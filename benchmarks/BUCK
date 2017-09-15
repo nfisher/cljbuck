@@ -1,0 +1,13 @@
+java_library(
+    name = 'lib',
+    srcs = glob(['src/**/*.java']),
+    deps = ['//compiler:lib','//lib:jcsp', '//lib:jmh-core',],
+    provided_deps = ['//lib:jmh-generator-annprocess',],
+    visibility = ['PUBLIC'],
+)
+
+java_binary(
+    name = 'main',
+    main_class = 'ca.junctionbox.cljbuck.lexer.benchmarks.LexerBenchmark',
+    deps = [':lib',],
+)
