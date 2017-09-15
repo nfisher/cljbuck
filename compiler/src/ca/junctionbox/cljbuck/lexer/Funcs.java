@@ -17,15 +17,55 @@ public class Funcs {
     public static final String SYMBOLIC = ALPHANUMERIC + "*+!/.-_?:";
 
     public static StateFunc lexText = l -> {
+        if (l.accept(WHITESPACE)) {
+            l.acceptRun(WHITESPACE);
+            l.ignore();
+        }
+
+        if (l.accept(";")) { return Funcs.lexComment;
+        } else if(l.accept("[")) { return leftBracket(l, '[', ItemType.itemLeftBracket);
+        } else if(l.accept("(")) { return leftBracket(l, '(', ItemType.itemLeftParen);
+        } else if(l.accept("{")) { return leftBracket(l, '{', ItemType.itemLeftBrace);
+        } else if(l.accept("]")) { return rightBracket(l, ']', ItemType.itemRightBracket);
+        } else if(l.accept(")")) { return rightBracket(l, ')', ItemType.itemRightParen);
+        } else if(l.accept("}")) { return rightBracket(l, '}', ItemType.itemLeftBrace);
+        } else if(l.accept(":")){ return Funcs.lexKeyword;
+        } else if(l.accept("\"")){ return Funcs.lexString;
+        } else if(l.accept(NUMERIC)){ return Funcs.lexNumeric;
+        } else if(l.accept(SYMBOLIC)){ return Funcs.lexSymbol;
+        } else {
+            l.pos = l.input.length();
+        }
+
         l.emit(ItemType.itemEOF);
         return null;
     };
 
-    public static StateFunc lexBoolean = l -> {
-        l.emit(ItemType.itemBool);
-        l.acceptRun("truefals");
-        return null;
-    };
+    public static StateFunc leftBracket(Lexer l, char c, ItemType t) {
+        l.leftBrackets.push(c);
+        l.emit(t);
+        return lexText;
+    }
+
+    public static StateFunc rightBracket(Lexer l, char cf, ItemType t) {
+        boolean matches = false;
+        char c = ' ';
+
+        if (!l.leftBrackets.empty()) {
+            c = l.leftBrackets.pop();
+        }
+
+        if (c == '[') matches = ']' == cf;
+        else if (c == '(') matches = ')' == cf;
+        else if (c == '{') matches = '}' == cf;
+
+        if (!matches) {
+            l.errorf("want pair for %s, got %s", c, cf);
+            return null;
+        }
+        l.emit(t);
+        return lexText;
+    }
 
     public static StateFunc lexString = l -> {
         l.next();
@@ -37,14 +77,15 @@ public class Funcs {
                 return null;
             }
         }
+
         l.emit(ItemType.itemString);
-        return null;
+        return lexText;
     };
 
     public static StateFunc lexSymbol = l -> {
         l.acceptRun(SYMBOLIC);
         l.emit(ItemType.itemSymbol);
-        return null;
+        return lexText;
     };
 
     public static StateFunc lexKeyword = l -> {
@@ -59,7 +100,7 @@ public class Funcs {
         l.backup();
 
         l.emit(ItemType.itemKeyword);
-        return null;
+        return lexText;
     };
 
     public static StateFunc lexComment = l -> {
@@ -68,7 +109,7 @@ public class Funcs {
             if ('\n' == ch || EOF == ch) break;
         }
         l.emit(ItemType.itemComment);
-        return null;
+        return lexText;
     };
 
     public static StateFunc lexNumeric = l -> {
@@ -76,7 +117,7 @@ public class Funcs {
         String digits = NUMERIC;
         boolean isDigital = false;
 
-        if (l.peek() == '.') {
+        if (l.accept(".")) {
             l.errorf("Invalid Number: %s", " a number should not start with a period");
             return null;
         }
@@ -111,6 +152,8 @@ public class Funcs {
         }
 
         l.emit(ItemType.itemNumber);
-        return null;
+        return lexText;
     };
+
+
 };

@@ -6,14 +6,16 @@ import org.jcsp.lang.One2OneChannel;
 import org.jcsp.util.Buffer;
 
 import java.nio.file.Path;
+import java.util.Stack;
 
 import static ca.junctionbox.cljbuck.channel.Closer.close;
 import static ca.junctionbox.cljbuck.lexer.Funcs.lexText;
 
 public class Lexer implements CSProcess {
     private final One2OneChannel<Object> items;
-    private String name;
-    private String input;
+    String name;
+    String input;
+    Stack<Character> leftBrackets;
     int start;
     int pos;
     int lastPos;
@@ -25,6 +27,7 @@ public class Lexer implements CSProcess {
         this.items = Channel.one2one();
         this.name = path;
         this.input = contents;
+        this.leftBrackets = new Stack();
     }
 
     public void emit(ItemType t) {
@@ -64,7 +67,9 @@ public class Lexer implements CSProcess {
     }
 
     public boolean accept(final String valid) {
-        if (valid.indexOf(next()) >= 0) {
+        char ch = next();
+        if (EOF == ch) return false;
+        if (valid.indexOf(ch) != -1) {
             return true;
         }
 
@@ -74,7 +79,9 @@ public class Lexer implements CSProcess {
 
     public void acceptRun(final String valid) {
         for(;;) {
-            if (valid.indexOf(next()) == -1) break;
+            char ch = next();
+            if (EOF == ch) break;
+            if (valid.indexOf(ch) == -1) break;
         }
         backup();
     }
@@ -87,6 +94,8 @@ public class Lexer implements CSProcess {
 
     public Item nextItem() {
         Item item = (Item) items.in().read();
+        if (item == null) return null;
+
         lastPos = item.pos;
         return item;
     }
@@ -96,9 +105,14 @@ public class Lexer implements CSProcess {
     }
 
     public void run() {
-        for (StateFunc fn = lexText; fn != null;) {
-            fn = fn.func(this);
+        try {
+            StateFunc fn = lexText;
+            for (;;) {
+                if (fn == null) break;
+                fn = fn.func(this);
+            }
+        } finally {
+            close(items.out());
         }
-        close(items.out());
     }
 }
