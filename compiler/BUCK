@@ -1,0 +1,19 @@
+# //compiler:
+
+java_library(
+    name = 'lib',
+    srcs = glob(['src/**/*.java']),
+    deps = ['//lib:jcsp'],
+    )
+
+java_test(
+    name = 'test',
+    srcs = glob(['test/**/*.java']),
+    deps = ['//lib:jcsp', '//lib:junit', ':lib'],
+    )
+
+java_binary(
+    name = 'main',
+    main_class = 'ca.junctionbox.cljbuck.Main',
+    deps = [':libfind'],
+    )

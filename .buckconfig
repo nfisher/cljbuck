@@ -1,0 +1,15 @@
+[java]
+    source_level = 8 
+    target_level = 8 
+    src_roots = /reader
+    resources_root = /resources
+
+[download]
+    maven_repo = http://repo.maven.apache.org/maven2/
+    in_build = true
+
+[project]
+    ignore = .git, target
+
+[httpserver]
+    port = 0
