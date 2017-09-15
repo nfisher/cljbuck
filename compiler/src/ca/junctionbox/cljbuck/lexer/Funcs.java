@@ -14,7 +14,7 @@ public class Funcs {
 
     public static final String ALPHA =  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     public static final String ALPHANUMERIC = ALPHA + NUMERIC;
-    public static final String SYMBOLIC = ALPHANUMERIC + "*+!/.-_?:";
+    public static final String SYMBOLIC = ALPHANUMERIC + "*+!/.-_?:=@><\\%";
 
     public static StateFunc lexText = l -> {
         if (l.accept(WHITESPACE)) {
@@ -23,17 +23,51 @@ public class Funcs {
         }
 
         if (l.accept(";")) { return Funcs.lexComment;
-        } else if(l.accept("[")) { return leftBracket(l, '[', ItemType.itemLeftBracket);
-        } else if(l.accept("(")) { return leftBracket(l, '(', ItemType.itemLeftParen);
-        } else if(l.accept("{")) { return leftBracket(l, '{', ItemType.itemLeftBrace);
-        } else if(l.accept("]")) { return rightBracket(l, ']', ItemType.itemRightBracket);
-        } else if(l.accept(")")) { return rightBracket(l, ')', ItemType.itemRightParen);
-        } else if(l.accept("}")) { return rightBracket(l, '}', ItemType.itemLeftBrace);
-        } else if(l.accept(":")){ return Funcs.lexKeyword;
-        } else if(l.accept("\"")){ return Funcs.lexString;
-        } else if(l.accept(NUMERIC)){ return Funcs.lexNumeric;
-        } else if(l.accept(SYMBOLIC)){ return Funcs.lexSymbol;
+        } else if(l.accept("[")) {
+            return leftBracket(l, '[', ItemType.itemLeftBracket);
+
+        } else if(l.accept("(")) {
+            return leftBracket(l, '(', ItemType.itemLeftParen);
+
+        } else if(l.accept("{")) {
+            return leftBracket(l, '{', ItemType.itemLeftBrace);
+
+        } else if(l.accept("]")) {
+            return rightBracket(l, ']', ItemType.itemRightBracket);
+
+        } else if(l.accept(")")) {
+            return rightBracket(l, ')', ItemType.itemRightParen);
+
+        } else if(l.accept("}")) {
+            return rightBracket(l, '}', ItemType.itemLeftBrace);
+
+        } else if(l.accept(":")){
+            return Funcs.lexKeyword;
+
+        } else if(l.accept("\"")){
+            return Funcs.lexString;
+
+        } else if(l.accept(".")) {
+            return Funcs.lexSymbol;
+
+        } else if(l.accept("^")) {
+            return Funcs.lexSymbol;
+
+        } else if(l.accept("'#&")) {
+            l.ignore();
+            return Funcs.lexText; // TODO: Need to emit this as distinct symbol
+
+        } else if(l.accept(NUMERIC)){
+            return Funcs.lexNumeric;
+
+        } else if(l.accept(SYMBOLIC)) {
+            return Funcs.lexSymbol;
+
         } else {
+            char ch = l.peek();
+            if (ch != EOF) {
+                //System.out.println("\t ch == " + (int) ch);
+            }
             l.pos = l.input.length();
         }
 
@@ -89,16 +123,7 @@ public class Funcs {
     };
 
     public static StateFunc lexKeyword = l -> {
-        for(;;) {
-            char ch = l.next();
-            if (' ' == ch) break;
-            if (EOF == ch) {
-                l.errorf(UNCLOSED_KEYWORD);
-                return null;
-            }
-        }
-        l.backup();
-
+        l.acceptRun(ALPHANUMERIC + ":./-_?");
         l.emit(ItemType.itemKeyword);
         return lexText;
     };

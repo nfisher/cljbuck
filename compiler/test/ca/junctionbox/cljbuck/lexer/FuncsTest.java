@@ -5,7 +5,9 @@ import org.jcsp.lang.Parallel;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import static ca.junctionbox.cljbuck.lexer.Funcs.*;
 import static junit.framework.TestCase.assertNull;
@@ -230,7 +232,7 @@ public class FuncsTest {
 }
 
 class ConsumeTask implements CSProcess {
-    final List<Item> items = new ArrayList<>();
+    final Queue<Item> items = new LinkedList<>();
     final Lexer l;
 
     ConsumeTask(Lexer l) {

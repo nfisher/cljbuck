@@ -3,13 +3,17 @@ Experiment in speeding up Clojure build times from first principals.
 
 ## Design
 
+- No regex in the lexer.
 - Pipeline Approach (reader -> lexer -> parser -> evaluator).
 - Breadth-First File System Read.
-- Single Reader from Filesystem.
 - Eventually fan-out to multiple Lexers/Parsers.
-- Pre-Allocate Code Slabs?
-- Radix Tree all the things to lower memory pressure?
 - Reduced "lisp" commands inspired by Buck.
+
+## Potential Performance Improvements
+
+- Pre-Allocate Code Slabs?
+- Single reader from Filesystem? (stream files)
+- Lower memory pressure/no-GC?
 
 ## Assumptions
 

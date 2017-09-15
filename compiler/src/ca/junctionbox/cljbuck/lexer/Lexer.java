@@ -5,7 +5,6 @@ import org.jcsp.lang.Channel;
 import org.jcsp.lang.One2OneChannel;
 import org.jcsp.util.Buffer;
 
-import java.nio.file.Path;
 import java.util.Stack;
 
 import static ca.junctionbox.cljbuck.channel.Closer.close;
@@ -24,7 +23,7 @@ public class Lexer implements CSProcess {
     public static final char EOF = 3; // ASCII - ETX/End of Text
 
     public Lexer(String path, String contents) {
-        this.items = Channel.one2one();
+        this.items = Channel.one2one(new Buffer(8192));
         this.name = path;
         this.input = contents;
         this.leftBrackets = new Stack();

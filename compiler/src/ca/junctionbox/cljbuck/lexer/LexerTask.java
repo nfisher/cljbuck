@@ -2,18 +2,21 @@ package ca.junctionbox.cljbuck.lexer;
 
 import ca.junctionbox.cljbuck.source.FormsTable;
 import ca.junctionbox.cljbuck.source.SourceCache;
-import org.jcsp.lang.AltingChannelInput;
 import org.jcsp.lang.CSProcess;
+import org.jcsp.lang.ChannelInput;
+import org.jcsp.lang.Parallel;
 
 import java.nio.file.Path;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class LexerTask implements CSProcess, SourceLexer {
     private final SourceCache cache;
     private final FormsTable formsTable;
 
-    private final AltingChannelInput in;
+    private final ChannelInput in;
 
-    public LexerTask(final SourceCache cache, FormsTable formsTable, final AltingChannelInput in) {
+    public LexerTask(final SourceCache cache, FormsTable formsTable, final ChannelInput in) {
         this.cache = cache;
         this.formsTable = formsTable;
         this.in = in;
@@ -21,21 +24,53 @@ public class LexerTask implements CSProcess, SourceLexer {
 
     @Override
     public void run() {
+        long start = System.currentTimeMillis();
+        long working = 0;
         while(true) {
             Path p = (Path) in.read();
+            long workStart = System.currentTimeMillis();
             if (null == p) {
                 break;
             }
 
             cache.apply(p, this);
+            working += System.currentTimeMillis() - workStart;
         }
+        long finish = System.currentTimeMillis();
+        System.out.println(this.getClass().getSimpleName() + " finish " + (finish - start) + "ms, work " + working + "ms");
     }
 
     // rip off of Rob Pikes lexer talk :D
     public void lex(final Path path, final String contents) {
         final Lexer lexer = new Lexer(path.toString(), contents);
-        lexer.run();
-        System.out.println(path.toString() + ": " + contents.length());
+        final ConsumeTask task = new ConsumeTask(lexer);
+
+        long start = System.currentTimeMillis();
+        new Parallel(new CSProcess[]{
+                lexer,
+                task,
+        }).run();
+        long finish = System.currentTimeMillis();
+        System.out.println("\t" + path.toString() + ": " + contents.length() + " chars lexed " + task.items.size() + " symbols " + (finish - start) + "ms");
     }
 }
 
+class ConsumeTask implements CSProcess {
+    final Queue<Item> items = new LinkedList<>();
+    final Lexer l;
+
+    ConsumeTask(Lexer l) {
+        this.l = l;
+    }
+
+    @Override
+    public void run() {
+        for (;;) {
+            final Item item = l.nextItem();
+            if (item == null) {
+                break;
+            }
+            items.add(item);
+        }
+    }
+}
