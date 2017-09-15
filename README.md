@@ -1,8 +1,8 @@
 # cljbuck
 
-Experiment in speeding up Clojure build times from first principals.
+Experiment in speeding up Clojure build times from the ground up.
 
-## TODO
+## Next Steps
 
 - instrument JMH benchmarks for each stage.
 - finish symbol parsing.
@@ -54,8 +54,7 @@ Using multiples of 4096 for number bytes to keep it around memory page boundarie
   - Average 75 deps.
   - 95PCTL < 500 deps.
 
-
-### Source in Memory
+## Memory Estimates
 
 ```
 Small
@@ -73,7 +72,6 @@ Dependencies
 ??
 ```
 
-
 ## Slab Structure
 
 - Data stored in raw bytes.
@@ -90,15 +88,6 @@ Dependencies
     |                       CLJ Src                               ...
 ```
 
-
-### Entries
-
-```
-filepath - $path:$pos
-symbol slab location - $symbol:$slabloc
-```
-
-
 ## Project File Specification
 
 - command-alias: 
@@ -112,8 +101,7 @@ symbol slab location - $symbol:$slabloc
 - java-library: Generate library file.
 - prebuilt-jar: Precompiled binary.
 
-
-## Points of Inspiration
+## Inspiration
 
 - Aeron Protocol Specification - https://github.com/real-logic/aeron/wiki/Protocol-Specification
 - Buck Build - https://buckbuild.com/
