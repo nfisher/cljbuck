@@ -1,19 +1,37 @@
 # cljbuck
+
 Experiment in speeding up Clojure build times from first principals.
+
+## TODO
+
+- instrument JMH benchmarks for each stage.
+- finish symbol parsing.
+- build AST.
+- build evaluator.
+- generate bytecode, jar file, etc.
+- run a clojure program.
+
+## Building
+
+- requires buck - see https://buckbuild.com/setup/getting_started.html.
+- buck test --all # run tests
+- buck build //... # build project
+- buck run //compiler:main -- "$CLJ_PROJECT" # run
 
 ## Design
 
 - No regex in the lexer.
-- Pipeline Approach (reader -> lexer -> parser -> evaluator).
-- Breadth-First File System Read.
-- Eventually fan-out to multiple Lexers/Parsers.
+- Pipeline approach (reader -> lexer -> parser -> evaluator).
 - Reduced "lisp" commands inspired by Buck.
+- Build a DAG for all forms.
 
 ## Potential Performance Improvements
 
+- Breadth-First File System Read?
 - Pre-Allocate Code Slabs?
 - Single reader from Filesystem? (stream files)
 - Lower memory pressure/no-GC?
+- Fan-out to multiple Lexers/Parsers/Evaluators?
 
 ## Assumptions
 
@@ -36,6 +54,8 @@ Using multiples of 4096 for number bytes to keep it around memory page boundarie
   - Average 75 deps.
   - 95PCTL < 500 deps.
 
+
+### Source in Memory
 
 ```
 Small
@@ -70,6 +90,7 @@ Dependencies
     |                       CLJ Src                               ...
 ```
 
+
 ### Entries
 
 ```
@@ -77,20 +98,22 @@ filepath - $path:$pos
 symbol slab location - $symbol:$slabloc
 ```
 
+
 ## Project File Specification
 
-command-alias: 
-export-file:
-genrule:
-remote-file:
-worker-tool:
-zip-file:
+- command-alias: 
+- export-file:
+- genrule:
+- remote-file:
+- worker-tool:
+- zip-file:
 
-java-binary: Generate executable JAR file.
-java-library: Generate library file.
-prebuilt-jar: Precompiled binary.
+- java-binary: Generate executable JAR file.
+- java-library: Generate library file.
+- prebuilt-jar: Precompiled binary.
+
 
 ## Points of Inspiration
 
-Aeron Protocol Specification - https://github.com/real-logic/aeron/wiki/Protocol-Specification
-Buck Build - https://buckbuild.com/
+- Aeron Protocol Specification - https://github.com/real-logic/aeron/wiki/Protocol-Specification
+- Buck Build - https://buckbuild.com/
