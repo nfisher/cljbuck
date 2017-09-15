@@ -1,4 +1,5 @@
-Experiment in speeding up Clojure build times.
+# cljbuck
+Experiment in speeding up Clojure build times from first principals.
 
 ## Design
 
@@ -11,6 +12,8 @@ Experiment in speeding up Clojure build times.
 - Reduced "lisp" commands inspired by Buck.
 
 ## Assumptions
+
+Dynamic language makes it more difficult to specify an ABI.
 
 Using multiples of 4096 for number bytes to keep it around memory page boundaries
 
@@ -70,11 +73,6 @@ filepath - $path:$pos
 symbol slab location - $symbol:$slabloc
 ```
 
-Points of Inspiration:
-
-Aeron Protocol Specification - https://github.com/real-logic/aeron/wiki/Protocol-Specification
-Buck Build - https://buckbuild.com/
-
 ## Project File Specification
 
 command-alias: 
@@ -87,3 +85,8 @@ zip-file:
 java-binary: Generate executable JAR file.
 java-library: Generate library file.
 prebuilt-jar: Precompiled binary.
+
+## Points of Inspiration
+
+Aeron Protocol Specification - https://github.com/real-logic/aeron/wiki/Protocol-Specification
+Buck Build - https://buckbuild.com/

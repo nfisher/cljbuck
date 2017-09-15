@@ -2,5 +2,6 @@
 .DS_Store
 /.buckd
 /buck-out
+*.avro
 /.idea
 *.iml
