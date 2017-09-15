@@ -7,8 +7,8 @@ import org.jcsp.lang.ChannelInput;
 import org.jcsp.lang.Parallel;
 
 import java.nio.file.Path;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LexerTask implements CSProcess, SourceLexer {
     private final SourceCache cache;
@@ -55,22 +55,3 @@ public class LexerTask implements CSProcess, SourceLexer {
     }
 }
 
-class ConsumeTask implements CSProcess {
-    final Queue<Item> items = new LinkedList<>();
-    final Lexer l;
-
-    ConsumeTask(Lexer l) {
-        this.l = l;
-    }
-
-    @Override
-    public void run() {
-        for (;;) {
-            final Item item = l.nextItem();
-            if (item == null) {
-                break;
-            }
-            items.add(item);
-        }
-    }
-}
