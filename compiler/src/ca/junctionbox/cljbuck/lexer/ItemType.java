@@ -15,5 +15,19 @@ public enum ItemType {
     itemRightBracket,   // ]
     itemRightParen,     // )
     itemString,         // "Banana"
-    itemVar, itemComment, itemSymbol, itemLong, itemHex, itemOctal, itemBase36, itemRightMap, itemLeftList, itemLeftMap, itemRightList, itemLeftVector, itemRightVector, itemText,
+    itemVar,
+    itemComment,
+    itemSymbol,
+    itemLong,
+    itemHex,
+    itemOctal,
+    itemBase36,
+    itemRightMap,
+    itemLeftList,
+    itemLeftMap,
+    itemRightList,
+    itemLeftVector,
+    itemRightVector,
+    itemText,
+    itemDecimal, itemDouble, itemRational, itemBigDecimal, itemBigInt,
 }

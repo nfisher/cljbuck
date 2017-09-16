@@ -11,12 +11,13 @@ public class Funcs {
     static final String HEX = "ABCDEFabcdef" + NUMERIC;
     static final String BASE36 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + NUMERIC;
     static final String WHITESPACE = " \t\r\n";
+    static final String BOUNDARY_CHAR = "()[]{}'#\n\r\t ";
 
     public static final String ALPHA =  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     public static final String ALPHANUMERIC = ALPHA + NUMERIC;
     public static final String SYMBOLIC = ALPHANUMERIC + "*+!/.-_?:=@><\\%";
 
-    public static StateFunc lexText = l -> {
+    public static StateFunc lexFile = l -> {
         if (l.accept(WHITESPACE)) {
             l.acceptRun(WHITESPACE);
             l.ignore();
@@ -55,10 +56,10 @@ public class Funcs {
 
         } else if(l.accept("'#&")) {
             l.ignore();
-            return Funcs.lexText; // TODO: Need to emit this as distinct symbol
+            return Funcs.lexFile; // TODO: Need to emit this as distinct symbol
 
         } else if(l.accept(NUMERIC)){
-            return Funcs.lexNumeric;
+            return Funcs.lexNumeric;  // TODO: Need to handle +/-
 
         } else if(l.accept(SYMBOLIC)) {
             return Funcs.lexSymbol;
@@ -78,7 +79,7 @@ public class Funcs {
     public static StateFunc leftBracket(Lexer l, char c, ItemType t) {
         l.leftBrackets.push(c);
         l.emit(t);
-        return lexText;
+        return lexFile;
     }
 
     public static StateFunc rightBracket(Lexer l, char cf, ItemType t) {
@@ -98,7 +99,7 @@ public class Funcs {
             return null;
         }
         l.emit(t);
-        return lexText;
+        return lexFile;
     }
 
     public static StateFunc lexString = l -> {
@@ -113,72 +114,24 @@ public class Funcs {
         }
 
         l.emit(ItemType.itemString);
-        return lexText;
+        return lexFile;
     };
 
     public static StateFunc lexSymbol = l -> {
         l.acceptRun(SYMBOLIC);
         l.emit(ItemType.itemSymbol);
-        return lexText;
+        return lexFile;
     };
 
     public static StateFunc lexKeyword = l -> {
         l.acceptRun(ALPHANUMERIC + ":./-_?");
         l.emit(ItemType.itemKeyword);
-        return lexText;
+        return lexFile;
     };
 
-    public static StateFunc lexComment = l -> {
-        for (;;) {
-            char ch = l.next();
-            if ('\n' == ch || EOF == ch) break;
-        }
-        l.emit(ItemType.itemComment);
-        return lexText;
-    };
+    public static StateFunc lexNumeric = new LexNumeric();
 
-    public static StateFunc lexNumeric = l -> {
-        l.accept("-+");
-        String digits = NUMERIC;
-        boolean isDigital = false;
-
-        if (l.accept(".")) {
-            l.errorf("Invalid Number: %s", " a number should not start with a period");
-            return null;
-        }
-
-        if (l.accept("0") && l.accept("xX")) {
-            digits = HEX;
-            isDigital = true;
-        } else if (l.accept("3") && l.accept("6") && l.accept("r")) {
-            digits = BASE36;
-            isDigital = true;
-        }
-        l.acceptRun(digits);
-
-
-        if (isDigital && l.accept("./")) {
-            l.errorf("Invalid Number: %s", "digital numbers shouldn't have a . or /");
-            return null;
-        } else if (l.accept("./")) {
-            l.acceptRun(digits);
-        }
-
-        if (l.accept("eE")) {
-            l.accept("+-");
-            l.acceptRun(NUMERIC);
-        } else {
-            l.accept("MN");
-        }
-
-        if (l.accept(ALPHANUMERIC)) {
-            l.errorf("Invalid Number");
-            return null;
-        }
-
-        l.emit(ItemType.itemNumber);
-        return lexText;
-    };
-
+    public static final StateFunc lexComment = new LexComment();
 
 };
+

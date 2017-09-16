@@ -8,9 +8,9 @@ import org.jcsp.util.Buffer;
 import java.util.Stack;
 
 import static ca.junctionbox.cljbuck.channel.Closer.close;
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexText;
+import static ca.junctionbox.cljbuck.lexer.Funcs.lexFile;
 
-public class Lexer implements CSProcess {
+public class Lexer implements CSProcess, Lexable {
     private final One2OneChannel<Object> items;
     String name;
     String input;
@@ -29,12 +29,14 @@ public class Lexer implements CSProcess {
         this.leftBrackets = new Stack();
     }
 
+    @Override
     public void emit(ItemType t) {
         Item item = new Item(t, start, input.substring(start, pos), line);
         items.out().write(item);
         start = pos;
     }
 
+    @Override
     public char next() {
         if (pos >= input.length()) {
             return EOF;
@@ -48,12 +50,14 @@ public class Lexer implements CSProcess {
         return c;
     }
 
+    @Override
     public char peek() {
         char c = next();
         backup();
         return c;
     }
 
+    @Override
     public void backup() {
         pos -= 1;
         if (input.charAt(pos) == '\n') {
@@ -61,10 +65,12 @@ public class Lexer implements CSProcess {
         }
     }
 
+    @Override
     public void ignore() {
         start = pos;
     }
 
+    @Override
     public boolean accept(final String valid) {
         char ch = next();
         if (EOF == ch) return false;
@@ -76,6 +82,7 @@ public class Lexer implements CSProcess {
         return false;
     }
 
+    @Override
     public void acceptRun(final String valid) {
         for(;;) {
             char ch = next();
@@ -85,12 +92,14 @@ public class Lexer implements CSProcess {
         backup();
     }
 
+    @Override
     public StateFunc errorf(final String fmt, Object... args) {
         Item item = new Item(ItemType.itemError, start, String.format(fmt, args), line);
         items.out().write(item);
         return null;
     }
 
+    @Override
     public Item nextItem() {
         Item item = (Item) items.in().read();
         if (item == null) return null;
@@ -99,13 +108,14 @@ public class Lexer implements CSProcess {
         return item;
     }
 
+    @Override
     public void drain() {
         for(;nextItem() != null;) { }
     }
 
     public void run() {
         try {
-            StateFunc fn = lexText;
+            StateFunc fn = lexFile;
             for (;;) {
                 if (fn == null) break;
                 fn = fn.func(this);

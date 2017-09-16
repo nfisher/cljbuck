@@ -25,11 +25,14 @@ public class SourceCache {
     }
 
     public void consume(final Path sourceFile) throws IOException {
-        long start = System.currentTimeMillis();
-        codeCache.put(sourceFile, new String(Files.readAllBytes(sourceFile), StandardCharsets.UTF_8));
-        long finish = System.currentTimeMillis();
+        final long start = System.currentTimeMillis();
+        final byte[] bytes = Files.readAllBytes(sourceFile);
+        final long read = System.currentTimeMillis();
+        final String contents = new String(bytes, StandardCharsets.UTF_8);
+        final long finish = System.currentTimeMillis();
+        codeCache.put(sourceFile, contents);
 
-        System.out.println("\tconsumed " + sourceFile + " in " + (finish - start) + "ms");
+        System.out.println("\tconsumed " + bytes.length + "B from " + sourceFile + " in " + (finish - start) + "ms, " + (read - start) + "ms read, " + (finish - read) + "ms conversion");
     }
 
     public void apply(final Path sourceFile, final SourceLexer lexer) {

@@ -7,8 +7,6 @@ import org.jcsp.lang.ChannelInput;
 import org.jcsp.lang.Parallel;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 public class LexerTask implements CSProcess, SourceLexer {
     private final SourceCache cache;
@@ -42,12 +40,12 @@ public class LexerTask implements CSProcess, SourceLexer {
 
     // rip off of Rob Pikes lexer talk :D
     public void lex(final Path path, final String contents) {
-        final Lexer lexer = new Lexer(path.toString(), contents);
-        final ConsumeTask task = new ConsumeTask(lexer);
+        final Lexable lexable = new Lexer(path.toString(), contents);
+        final ConsumeTask task = new ConsumeTask(lexable);
 
         long start = System.currentTimeMillis();
         new Parallel(new CSProcess[]{
-                lexer,
+                lexable,
                 task,
         }).run();
         long finish = System.currentTimeMillis();

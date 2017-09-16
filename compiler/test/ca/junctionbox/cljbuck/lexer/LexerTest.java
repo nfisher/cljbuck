@@ -8,7 +8,7 @@ public class LexerTest {
 
     @Test
     public void Test_next() {
-        final Lexer l = new Lexer("test.clj", "a");
+        final Lexable l = new Lexer("test.clj", "a");
 
         char c1 = l.next();
         char c2 = l.next();
