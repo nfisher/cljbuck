@@ -2,7 +2,7 @@ package ca.junctionbox.cljbuck.lexer.benchmarks;
 
 import ca.junctionbox.cljbuck.lexer.Item;
 import ca.junctionbox.cljbuck.lexer.Lexable;
-import ca.junctionbox.cljbuck.lexer.Lexer;
+import ca.junctionbox.cljbuck.lexer.StringLexer;
 import org.jcsp.lang.CSProcess;
 import org.jcsp.lang.Parallel;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -18,13 +18,13 @@ public class LexerBenchmark {
 
     @Benchmark
     public void BenchmarkLexer() {
-        final Lexable l = new Lexer("comment.clj",
+        final Lexable l = new StringLexer("comment.clj",
                 "(ns my.core (:require [hello.world.extended :as ext])\n\n\n(defn hello [name]\n (prn \"Hola \" name))");
 
         ConsumeTask task = new ConsumeTask(l);
 
         new Parallel(new CSProcess[]{
-                l,
+                (CSProcess) l,
                 task,
         }).run();
     }

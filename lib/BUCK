@@ -67,3 +67,9 @@ prebuilt_jar (
     name = 'commons-math3',
     binary_jar = 'commons-math3-3.2.jar',
 )
+
+prebuilt_jar (
+    name = 'guava',
+    binary_jar = 'guava-23.0.jar',
+    visibility = ["PUBLIC"],
+)

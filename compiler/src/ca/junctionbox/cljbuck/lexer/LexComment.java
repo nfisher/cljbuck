@@ -1,6 +1,6 @@
 package ca.junctionbox.cljbuck.lexer;
 
-import static ca.junctionbox.cljbuck.lexer.Lexer.EOF;
+import static ca.junctionbox.cljbuck.lexer.StringLexer.EOF;
 
 class LexComment implements StateFunc {
 

@@ -22,7 +22,7 @@ interface Runner {
 public class FuncsTest {
     Runner partial(final StateFunc fn) {
         return s -> {
-            final Lexable l = new Lexer("comment.clj", s);
+            final Lexable l = new StringLexer("comment.clj", s);
             final Result[] actual = {new Result()};
             CSProcess receiver = () -> {
                 final Item item = l.nextItem();
@@ -176,13 +176,13 @@ public class FuncsTest {
 
     @Test(timeout=1000L)
     public void Test_Lexer_lex_single_line() {
-        final Lexable l = new Lexer("comment.clj",
+        final Lexable l = new StringLexer("comment.clj",
                 "(defn hello [name] (prn \"Hola \" name))");
 
         DrainTask task = new DrainTask(l);
 
         new Parallel(new CSProcess[]{
-                l,
+                (CSProcess) l,
                 task,
         }).run();
 
@@ -198,13 +198,13 @@ public class FuncsTest {
 
     @Test(timeout=1000L)
     public void Test_Lexer_lex_multiple_lines() {
-        final Lexable l = new Lexer("comment.clj",
+        final Lexable l = new CharLexer("comment.clj",
                 "(ns my.core)\n\n\n(defn hello [name]\n (prn \"Hola \" name))");
 
         DrainTask task = new DrainTask(l);
 
         new Parallel(new CSProcess[]{
-                l,
+                (CSProcess) l,
                 task,
         }).run();
 

@@ -1,6 +1,9 @@
 package ca.junctionbox.cljbuck.lexer;
 
-import static ca.junctionbox.cljbuck.lexer.Lexer.EOF;
+import com.sun.corba.se.spi.orbutil.fsm.State;
+
+import static ca.junctionbox.cljbuck.lexer.Funcs.*;
+import static ca.junctionbox.cljbuck.lexer.StringLexer.EOF;
 
 public class Funcs {
     public static final String UNCLOSED_STRING = "unclosed string";
@@ -17,72 +20,15 @@ public class Funcs {
     public static final String ALPHANUMERIC = ALPHA + NUMERIC;
     public static final String SYMBOLIC = ALPHANUMERIC + "*+!/.-_?:=@><\\%";
 
-    public static StateFunc lexFile = l -> {
-        if (l.accept(WHITESPACE)) {
-            l.acceptRun(WHITESPACE);
-            l.ignore();
-        }
+    public static final StateFunc lexFile = new LexFile();
 
-        if (l.accept(";")) { return Funcs.lexComment;
-        } else if(l.accept("[")) {
-            return leftBracket(l, '[', ItemType.itemLeftBracket);
-
-        } else if(l.accept("(")) {
-            return leftBracket(l, '(', ItemType.itemLeftParen);
-
-        } else if(l.accept("{")) {
-            return leftBracket(l, '{', ItemType.itemLeftBrace);
-
-        } else if(l.accept("]")) {
-            return rightBracket(l, ']', ItemType.itemRightBracket);
-
-        } else if(l.accept(")")) {
-            return rightBracket(l, ')', ItemType.itemRightParen);
-
-        } else if(l.accept("}")) {
-            return rightBracket(l, '}', ItemType.itemLeftBrace);
-
-        } else if(l.accept(":")){
-            return Funcs.lexKeyword;
-
-        } else if(l.accept("\"")){
-            return Funcs.lexString;
-
-        } else if(l.accept(".")) {
-            return Funcs.lexSymbol;
-
-        } else if(l.accept("^")) {
-            return Funcs.lexSymbol;
-
-        } else if(l.accept("'#&")) {
-            l.ignore();
-            return Funcs.lexFile; // TODO: Need to emit this as distinct symbol
-
-        } else if(l.accept(NUMERIC)){
-            return Funcs.lexNumeric;  // TODO: Need to handle +/-
-
-        } else if(l.accept(SYMBOLIC)) {
-            return Funcs.lexSymbol;
-
-        } else {
-            char ch = l.peek();
-            if (ch != EOF) {
-                //System.out.println("\t ch == " + (int) ch);
-            }
-            l.pos = l.input.length();
-        }
-
-        l.emit(ItemType.itemEOF);
-        return null;
-    };
-
-    public static StateFunc leftBracket(Lexer l, char c, ItemType t) {
+    public static StateFunc leftBracket(Lexable l, char c, ItemType t) {
         l.leftBrackets.push(c);
         l.emit(t);
         return lexFile;
     }
 
-    public static StateFunc rightBracket(Lexer l, char cf, ItemType t) {
+    public static StateFunc rightBracket(Lexable l, char cf, ItemType t) {
         boolean matches = false;
         char c = ' ';
 
@@ -102,36 +48,16 @@ public class Funcs {
         return lexFile;
     }
 
-    public static StateFunc lexString = l -> {
-        l.next();
-        for (;;) {
-            char ch = l.next();
-            if ('\"' == ch) break;
-            if (EOF == ch) {
-                l.errorf(UNCLOSED_STRING);
-                return null;
-            }
-        }
+    public static final StateFunc lexString = new LexString();
 
-        l.emit(ItemType.itemString);
-        return lexFile;
-    };
+    public static final StateFunc lexKeyword = new LexKeyword();
 
-    public static StateFunc lexSymbol = l -> {
-        l.acceptRun(SYMBOLIC);
-        l.emit(ItemType.itemSymbol);
-        return lexFile;
-    };
+    public static final StateFunc lexSymbol = new LexSymbol();
 
-    public static StateFunc lexKeyword = l -> {
-        l.acceptRun(ALPHANUMERIC + ":./-_?");
-        l.emit(ItemType.itemKeyword);
-        return lexFile;
-    };
-
-    public static StateFunc lexNumeric = new LexNumeric();
+    public static final StateFunc lexNumeric = new LexNumeric();
 
     public static final StateFunc lexComment = new LexComment();
 
-};
+
+}
 

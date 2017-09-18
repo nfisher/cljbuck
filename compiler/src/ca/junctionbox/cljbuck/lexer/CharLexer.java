@@ -1,20 +1,19 @@
 package ca.junctionbox.cljbuck.lexer;
 
+import ca.junctionbox.cljbuck.channel.Closer;
 import org.jcsp.lang.CSProcess;
 import org.jcsp.lang.Channel;
 import org.jcsp.lang.One2OneChannel;
 import org.jcsp.util.Buffer;
 
-import java.util.Stack;
+import java.nio.file.Path;
 
-import static ca.junctionbox.cljbuck.channel.Closer.close;
 import static ca.junctionbox.cljbuck.lexer.Funcs.lexFile;
 
-public class Lexer implements CSProcess, Lexable {
+public class CharLexer implements CSProcess, Lexable, SourceLexer {
     private final One2OneChannel<Object> items;
     String name;
-    String input;
-    Stack<Character> leftBrackets;
+    char[] input;
     int start;
     int pos;
     int lastPos;
@@ -22,27 +21,26 @@ public class Lexer implements CSProcess, Lexable {
 
     public static final char EOF = 3; // ASCII - ETX/End of Text
 
-    public Lexer(String path, String contents) {
+    public CharLexer(String path, String contents) {
         this.items = Channel.one2one(new Buffer(8192));
         this.name = path;
-        this.input = contents;
-        this.leftBrackets = new Stack();
+        this.input = contents.toCharArray();
     }
 
     @Override
     public void emit(ItemType t) {
-        Item item = new Item(t, start, input.substring(start, pos), line);
+        Item item = new Item(t, start, new String(input, start, pos-start), line);
         items.out().write(item);
         start = pos;
     }
 
     @Override
     public char next() {
-        if (pos >= input.length()) {
+        if (pos >= input.length) {
             return EOF;
         }
 
-        char c = input.charAt(pos);
+        char c = input[pos];
         pos += 1;
         if ('\n' == c) {
            line++;
@@ -60,7 +58,7 @@ public class Lexer implements CSProcess, Lexable {
     @Override
     public void backup() {
         pos -= 1;
-        if (input.charAt(pos) == '\n') {
+        if (input[pos] == '\n') {
             line--;
         }
     }
@@ -68,6 +66,11 @@ public class Lexer implements CSProcess, Lexable {
     @Override
     public void ignore() {
         start = pos;
+    }
+
+    @Override
+    public int getPos() {
+        return pos;
     }
 
     @Override
@@ -113,6 +116,11 @@ public class Lexer implements CSProcess, Lexable {
         for(;nextItem() != null;) { }
     }
 
+    @Override
+    public void close() {
+        pos = input.length;
+    }
+
     public void run() {
         try {
             StateFunc fn = lexFile;
@@ -121,7 +129,12 @@ public class Lexer implements CSProcess, Lexable {
                 fn = fn.func(this);
             }
         } finally {
-            close(items.out());
+            Closer.close(items.out());
         }
+    }
+
+    @Override
+    public void lex(Path path, String contents) {
+
     }
 }

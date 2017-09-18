@@ -2,8 +2,10 @@ package ca.junctionbox.cljbuck.lexer;
 
 import ca.junctionbox.cljbuck.source.FormsTable;
 import ca.junctionbox.cljbuck.source.SourceCache;
+import ca.junctionbox.cljbuck.syntax.SyntaxTask;
 import org.jcsp.lang.CSProcess;
 import org.jcsp.lang.ChannelInput;
+import org.jcsp.lang.ChannelOutput;
 import org.jcsp.lang.Parallel;
 
 import java.nio.file.Path;
@@ -13,11 +15,13 @@ public class LexerTask implements CSProcess, SourceLexer {
     private final FormsTable formsTable;
 
     private final ChannelInput in;
+    private final ChannelOutput<Object> out;
 
-    public LexerTask(final SourceCache cache, FormsTable formsTable, final ChannelInput in) {
+    public LexerTask(final SourceCache cache, FormsTable formsTable, final ChannelInput in, final ChannelOutput<Object> out) {
         this.cache = cache;
         this.formsTable = formsTable;
         this.in = in;
+        this.out = out;
     }
 
     @Override
@@ -40,16 +44,16 @@ public class LexerTask implements CSProcess, SourceLexer {
 
     // rip off of Rob Pikes lexer talk :D
     public void lex(final Path path, final String contents) {
-        final Lexable lexable = new Lexer(path.toString(), contents);
-        final ConsumeTask task = new ConsumeTask(lexable);
+        final Lexable lexable = new CharLexer(path.toString(), contents);
+        final SyntaxTask task = new SyntaxTask(lexable);
 
         long start = System.currentTimeMillis();
         new Parallel(new CSProcess[]{
-                lexable,
+                (CSProcess) lexable,
                 task,
         }).run();
         long finish = System.currentTimeMillis();
-        System.out.println("\t" + path.toString() + ": " + contents.length() + " chars lexed " + task.items.size() + " symbols " + (finish - start) + "ms");
+        System.out.println("\t" + path.toString() + ": " + contents.length() + " chars lexed " + task.size() + " symbols " + (finish - start) + "ms");
     }
 }
 

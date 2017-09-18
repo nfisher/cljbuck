@@ -1,5 +1,7 @@
 package ca.junctionbox.cljbuck.lexer;
 
+import java.util.Stack;
+
 public interface Lexable {
     void emit(ItemType t);
 
@@ -11,6 +13,8 @@ public interface Lexable {
 
     void ignore();
 
+    int getPos();
+
     boolean accept(String valid);
 
     void acceptRun(String valid);
@@ -20,4 +24,8 @@ public interface Lexable {
     Item nextItem();
 
     void drain();
+
+    Stack<Character> leftBrackets = new Stack<>();
+
+    void close();
 }

@@ -1,17 +1,19 @@
-package ca.junctionbox.cljbuck.lexer;
+package ca.junctionbox.cljbuck.syntax;
 
+import ca.junctionbox.cljbuck.lexer.Item;
+import ca.junctionbox.cljbuck.lexer.Lexable;
 import org.jcsp.lang.CSProcess;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import com.google.common.graph.GraphBuilder;
 
-public class ConsumeTask implements CSProcess {
+public class SyntaxTask implements CSProcess {
     final List<Item> items = new ArrayList<>();
     final Lexable l;
-    final TreeNode root = new Branch(Syntax.CljFile);
 
-    ConsumeTask(Lexable l) {
+    public SyntaxTask(final Lexable l) {
         this.l = l;
     }
 
@@ -26,9 +28,47 @@ public class ConsumeTask implements CSProcess {
             items.add(item);
         }
     }
+
+    public int size() {
+        return items.size();
+    }
 }
 
-enum Syntax {
+class ParentNode {
+    final SyntaxType type;
+
+    public ParentNode(final SyntaxType type) {
+        this.type = type;
+    }
+
+    public SyntaxType getType() {
+        return type;
+    }
+
+    public String getValue() {
+        return "";
+    }
+}
+
+class SyntaxNode {
+    final SyntaxType type;
+    final String value;
+
+    public SyntaxNode(final SyntaxType type, final String value) {
+        this.type = type;
+        this.value = value;
+    }
+
+    public SyntaxType getType() {
+        return type;
+    }
+
+    public String getValue() {
+        return value;
+    }
+}
+
+enum SyntaxType {
     CljFile,
 
     // Collections
@@ -75,46 +115,4 @@ enum Syntax {
     ReaderConditional,          // #?
     ReaderConditionalSplicing,  // #?@
 
-}
-
-interface TreeNode {
-    boolean hasChildren();
-    Syntax getType();
-}
-
-class Leaf implements TreeNode {
-    private final Syntax type;
-
-    public Leaf(final Syntax type) {
-       this.type = type;
-    }
-
-    @Override
-    public boolean hasChildren() {
-        return false;
-    }
-
-    @Override
-    public Syntax getType() {
-        return type;
-    }
-}
-
-class Branch implements TreeNode {
-    final LinkedList<TreeNode> children = new LinkedList<>();
-    final Syntax type;
-
-    Branch(final Syntax type) {
-        this.type = type;
-    }
-
-    @Override
-    public boolean hasChildren() {
-        return children.size() > 0;
-    }
-
-    @Override
-    public Syntax getType() {
-        return type;
-    }
 }

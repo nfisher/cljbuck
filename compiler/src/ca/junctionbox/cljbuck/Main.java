@@ -6,11 +6,7 @@ import ca.junctionbox.cljbuck.io.ReadFileTask;
 import ca.junctionbox.cljbuck.lexer.LexerTask;
 import ca.junctionbox.cljbuck.source.FormsTable;
 import ca.junctionbox.cljbuck.source.SourceCache;
-import org.jcsp.lang.CSProcess;
-import org.jcsp.lang.Channel;
-import org.jcsp.lang.One2AnyChannel;
-import org.jcsp.lang.One2OneChannel;
-import org.jcsp.lang.Parallel;
+import org.jcsp.lang.*;
 import org.jcsp.util.Buffer;
 
 import java.io.IOException;
@@ -23,6 +19,7 @@ public class Main {
         final One2OneChannel<Object> globCh = Channel.one2one(new Buffer(2048), 0);
         final One2AnyChannel<Object> pathCh = Channel.one2any(new Buffer(2048),0);
         final One2AnyChannel<Object> cacheCh = Channel.one2any(new Buffer(2048),0);
+        final Any2OneChannel<Object> tokenCh = Channel.any2one(new Buffer(2048),0);
 
         final SourceCache cache = SourceCache.create();
         final FormsTable forms = FormsTable.create();
@@ -35,7 +32,7 @@ public class Main {
         allTasks[1] = new FindFilesTask(globCh.in(), pathCh.out(), numReadFileTasks);
 
         for (int i = 2; i < numReadFileTasks + 2; i++) allTasks[i] = new ReadFileTask(cache, pathCh.in(), cacheCh.out(), numLexerTasks/numReadFileTasks);
-        for (int i = 2 + numReadFileTasks; i < numLexerTasks + numReadFileTasks + 2; i++) allTasks[i] = new LexerTask(cache, forms, cacheCh.in());
+        for (int i = 2 + numReadFileTasks; i < numLexerTasks + numReadFileTasks + 2; i++) allTasks[i] = new LexerTask(cache, forms, cacheCh.in(), tokenCh.out());
 
         new Parallel(allTasks).run();
 
