@@ -1,10 +1,10 @@
 package ca.junctionbox.cljbuck.lexer.benchmarks;
 
+import ca.junctionbox.cljbuck.lexer.CharLexer;
 import ca.junctionbox.cljbuck.lexer.Item;
 import ca.junctionbox.cljbuck.lexer.Lexable;
-import ca.junctionbox.cljbuck.lexer.StringLexer;
-import org.jcsp.lang.CSProcess;
-import org.jcsp.lang.Parallel;
+import org.jcsp.lang.*;
+import org.jcsp.util.Buffer;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -18,10 +18,11 @@ public class LexerBenchmark {
 
     @Benchmark
     public void BenchmarkLexer() {
-        final Lexable l = new StringLexer("comment.clj",
-                "(ns my.core (:require [hello.world.extended :as ext])\n\n\n(defn hello [name]\n (prn \"Hola \" name))");
+        final One2OneChannel<Object> chan = Channel.one2one(new Buffer(2048));
+        final Lexable l = new CharLexer("comment.clj",
+                "(ns my.core (:require [hello.world.extended :as ext])\n\n\n(defn hello [name]\n (prn \"Hola \" name))", chan.out());
 
-        ConsumeTask task = new ConsumeTask(l);
+        ConsumeTask task = new ConsumeTask(chan.in());
 
         new Parallel(new CSProcess[]{
                 (CSProcess) l,
@@ -41,16 +42,16 @@ public class LexerBenchmark {
 
 class ConsumeTask implements CSProcess {
     final Queue<Item> items = new LinkedList<>();
-    final Lexable l;
+    private final ChannelInput<Object> in;
 
-    ConsumeTask(Lexable l) {
-        this.l = l;
+    ConsumeTask(ChannelInput<Object> in) {
+        this.in = in;
     }
 
     @Override
     public void run() {
         for (;;) {
-            final Item item = l.nextItem();
+            final Item item = (Item) in.read();
             if (item == null) {
                 break;
             }

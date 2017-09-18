@@ -10,16 +10,16 @@ import org.jcsp.lang.Parallel;
 
 import java.nio.file.Path;
 
+import static ca.junctionbox.cljbuck.channel.Closer.close;
+
 public class LexerTask implements CSProcess, SourceLexer {
     private final SourceCache cache;
-    private final FormsTable formsTable;
 
     private final ChannelInput in;
     private final ChannelOutput<Object> out;
 
-    public LexerTask(final SourceCache cache, FormsTable formsTable, final ChannelInput in, final ChannelOutput<Object> out) {
+    public LexerTask(final SourceCache cache, final ChannelInput in, final ChannelOutput<Object> out) {
         this.cache = cache;
-        this.formsTable = formsTable;
         this.in = in;
         this.out = out;
     }
@@ -40,20 +40,17 @@ public class LexerTask implements CSProcess, SourceLexer {
         }
         long finish = System.currentTimeMillis();
         System.out.println(this.getClass().getSimpleName() + " finish " + (finish - start) + "ms, work " + working + "ms");
+        close(out);
     }
 
     // rip off of Rob Pikes lexer talk :D
     public void lex(final Path path, final String contents) {
-        final Lexable lexable = new CharLexer(path.toString(), contents);
-        final SyntaxTask task = new SyntaxTask(lexable);
+        final Lexable lexable = new CharLexer(path.toString(), contents, out);
 
-        long start = System.currentTimeMillis();
-        new Parallel(new CSProcess[]{
-                (CSProcess) lexable,
-                task,
-        }).run();
-        long finish = System.currentTimeMillis();
-        System.out.println("\t" + path.toString() + ": " + contents.length() + " chars lexed " + task.size() + " symbols " + (finish - start) + "ms");
+        final long start = System.currentTimeMillis();
+        lexable.run();
+        final long finish = System.currentTimeMillis();
+        System.out.println("\t" + path.toString() + ": " + contents.length() + " chars " + (finish - start) + "ms");
     }
 }
 

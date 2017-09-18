@@ -1,34 +1,30 @@
 package ca.junctionbox.cljbuck.lexer;
 
-import ca.junctionbox.cljbuck.channel.Closer;
 import org.jcsp.lang.CSProcess;
-import org.jcsp.lang.Channel;
-import org.jcsp.lang.One2OneChannel;
-import org.jcsp.util.Buffer;
+import org.jcsp.lang.ChannelOutput;
 
 import static ca.junctionbox.cljbuck.lexer.Funcs.lexFile;
 
 public class StringLexer implements CSProcess, Lexable {
-    private final One2OneChannel<Object> items;
+    private final ChannelOutput<Object> out;
     private String name;
     private String input;
     private int start;
     private int pos;
-    private int lastPos;
     private int line;
 
     public static final char EOF = 3; // ASCII - ETX/End of Text
 
-    public StringLexer(String path, String contents) {
-        this.items = Channel.one2one(new Buffer(8192));
+    public StringLexer(String path, String contents, ChannelOutput<Object> out) {
         this.name = path;
         this.input = contents;
+        this.out = out;
     }
 
     @Override
     public void emit(ItemType t) {
         Item item = new Item(t, start, input.substring(start, pos), line);
-        items.out().write(item);
+        out.write(item);
         start = pos;
     }
 
@@ -96,22 +92,8 @@ public class StringLexer implements CSProcess, Lexable {
     @Override
     public StateFunc errorf(final String fmt, Object... args) {
         Item item = new Item(ItemType.itemError, start, String.format(fmt, args), line);
-        items.out().write(item);
+        out.write(item);
         return null;
-    }
-
-    @Override
-    public Item nextItem() {
-        Item item = (Item) items.in().read();
-        if (item == null) return null;
-
-        lastPos = item.pos;
-        return item;
-    }
-
-    @Override
-    public void drain() {
-        for(;nextItem() != null;) { }
     }
 
     @Override
@@ -120,14 +102,11 @@ public class StringLexer implements CSProcess, Lexable {
     }
 
     public void run() {
-        try {
-            StateFunc fn = lexFile;
-            for (;;) {
-                if (fn == null) break;
-                fn = fn.func(this);
-            }
-        } finally {
-            Closer.close(items.out());
+        leftBrackets.clear();
+        StateFunc fn = lexFile;
+        for (;;) {
+            if (fn == null) break;
+            fn = fn.func(this);
         }
     }
 }

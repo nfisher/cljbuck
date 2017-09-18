@@ -1,10 +1,5 @@
 package ca.junctionbox.cljbuck.lexer;
 
-import com.sun.corba.se.spi.orbutil.fsm.State;
-
-import static ca.junctionbox.cljbuck.lexer.Funcs.*;
-import static ca.junctionbox.cljbuck.lexer.StringLexer.EOF;
-
 public class Funcs {
     public static final String UNCLOSED_STRING = "unclosed string";
     public static final String UNCLOSED_KEYWORD = "unclosed keyword";
@@ -20,7 +15,7 @@ public class Funcs {
     public static final String ALPHANUMERIC = ALPHA + NUMERIC;
     public static final String SYMBOLIC = ALPHANUMERIC + "*+!/.-_?:=@><\\%";
 
-    public static final StateFunc lexFile = new LexFile();
+    public static final StateFunc lexFile = new LexForm();
 
     public static StateFunc leftBracket(Lexable l, char c, ItemType t) {
         l.leftBrackets.push(c);

@@ -1,46 +1,40 @@
 package ca.junctionbox.cljbuck.lexer;
 
-import ca.junctionbox.cljbuck.channel.Closer;
 import org.jcsp.lang.CSProcess;
-import org.jcsp.lang.Channel;
-import org.jcsp.lang.One2OneChannel;
-import org.jcsp.util.Buffer;
-
-import java.nio.file.Path;
+import org.jcsp.lang.ChannelOutput;
 
 import static ca.junctionbox.cljbuck.lexer.Funcs.lexFile;
 
-public class CharLexer implements CSProcess, Lexable, SourceLexer {
-    private final One2OneChannel<Object> items;
-    String name;
-    char[] input;
-    int start;
-    int pos;
-    int lastPos;
-    int line;
+public class CharLexer implements CSProcess, Lexable {
+    private final String filename;
+    private final char[] contents;
+    private final ChannelOutput<Object> out;
+    private int start;   // start position of this item
+    private int pos;     // current position in the contents
+    private int line;    // 1+number of newlines seen
 
     public static final char EOF = 3; // ASCII - ETX/End of Text
 
-    public CharLexer(String path, String contents) {
-        this.items = Channel.one2one(new Buffer(8192));
-        this.name = path;
-        this.input = contents.toCharArray();
+    public CharLexer(final String path, final String contents, final ChannelOutput<Object> out) {
+        this.filename = path;
+        this.contents = contents.toCharArray();
+        this.out = out;
     }
 
     @Override
     public void emit(ItemType t) {
-        Item item = new Item(t, start, new String(input, start, pos-start), line);
-        items.out().write(item);
+        Item item = new Item(t, start, new String(contents, start, pos-start), line);
+        out.write(item);
         start = pos;
     }
 
     @Override
     public char next() {
-        if (pos >= input.length) {
+        if (pos >= contents.length) {
             return EOF;
         }
 
-        char c = input[pos];
+        char c = contents[pos];
         pos += 1;
         if ('\n' == c) {
            line++;
@@ -58,7 +52,7 @@ public class CharLexer implements CSProcess, Lexable, SourceLexer {
     @Override
     public void backup() {
         pos -= 1;
-        if (input[pos] == '\n') {
+        if (contents[pos] == '\n') {
             line--;
         }
     }
@@ -98,43 +92,21 @@ public class CharLexer implements CSProcess, Lexable, SourceLexer {
     @Override
     public StateFunc errorf(final String fmt, Object... args) {
         Item item = new Item(ItemType.itemError, start, String.format(fmt, args), line);
-        items.out().write(item);
+        out.write(item);
         return null;
     }
 
     @Override
-    public Item nextItem() {
-        Item item = (Item) items.in().read();
-        if (item == null) return null;
-
-        lastPos = item.pos;
-        return item;
-    }
-
-    @Override
-    public void drain() {
-        for(;nextItem() != null;) { }
-    }
-
-    @Override
     public void close() {
-        pos = input.length;
+        pos = contents.length;
     }
 
     public void run() {
-        try {
-            StateFunc fn = lexFile;
-            for (;;) {
-                if (fn == null) break;
-                fn = fn.func(this);
-            }
-        } finally {
-            Closer.close(items.out());
+        leftBrackets.clear();
+        StateFunc fn = lexFile;
+        for (;;) {
+            if (fn == null) break;
+            fn = fn.func(this);
         }
-    }
-
-    @Override
-    public void lex(Path path, String contents) {
-
     }
 }

@@ -6,6 +6,7 @@ import ca.junctionbox.cljbuck.io.ReadFileTask;
 import ca.junctionbox.cljbuck.lexer.LexerTask;
 import ca.junctionbox.cljbuck.source.FormsTable;
 import ca.junctionbox.cljbuck.source.SourceCache;
+import ca.junctionbox.cljbuck.syntax.SyntaxTask;
 import org.jcsp.lang.*;
 import org.jcsp.util.Buffer;
 
@@ -22,17 +23,18 @@ public class Main {
         final Any2OneChannel<Object> tokenCh = Channel.any2one(new Buffer(2048),0);
 
         final SourceCache cache = SourceCache.create();
-        final FormsTable forms = FormsTable.create();
 
         int numReadFileTasks = 4;
         int numLexerTasks = 16;
-        CSProcess[] allTasks = new CSProcess[2 + numReadFileTasks + numLexerTasks];
+        CSProcess[] allTasks = new CSProcess[2 + numReadFileTasks + numLexerTasks + 1];
 
         allTasks[0] = new GlobsTask(args, globCh.out());
         allTasks[1] = new FindFilesTask(globCh.in(), pathCh.out(), numReadFileTasks);
 
         for (int i = 2; i < numReadFileTasks + 2; i++) allTasks[i] = new ReadFileTask(cache, pathCh.in(), cacheCh.out(), numLexerTasks/numReadFileTasks);
-        for (int i = 2 + numReadFileTasks; i < numLexerTasks + numReadFileTasks + 2; i++) allTasks[i] = new LexerTask(cache, forms, cacheCh.in(), tokenCh.out());
+        for (int i = 2 + numReadFileTasks; i < numLexerTasks + numReadFileTasks + 2; i++) allTasks[i] = new LexerTask(cache, cacheCh.in(), tokenCh.out());
+
+        allTasks[allTasks.length - 1] = new SyntaxTask(tokenCh.in());
 
         new Parallel(allTasks).run();
 

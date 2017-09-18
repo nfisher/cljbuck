@@ -1,27 +1,27 @@
 package ca.junctionbox.cljbuck.syntax;
 
 import ca.junctionbox.cljbuck.lexer.Item;
-import ca.junctionbox.cljbuck.lexer.Lexable;
 import org.jcsp.lang.CSProcess;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import com.google.common.graph.GraphBuilder;
+
+import org.jcsp.lang.ChannelInput;
 
 public class SyntaxTask implements CSProcess {
     final List<Item> items = new ArrayList<>();
-    final Lexable l;
+    private final ChannelInput<Object> in;
 
-    public SyntaxTask(final Lexable l) {
-        this.l = l;
+    public SyntaxTask(ChannelInput<Object> in) {
+       this.in = in;
     }
 
     @Override
     public void run() {
         LinkedList<Item> brackets = new LinkedList<>();
         for (;;) {
-            final Item item = l.nextItem();
+            final Item item = (Item) in.read();
             if (item == null) {
                 break;
             }
@@ -98,9 +98,9 @@ enum SyntaxType {
 
     // MACROS
 
+    Comment,            // ;
     Quote,              // '
     Backslash,          // \
-    Comment,            // ;
     Deref,              // @
     Metadata,           // ^
     Backquote,          // `

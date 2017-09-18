@@ -3,6 +3,8 @@ package ca.junctionbox.cljbuck.lexer;
 import java.util.Stack;
 
 public interface Lexable {
+    Stack<Character> leftBrackets = new Stack<>();
+
     void emit(ItemType t);
 
     char next();
@@ -21,11 +23,7 @@ public interface Lexable {
 
     StateFunc errorf(String fmt, Object... args);
 
-    Item nextItem();
-
-    void drain();
-
-    Stack<Character> leftBrackets = new Stack<>();
-
     void close();
+
+    void run();
 }

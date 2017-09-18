@@ -1,7 +1,6 @@
 package ca.junctionbox.cljbuck.lexer;
 
-import org.jcsp.lang.CSProcess;
-import org.jcsp.lang.Parallel;
+import org.jcsp.lang.*;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -22,10 +21,12 @@ interface Runner {
 public class FuncsTest {
     Runner partial(final StateFunc fn) {
         return s -> {
-            final Lexable l = new StringLexer("comment.clj", s);
+            final One2OneChannel<Object> chan = Channel.one2one();
+            final Lexable l = new CharLexer("comment.clj", s, chan.out());
             final Result[] actual = {new Result()};
+
             CSProcess receiver = () -> {
-                final Item item = l.nextItem();
+                final Item item = (Item) chan.in().read();
                 actual[0].item = item;
             };
 
@@ -176,10 +177,11 @@ public class FuncsTest {
 
     @Test(timeout=1000L)
     public void Test_Lexer_lex_single_line() {
-        final Lexable l = new StringLexer("comment.clj",
-                "(defn hello [name] (prn \"Hola \" name))");
+        One2OneChannel<Object> chan = Channel.one2one();
+        final Lexable l = new CharLexer("comment.clj",
+                "(defn hello [filename] (prn \"Hola \" filename))", chan.out());
 
-        DrainTask task = new DrainTask(l);
+        DrainTask task = new DrainTask(chan.in());
 
         new Parallel(new CSProcess[]{
                 (CSProcess) l,
@@ -193,15 +195,17 @@ public class FuncsTest {
                 .get();
 
         assertEquals(task.items.size(), 13);
-        assertEquals("( defn hello [ name ] ( prn \"Hola \" name ) )", tokens);
+        assertEquals("( defn hello [ filename ] ( prn \"Hola \" filename ) )", tokens);
     }
+
 
     @Test(timeout=1000L)
     public void Test_Lexer_lex_multiple_lines() {
+        One2OneChannel<Object> chan = Channel.one2one();
         final Lexable l = new CharLexer("comment.clj",
-                "(ns my.core)\n\n\n(defn hello [name]\n (prn \"Hola \" name))");
+                "(ns my.core)\n\n\n(defn hello [filename]\n (prn \"Hola \" filename))", chan.out());
 
-        DrainTask task = new DrainTask(l);
+        DrainTask task = new DrainTask(chan.in());
 
         new Parallel(new CSProcess[]{
                 (CSProcess) l,
@@ -215,26 +219,26 @@ public class FuncsTest {
                 .get();
 
         assertEquals(task.items.size(), 17);
-        assertEquals("( ns my.core ) ( defn hello [ name ] ( prn \"Hola \" name ) )", tokens);
+        assertEquals("( ns my.core ) ( defn hello [ filename ] ( prn \"Hola \" filename ) )", tokens);
     }
 }
 
 class DrainTask implements CSProcess {
     public final ArrayList<Item> items = new ArrayList<>();
-    final Lexable l;
+    private final ChannelInput<Object> in;
 
-    DrainTask(Lexable l) {
-        this.l = l;
+    DrainTask(ChannelInput<Object> in) {
+        this.in = in;
     }
 
     @Override
     public void run() {
         for (;;) {
-            final Item item = l.nextItem();
-            if (item == null) {
+            final Item item = (Item) in.read();
+            items.add(item);
+            if (item == null || item.type == ItemType.itemEOF) {
                 break;
             }
-            items.add(item);
         }
     }
 }
