@@ -6,7 +6,7 @@ import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftBracket;
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftParen;
 
 public class LexForm implements StateFunc {
-   public StateFunc func(Lexable l) {
+   public StateFunc func(final Lexable l) {
         if (l.accept(WHITESPACE)) {
             l.acceptRun(WHITESPACE);
             l.ignore();
@@ -14,12 +14,28 @@ public class LexForm implements StateFunc {
 
         char ch = l.next();
 
-        if (ch == '(') return leftBracket(l, '(', itemLeftParen);
-        else if (ch == '[') return leftBracket(l, '[', itemLeftBracket);
-        else if (ch == '{') return leftBracket(l, '{', itemLeftBrace);
-        else if (ch == ')') return rightBracket(l, ')', itemRightParen);
-        else if (ch == ']') return rightBracket(l, ']', itemRightBracket);
-        else if (ch == '}') return rightBracket(l, '}', itemLeftBrace);
+        if (ch == '(') {
+            l.push(ch);
+            l.emit(itemLeftParen);
+            return lexForm;
+        } else if (ch == ')') {
+            final char want = '(';
+            return matchRight(l, ch, want, itemRightParen);
+        } else if (ch == '[') {
+            l.push(ch);
+            l.emit(itemLeftBracket);
+            return lexForm;
+        } else if (ch == ']') {
+            final char want = '[';
+            return matchRight(l, ch, want, itemRightBracket);
+        } else if (ch == '{') {
+            l.push(ch);
+            l.emit(itemLeftBrace);
+            return lexForm;
+        } else if (ch == '}') {
+            final char want = '{';
+            return matchRight(l, ch, want, itemRightBrace);
+        }
 
         switch(ch) {
             case ';':
@@ -82,5 +98,20 @@ public class LexForm implements StateFunc {
 
         l.emit(itemEOF);
         return null;
+    }
+
+    private StateFunc matchRight(Lexable l, char ch, char want, ItemType type) {
+        final char left = l.pop();
+        if (want != left) {
+            l.errorf("want %s, got %s", want, ch);
+            return null;
+        }
+
+        l.emit(type);
+
+        if (l.empty()) {
+            return lexFile;
+        }
+        return lexForm;
     }
 }

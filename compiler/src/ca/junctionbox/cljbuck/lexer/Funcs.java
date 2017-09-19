@@ -20,41 +20,6 @@ public class Funcs {
 
     public static final StateFunc lexForm = new LexForm();
 
-    public static StateFunc leftBracket(final Lexable l, final char c, final ItemType t) {
-        l.push(c);
-        l.emit(t);
-        return lexForm;
-    }
-
-    public static StateFunc rightBracket(final Lexable l, final char cf, final ItemType t) {
-        try {
-            final char c = l.pop();
-            boolean matches = false;
-
-            if (c == '[') {
-                matches = (']' == cf);
-            } else if (c == '(') {
-                matches = (')' == cf);
-            } else if (c == '{') {
-                matches = ('}' == cf);
-            }
-
-            if (!matches) {
-                l.errorf("want pair for %s, got %s", c, cf);
-                return null;
-            }
-            l.emit(t);
-
-            if (l.empty()) { // no nesting, use file lexer
-                return lexFile;
-            }
-            return lexForm;
-        } catch(final EmptyStackException ese) {
-            l.errorf("Mismatched bracket");
-            return null;
-        }
-    }
-
     public static final StateFunc lexString = new LexString();
 
     public static final StateFunc lexKeyword = new LexKeyword();
