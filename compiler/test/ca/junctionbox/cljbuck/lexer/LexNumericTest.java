@@ -2,26 +2,35 @@ package ca.junctionbox.cljbuck.lexer;
 
 import org.junit.Test;
 
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexFile;
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexForm;
 import static ca.junctionbox.cljbuck.lexer.Funcs.lexNumeric;
-import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftParen;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class LexNumericTest {
-    @Test
-    public void Test_left_list_form() {
-        final WriterQueue q = new WriterQueue();
-        final Lexable lexable = Lexable.create("test.clj", "(", q);
-        final StateFunc fn = lexFile.func(lexable);
 
-        assertEquals(lexForm, fn);
-        assertEquals(itemLeftParen, q.read().type);
+    @Test
+    public void Test_invalid_numbers() {
+        String[] testData = {
+                "36T ",
+                "0x1.2 ",
+                "098 ",
+        };
+
+
+        for (String td  : testData) {
+            WriterQueue q = new WriterQueue();
+            Lexable lexable = Lexable.create("test.clj", td, q);
+
+            StateFunc fn = lexNumeric.func(lexable);
+
+            assertEquals(td,"NumberFormatException Invalid number", q.read().val);
+            assertNull(td, fn);
+        }
     }
 
     @Test(timeout = 100L)
-    public void Test_lexNumber_with_valid_numbers() {
+    public void Test_valid_numbers() {
         String[][] testData = {
                 {"360 ", "360", "itemLong"},
                 {"2.78 ", "2.78", "itemDouble"},
@@ -47,21 +56,5 @@ public class LexNumericTest {
             assertEquals(td[1], q.read().val);
             assertNotNull(fn);
         }
-
-
-        /*
-        actual = p.run("0x1.2 ");
-        assertNotEquals("0x1.2", actual.item.val);
-        assertNull("0x1.2 ", actual.fn);
-
-        actual = p.run("017 ");
-        assertEquals("017", actual.item.val);
-        assertNotNull(actual.fn);
-
-        actual = p.run("089 ");
-        assertNotEquals("089", actual.item.val);
-        assertNull("089 ", actual.fn);
-        */
     }
-
 }

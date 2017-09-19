@@ -1,5 +1,7 @@
 package ca.junctionbox.cljbuck.lexer;
 
+import static ca.junctionbox.cljbuck.lexer.Funcs.BOUNDARY_CHAR;
+
 public class LexNumeric implements StateFunc {
     public StateFunc func(Lexable l) {
         ItemType type = ItemType.itemLong;
@@ -10,8 +12,18 @@ public class LexNumeric implements StateFunc {
         if (l.accept("0")) {
             if (l.accept("xX")) {
                 l.acceptRun(Funcs.HEX);
+                char ch = l.peek();
+                if (BOUNDARY_CHAR.indexOf(ch) == -1) {
+                    l.errorf("NumberFormatException Invalid number");
+                    return null;
+                }
             } else if (l.accept(Funcs.OCTAL)) {
                 l.accept(Funcs.OCTAL);
+                char ch = l.peek();
+                if (BOUNDARY_CHAR.indexOf(ch) == -1) {
+                    l.errorf("NumberFormatException Invalid number");
+                    return null;
+                }
             }
         } else {
             l.acceptRun(Funcs.NUMERIC);
@@ -35,7 +47,7 @@ public class LexNumeric implements StateFunc {
         }
 
         char ch = l.peek();
-        if (Funcs.BOUNDARY_CHAR.indexOf(ch) == -1) {
+        if (BOUNDARY_CHAR.indexOf(ch) == -1) {
             l.errorf("NumberFormatException Invalid number");
             return null;
         }

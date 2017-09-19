@@ -37,10 +37,10 @@ public class LexFile implements StateFunc {
                return null;
            }
 
-           l.errorf("Unexpected character found", ch);
+           l.errorf("unexpected character found %s", ch);
            return null;
        } catch(EmptyStackException esex) {
-           l.errorf("unmatched paren %s", ch);
+           l.errorf("unmatched paren found %s", ch);
            return null;
        }
     }
