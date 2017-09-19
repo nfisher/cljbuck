@@ -1,7 +1,7 @@
 package ca.junctionbox.cljbuck.lexer;
 
 import static ca.junctionbox.cljbuck.lexer.Funcs.UNCLOSED_STRING;
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexFile;
+import static ca.junctionbox.cljbuck.lexer.Funcs.lexForm;
 import static ca.junctionbox.cljbuck.lexer.Lexable.EOF;
 
 public class LexString implements StateFunc {
@@ -17,6 +17,6 @@ public class LexString implements StateFunc {
         }
 
         l.emit(ItemType.itemString);
-        return lexFile;
+        return lexForm;
     }
 }

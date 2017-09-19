@@ -6,7 +6,7 @@ import static org.junit.Assert.*;
 
 public class LexerTest {
 
-    public static final String bigFile = "; Copyright 2013 Relevance, Inc.\n" +
+    public static final String pedestalInterceptorHelpers = "; Copyright 2013 Relevance, Inc.\n" +
             "; Copyright 2014-2016 Cognitect, Inc.\n" +
             "\n" +
             "; The use and distribution terms for this software are covered by the\n" +
@@ -320,9 +320,20 @@ public class LexerTest {
             "       (middleware ~interceptor-name# ~enter-fn-form ~leave-fn-form))))\n" +
             "\n";
 
-    @Test
+    //@Test(timeout=100L)
+    public void Test_lex_pedestal_interceptor_helpers() {
+        final WriterQueue q = new WriterQueue();
+        final Lexable l = Lexable.create("helpers.clj", "a", q);
+
+        l.run();
+
+        assertEquals(100, q.size());
+    }
+
+    @Test(timeout=100L)
     public void Test_next() {
-        final Lexable l = Lexable.create("test.clj", "a", null);
+        final WriterQueue q = new WriterQueue();
+        final Lexable l = Lexable.create("test.clj", "a", q);
 
         char c1 = l.next();
         char c2 = l.next();
@@ -331,21 +342,61 @@ public class LexerTest {
         assertEquals(3, c2);
     }
 
-    @Test
+    @Test(timeout=100L)
     public void Test_ignore() {
-        final Lexable l = Lexable.create("test.clj", "   ", null);
+        final WriterQueue q = new WriterQueue();
+        final Lexable l = Lexable.create("test.clj", "   ", q);
         l.acceptRun(" ");
         l.ignore();
 
-        assertEquals(2, l.getPos());
+        assertEquals(3, l.getPos());
     }
 
-    @Test
+    @Test(timeout=100L)
     public void Test_accept() {
-        final Lexable l = Lexable.create("test.clj", " ) ", null);
+        final WriterQueue q = new WriterQueue();
+        final Lexable l = Lexable.create("test.clj", " ) ", q);
         l.accept(" ");
         l.accept(")");
         l.accept(" ");
         assertEquals(3, l.getPos());
+    }
+
+    @Test(timeout=100L)
+    public void Test_Lexer_lex_single_line() {
+        WriterQueue q = new WriterQueue();
+        final Lexable l = Lexable.create("comment.clj",
+                "(defn hello [filename] (prn \"Hola \" filename))", q);
+
+        l.run();
+
+        String tokens = q.stream()
+                .filter(item -> item.type != ItemType.itemEOF)
+                .map(item -> item.val)
+                .reduce((a,b) -> a + " " + b)
+                .get();
+
+        assertEquals(q.size(), 13);
+        assertEquals("( defn hello [ filename ] ( prn \"Hola \" filename ) )", tokens);
+    }
+
+
+    @Test(timeout=100L)
+    public void Test_Lexer_lex_multiple_lines() {
+        WriterQueue q = new WriterQueue();
+        final Lexable l = Lexable.create("comment.clj",
+                "(ns my.core)\n\n\n(defn hello [filename]\n (prn \"Hola \" filename))", q);
+
+
+        l.run();
+
+        String tokens = q.stream()
+                .filter(item -> item.type != ItemType.itemEOF)
+                .map(item -> item.val)
+                .reduce((a,b) -> a + " " + b)
+                .get();
+
+        assertEquals(q.size(), 17);
+        assertEquals("( ns my.core ) ( defn hello [ filename ] ( prn \"Hola \" filename ) )", tokens);
     }
 }

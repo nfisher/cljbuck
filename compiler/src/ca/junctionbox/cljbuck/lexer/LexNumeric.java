@@ -41,6 +41,6 @@ public class LexNumeric implements StateFunc {
         }
 
         l.emit(type);
-        return Funcs.lexFile;
+        return Funcs.lexForm;
     }
 }

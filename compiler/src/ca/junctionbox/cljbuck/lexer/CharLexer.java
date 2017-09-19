@@ -1,21 +1,20 @@
 package ca.junctionbox.cljbuck.lexer;
 
 import org.jcsp.lang.CSProcess;
-import org.jcsp.lang.ChannelOutput;
 
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexFile;
+import static ca.junctionbox.cljbuck.lexer.Funcs.lexForm;
 
 public class CharLexer implements CSProcess, Lexable {
     private final String filename;
     private final char[] contents;
-    private final ChannelOutput<Object> out;
+    private final Writer out;
     private int start;   // start position of this item
     private int pos;     // current position in the contents
     private int line;    // 1+number of newlines seen
 
     public static final char EOF = 3; // ASCII - ETX/End of Text
 
-    public CharLexer(final String path, final String contents, final ChannelOutput<Object> out) {
+    public CharLexer(final String path, final String contents, final Writer out) {
         this.filename = path;
         this.contents = contents.toCharArray();
         this.out = out;
@@ -83,7 +82,7 @@ public class CharLexer implements CSProcess, Lexable {
     public void acceptRun(final String valid) {
         for(;;) {
             char ch = next();
-            if (EOF == ch) break;
+            if (EOF == ch) return;
             if (valid.indexOf(ch) == -1) break;
         }
         backup();
@@ -102,7 +101,7 @@ public class CharLexer implements CSProcess, Lexable {
     }
 
     public void run() {
-        StateFunc fn = lexFile;
+        StateFunc fn = lexForm;
         for (;;) {
             if (fn == null) break;
             fn = fn.func(this);

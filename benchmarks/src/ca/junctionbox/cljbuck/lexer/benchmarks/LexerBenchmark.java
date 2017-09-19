@@ -1,9 +1,12 @@
 package ca.junctionbox.cljbuck.lexer.benchmarks;
 
-import ca.junctionbox.cljbuck.lexer.CharLexer;
 import ca.junctionbox.cljbuck.lexer.Item;
 import ca.junctionbox.cljbuck.lexer.Lexable;
-import org.jcsp.lang.*;
+import org.jcsp.lang.CSProcess;
+import org.jcsp.lang.Channel;
+import org.jcsp.lang.ChannelInput;
+import org.jcsp.lang.One2OneChannel;
+import org.jcsp.lang.Parallel;
 import org.jcsp.util.Buffer;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.runner.Runner;

@@ -53,19 +53,24 @@ public class LexForm implements StateFunc {
                 return lexSymbol;
 
             case '@':
+                l.emit(ItemType.itemDeref);
                 return lexSymbol;
 
             case '^':
-                return lexSymbol;
+                l.emit(ItemType.itemMeta);
+                return lexForm;
 
             case '`':
-                return lexSymbol;
+                l.emit(ItemType.itemBackquote);
+                return lexForm;
 
             case '~':
-                return lexSymbol;
+                l.emit(ItemType.itemUnquote);
+                return lexForm;
 
             case '#':
-                return lexSymbol;
+                l.emit(ItemType.itemDispatch);
+                return lexForm;
 
         }
 
