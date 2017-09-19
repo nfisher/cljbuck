@@ -1,12 +1,9 @@
 package ca.junctionbox.cljbuck.lexer;
 
-import ca.junctionbox.cljbuck.source.FormsTable;
 import ca.junctionbox.cljbuck.source.SourceCache;
-import ca.junctionbox.cljbuck.syntax.SyntaxTask;
 import org.jcsp.lang.CSProcess;
 import org.jcsp.lang.ChannelInput;
 import org.jcsp.lang.ChannelOutput;
-import org.jcsp.lang.Parallel;
 
 import java.nio.file.Path;
 
@@ -45,7 +42,7 @@ public class LexerTask implements CSProcess, SourceLexer {
 
     // rip off of Rob Pikes lexer talk :D
     public void lex(final Path path, final String contents) {
-        final Lexable lexable = new CharLexer(path.toString(), contents, out);
+        final Lexable lexable = Lexable.create(path.toString(), contents, out);
 
         final long start = System.currentTimeMillis();
         lexable.run();

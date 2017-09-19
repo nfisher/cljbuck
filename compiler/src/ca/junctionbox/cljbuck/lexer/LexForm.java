@@ -4,7 +4,6 @@ import static ca.junctionbox.cljbuck.lexer.Funcs.*;
 import static ca.junctionbox.cljbuck.lexer.ItemType.*;
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftBracket;
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftParen;
-import static ca.junctionbox.cljbuck.lexer.StringLexer.EOF;
 
 public class LexForm implements StateFunc {
    public StateFunc func(Lexable l) {

@@ -19,7 +19,7 @@ public class LexerBenchmark {
     @Benchmark
     public void BenchmarkLexer() {
         final One2OneChannel<Object> chan = Channel.one2one(new Buffer(2048));
-        final Lexable l = new CharLexer("comment.clj",
+        final Lexable l = Lexable.create("comment.clj",
                 "(ns my.core (:require [hello.world.extended :as ext])\n\n\n(defn hello [name]\n (prn \"Hola \" name))", chan.out());
 
         ConsumeTask task = new ConsumeTask(chan.in());

@@ -2,7 +2,7 @@ package ca.junctionbox.cljbuck.lexer;
 
 import static ca.junctionbox.cljbuck.lexer.Funcs.UNCLOSED_STRING;
 import static ca.junctionbox.cljbuck.lexer.Funcs.lexFile;
-import static ca.junctionbox.cljbuck.lexer.StringLexer.EOF;
+import static ca.junctionbox.cljbuck.lexer.Lexable.EOF;
 
 public class LexString implements StateFunc {
     public StateFunc func(Lexable l) {

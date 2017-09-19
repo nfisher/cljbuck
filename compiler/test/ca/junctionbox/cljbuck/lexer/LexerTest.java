@@ -322,7 +322,7 @@ public class LexerTest {
 
     @Test
     public void Test_next() {
-        final Lexable l = new StringLexer("test.clj", "a", null);
+        final Lexable l = Lexable.create("test.clj", "a", null);
 
         char c1 = l.next();
         char c2 = l.next();
@@ -333,7 +333,7 @@ public class LexerTest {
 
     @Test
     public void Test_ignore() {
-        final StringLexer l = new StringLexer("test.clj", "   ", null);
+        final Lexable l = Lexable.create("test.clj", "   ", null);
         l.acceptRun(" ");
         l.ignore();
 
@@ -342,7 +342,7 @@ public class LexerTest {
 
     @Test
     public void Test_accept() {
-        final StringLexer l = new StringLexer("test.clj", " ) ", null);
+        final Lexable l = Lexable.create("test.clj", " ) ", null);
         l.accept(" ");
         l.accept(")");
         l.accept(" ");

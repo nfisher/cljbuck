@@ -102,7 +102,6 @@ public class CharLexer implements CSProcess, Lexable {
     }
 
     public void run() {
-        leftBrackets.clear();
         StateFunc fn = lexFile;
         for (;;) {
             if (fn == null) break;

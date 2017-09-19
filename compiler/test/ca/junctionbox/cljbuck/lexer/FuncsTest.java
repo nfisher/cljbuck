@@ -22,7 +22,7 @@ public class FuncsTest {
     Runner partial(final StateFunc fn) {
         return s -> {
             final One2OneChannel<Object> chan = Channel.one2one();
-            final Lexable l = new CharLexer("comment.clj", s, chan.out());
+            final Lexable l = Lexable.create("comment.clj", s, chan.out());
             final Result[] actual = {new Result()};
 
             CSProcess receiver = () -> {
@@ -178,7 +178,7 @@ public class FuncsTest {
     @Test(timeout=1000L)
     public void Test_Lexer_lex_single_line() {
         One2OneChannel<Object> chan = Channel.one2one();
-        final Lexable l = new CharLexer("comment.clj",
+        final Lexable l = Lexable.create("comment.clj",
                 "(defn hello [filename] (prn \"Hola \" filename))", chan.out());
 
         DrainTask task = new DrainTask(chan.in());
@@ -202,7 +202,7 @@ public class FuncsTest {
     @Test(timeout=1000L)
     public void Test_Lexer_lex_multiple_lines() {
         One2OneChannel<Object> chan = Channel.one2one();
-        final Lexable l = new CharLexer("comment.clj",
+        final Lexable l = Lexable.create("comment.clj",
                 "(ns my.core)\n\n\n(defn hello [filename]\n (prn \"Hola \" filename))", chan.out());
 
         DrainTask task = new DrainTask(chan.in());
