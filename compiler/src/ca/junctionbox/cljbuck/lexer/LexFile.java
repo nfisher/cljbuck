@@ -7,29 +7,31 @@ import static ca.junctionbox.cljbuck.lexer.ItemType.*;
 import static ca.junctionbox.cljbuck.lexer.Lexable.EOF;
 
 public class LexFile implements StateFunc {
-   public StateFunc func(Lexable l) {
+   public StateFunc func(final Lexable l) {
        if (l.accept(WHITESPACE)) {
            l.acceptRun(WHITESPACE);
            l.ignore();
        }
 
-       char ch = l.next();
+       final char ch = l.next();
 
        try {
-           if (ch == '(') {
+           if ('(' == ch) {
                l.push(ch);
                l.emit(itemLeftParen);
                return lexForm;
-           } else if (ch == ')') {
-               char last = l.pop();
-               if (last != '(') {
+           } else if (')' == ch) {
+               final char last = l.pop();
+
+               if ('(' != last) {
                    l.errorf("want (, got %s", last);
                    return null;
                }
+
                return lexFile;
-           } else if (ch == ';') {
+           } else if (';' == ch) {
                return lexComment;
-           } else if (ch == EOF) {
+           } else if (EOF == ch) {
                l.close();
                l.emit(itemEOF);
                return null;

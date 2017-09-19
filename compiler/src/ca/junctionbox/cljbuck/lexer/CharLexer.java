@@ -2,12 +2,15 @@ package ca.junctionbox.cljbuck.lexer;
 
 import org.jcsp.lang.CSProcess;
 
+import java.util.Stack;
+
 import static ca.junctionbox.cljbuck.lexer.Funcs.lexForm;
 
 public class CharLexer implements CSProcess, Lexable {
     private final String filename;
     private final char[] contents;
     private final Writer out;
+    private final Stack<Character> brackets = new Stack<>();
     private int start;   // start position of this item
     private int pos;     // current position in the contents
     private int line;    // 1+number of newlines seen
@@ -18,6 +21,18 @@ public class CharLexer implements CSProcess, Lexable {
         this.filename = path;
         this.contents = contents.toCharArray();
         this.out = out;
+    }
+
+    public void push(final Character c) {
+        brackets.push(c);
+    }
+
+    public Character pop() {
+        return brackets.pop();
+    }
+
+    public boolean empty() {
+        return brackets.empty();
     }
 
     @Override

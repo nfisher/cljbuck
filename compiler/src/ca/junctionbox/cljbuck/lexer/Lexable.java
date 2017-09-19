@@ -15,19 +15,11 @@ public interface Lexable {
         return new CharLexer(path, contents, out);
     }
 
-    Stack<Character> leftBrackets = new Stack<>();
+    Character pop();
 
-    default Character pop() {
-       return leftBrackets.pop();
-    }
+    void push(final Character ch);
 
-    default void push(final Character ch) {
-        leftBrackets.push(ch);
-    }
-
-    default boolean empty() {
-        return leftBrackets.empty();
-    }
+    boolean empty();
 
     void emit(ItemType t);
 

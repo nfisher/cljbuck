@@ -7,6 +7,7 @@ import static ca.junctionbox.cljbuck.lexer.ItemType.itemError;
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftParen;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class LexFileTest {
     @Test
@@ -23,6 +24,7 @@ public class LexFileTest {
     public void Test_unmatched_right_list_form() {
         final WriterQueue q = new WriterQueue();
         final Lexable lexable = Lexable.create("test.clj", ")", q);
+        assertTrue("Not Empty", lexable.empty());
         final StateFunc fn = lexFile.func(lexable);
 
         assertNull(fn);
