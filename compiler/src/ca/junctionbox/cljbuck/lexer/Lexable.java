@@ -2,8 +2,6 @@ package ca.junctionbox.cljbuck.lexer;
 
 import org.jcsp.lang.ChannelOutput;
 
-import java.util.Stack;
-
 public interface Lexable {
     char EOF = 3; // ASCII - ETX/End of Text
 
@@ -32,6 +30,8 @@ public interface Lexable {
     void ignore();
 
     int getPos();
+
+    String getFilename();
 
     boolean accept(String valid);
 

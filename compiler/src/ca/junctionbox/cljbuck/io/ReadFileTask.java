@@ -26,7 +26,7 @@ public class ReadFileTask implements CSProcess {
         long start = System.currentTimeMillis();
         long working = 0;
         try {
-            while(true) {
+            for (;;) {
                 final Path path = (Path) in.read();
                 long workStart = System.currentTimeMillis();
                 if (null == path) {

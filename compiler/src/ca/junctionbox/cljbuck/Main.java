@@ -48,7 +48,7 @@ public class Main {
         long totalGarbageCollections = 0;
         long garbageCollectionTime = 0;
 
-        for(GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans()) {
+        for (GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans()) {
 
             long count = gc.getCollectionCount();
 

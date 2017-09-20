@@ -117,8 +117,4 @@ public class FuncsTest {
         assertNotNull(actual.fn);
     }
 
-    public void Test_rightBracket() {
-        WriterQueue q = new WriterQueue();
-        Lexable l = Lexable.create("test.clj", ")", q);
-    }
 }

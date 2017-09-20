@@ -2,6 +2,7 @@ package ca.junctionbox.cljbuck.lexer;
 
 import org.junit.Test;
 
+import static ca.junctionbox.cljbuck.lexer.ItemType.*;
 import static org.junit.Assert.*;
 
 public class LexerTest {
@@ -320,14 +321,16 @@ public class LexerTest {
             "       (middleware ~interceptor-name# ~enter-fn-form ~leave-fn-form))))\n" +
             "\n";
 
-    //@Test(timeout=100L)
+    @Test(timeout=100L)
     public void Test_lex_pedestal_interceptor_helpers() {
         final WriterQueue q = new WriterQueue();
-        final Lexable l = Lexable.create("helpers.clj", "a", q);
+        final Lexable l = Lexable.create("helpers.clj", pedestalInterceptorHelpers, q);
 
         l.run();
 
-        assertEquals(100, q.size());
+        long count = q.stream().filter(item -> item.type == itemLeftParen).count();
+
+        assertEquals(200, count);
     }
 
     @Test(timeout=100L)
@@ -371,7 +374,7 @@ public class LexerTest {
         l.run();
 
         String tokens = q.stream()
-                .filter(item -> item.type != ItemType.itemEOF)
+                .filter(item -> item.type != itemEOF)
                 .map(item -> item.val)
                 .reduce((a,b) -> a + " " + b)
                 .get();
@@ -391,7 +394,7 @@ public class LexerTest {
         l.run();
 
         String tokens = q.stream()
-                .filter(item -> item.type != ItemType.itemEOF)
+                .filter(item -> item.type != itemEOF)
                 .map(item -> item.val)
                 .reduce((a,b) -> a + " " + b)
                 .get();

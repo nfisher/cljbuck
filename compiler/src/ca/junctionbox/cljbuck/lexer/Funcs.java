@@ -1,7 +1,5 @@
 package ca.junctionbox.cljbuck.lexer;
 
-import java.util.EmptyStackException;
-
 public class Funcs {
     public static final String UNCLOSED_STRING = "unclosed string";
     public static final String UNCLOSED_KEYWORD = "unclosed keyword";
@@ -16,7 +14,7 @@ public class Funcs {
     public static final String ALPHA =  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     // optimise for common case of lower-case letters then numbers, and finally upper-case letters.
     public static final String ALPHANUMERIC = "abcdefghijklmnopqrstuvwxyz" + NUMERIC + "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    public static final String SYMBOLIC = "abcdefghijklmnopqrstuvwxyz-." + NUMERIC + "ABCDEFGHIJKLMNOPQRSTUVWXYZ*+!/_?:=@><\\%";
+    public static final String SYMBOLIC = "abcdefghijklmnopqrstuvwxyz-." + NUMERIC + "ABCDEFGHIJKLMNOPQRSTUVWXYZ*+!/_?:=@><\\%&";
 
     public static final StateFunc lexForm = new LexForm();
 

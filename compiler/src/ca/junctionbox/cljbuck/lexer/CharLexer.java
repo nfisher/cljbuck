@@ -4,7 +4,7 @@ import org.jcsp.lang.CSProcess;
 
 import java.util.Stack;
 
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexForm;
+import static ca.junctionbox.cljbuck.lexer.Funcs.lexFile;
 
 public class CharLexer implements CSProcess, Lexable {
     private final String filename;
@@ -37,7 +37,7 @@ public class CharLexer implements CSProcess, Lexable {
 
     @Override
     public void emit(ItemType t) {
-        Item item = new Item(t, start, new String(contents, start, pos-start), line);
+        Item item = new Item(t, start, new String(contents, start, pos-start), line, filename);
         out.write(item);
         start = pos;
     }
@@ -82,6 +82,11 @@ public class CharLexer implements CSProcess, Lexable {
     }
 
     @Override
+    public String getFilename() {
+        return filename;
+    }
+
+    @Override
     public boolean accept(final String valid) {
         char ch = next();
         if (EOF == ch) return false;
@@ -95,8 +100,9 @@ public class CharLexer implements CSProcess, Lexable {
 
     @Override
     public void acceptRun(final String valid) {
-        for(;;) {
+        for (int i = 0;; i++) {
             char ch = next();
+            if (i> 0 && i % 10_00_000 == 0) System.out.println(getFilename() + " is taking a long time with " + ch);
             if (EOF == ch) return;
             if (valid.indexOf(ch) == -1) break;
         }
@@ -105,7 +111,7 @@ public class CharLexer implements CSProcess, Lexable {
 
     @Override
     public StateFunc errorf(final String fmt, Object... args) {
-        Item item = new Item(ItemType.itemError, start, String.format(fmt, args), line);
+        Item item = new Item(ItemType.itemError, start, String.format(fmt, args), line, filename);
         out.write(item);
         return null;
     }
@@ -116,8 +122,9 @@ public class CharLexer implements CSProcess, Lexable {
     }
 
     public void run() {
-        StateFunc fn = lexForm;
-        for (;;) {
+        StateFunc fn = lexFile;
+        for (int i = 0;; i++) {
+            if (i > 1 && i % 10_000_000 == 0) System.out.println("::run() " + getFilename() + " is taking a long time " + fn + " pos: " + getPos());
             if (fn == null) break;
             fn = fn.func(this);
         }

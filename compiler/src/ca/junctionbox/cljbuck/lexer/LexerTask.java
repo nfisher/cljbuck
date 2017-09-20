@@ -25,7 +25,7 @@ public class LexerTask implements CSProcess, SourceLexer {
     public void run() {
         long start = System.currentTimeMillis();
         long working = 0;
-        while(true) {
+        for (;;) {
             Path p = (Path) in.read();
             long workStart = System.currentTimeMillis();
             if (null == p) {
