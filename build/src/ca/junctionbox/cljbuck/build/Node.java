@@ -68,9 +68,9 @@ abstract class Node {
     }
 
     public enum Type {
-        Lib,
+        CljLib,
+        CljBinary,
+        CljTest,
         Jar,
-        Binary,
-        Test,
     }
 }

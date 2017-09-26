@@ -64,15 +64,15 @@ public class Build {
     }
 
     public static Build cljLib(final String name) {
-        return new Build(name, Lib);
+        return new Build(name, CljLib);
     }
 
     public static Build cljBinary(final String name) {
-        return new Build(name, Binary);
+        return new Build(name, CljBinary);
     }
 
     public static Build cljTest(final String name) {
-        return new Build(name, Test);
+        return new Build(name, CljTest);
     }
 
     public Build visibility(final String... visiblity) {
@@ -100,13 +100,13 @@ public class Build {
             case Jar:
                 return new Jar(name, deps, visibility, binaryJar);
 
-            case Lib:
+            case CljLib:
                 return new ClojureLib(name, deps, visibility, srcs);
 
-            case Binary:
+            case CljBinary:
                 return new ClojureBinary(name, deps, visibility, main);
 
-            case Test:
+            case CljTest:
                 return new ClojureTest(name, deps, visibility, srcs);
         }
 
