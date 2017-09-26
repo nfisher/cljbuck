@@ -3,18 +3,18 @@ package ca.junctionbox.cljbuck.build;
 import java.util.Stack;
 
 public class SerialBuild implements Walken {
-    private Stack<Node> buildStack;
+    private Stack<BuildRule> buildStack;
 
     public SerialBuild() {
         this.buildStack = new Stack<>();
     }
 
     @Override
-    public void step(final Node node, final int depth) {
-        buildStack.push(node);
+    public void step(final BuildRule buildRule, final int depth) {
+        buildStack.push(buildRule);
     }
 
-    public Node pop() {
+    public BuildRule pop() {
         if (buildStack.isEmpty()) {
             return null;
         }
@@ -23,5 +23,11 @@ public class SerialBuild implements Walken {
 
     public boolean isEmpty() {
         return buildStack.isEmpty();
+    }
+
+    public void build() {
+        for (BuildRule n = pop(); n != null; n = pop()) {
+            n.build();
+        }
     }
 }

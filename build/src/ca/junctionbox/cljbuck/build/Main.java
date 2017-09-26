@@ -1,11 +1,15 @@
 package ca.junctionbox.cljbuck.build;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 import static ca.junctionbox.cljbuck.build.Build.*;
 
 public class Main {
     private static final int USAGE = 1;
+    public static final int ARG1 = 0;
 
     public static void main(final String[] args) {
         try {
@@ -39,31 +43,46 @@ public class Main {
                         .binaryJar("hamcrest-core-1.3.jar")
             );
 
+            final ArrayList<String> argList = new ArrayList<>(Arrays.asList(args));
+            final HashMap<String, Command> commandList = commandList(buildGraph);
+
             if (args.length < 1) {
-                printUsage(System.out);
+                printUsage(System.out, commandList);
                 System.exit(USAGE);
             }
 
-            if (buildGraph.contains(args[0])) {
-                buildGraph.depthFirstFrom(args[0], new PrintGraph(System.out));
-                final SerialBuild build = new SerialBuild();
-                buildGraph.breadthFirstFrom(args[0], build);
-                System.out.println("Build order: ");
-                StringBuilder sb = new StringBuilder();
-                for (Node node = build.pop(); node != null; node = build.pop()) {
-                    sb.append(node.getName());
-                    sb.append(", ");
-                }
-                System.out.println(sb.toString());
-            } else {
-                System.err.println(args[0] + " is not a known build target.");
+            final String arg1 = argList.remove(ARG1);
+            final Command cmd = commandList.get(arg1);
+
+            if (null == cmd) {
+                printUsage(System.out, commandList);
+                System.exit(USAGE);
             }
+
+            int rc = cmd.exec(argList);
+
+            System.exit(rc);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
     }
 
-    private static void printUsage(final PrintStream out) {
+    private static HashMap<String,Command> commandList(BuildGraph buildGraph) {
+        final HashMap<String,Command> commands = new HashMap<>();
+        final ArrayList<Command> list = new ArrayList<>();
+
+        list.add(new BuildCommand(buildGraph));
+        list.add(new PrintCommand(buildGraph));
+        list.add(new RunCommand(buildGraph));
+
+        for (final Command c : list) {
+            commands.put(c.getTarget(), c);
+        }
+
+        return commands;
+    }
+
+    private static void printUsage(final PrintStream out, HashMap<String, Command> commandList) {
         out.println("Description:");
         out.println("  cljbuild is a clojure/jvm build too.");
         out.println("");
@@ -71,28 +90,49 @@ public class Main {
         out.println("  cljbuild <command> [<command-options>]");
         out.println("");
         out.println("Available commands:");
+
+        for (final Command c : commandList.values()) {
+            out.print("  ");
+            out.print(c.getTarget());
+            out.print(" - ");
+            out.println(c.getDescription());
+        }
+
         out.println("");
     }
 }
 
-/*
-class JavaLibrary extends Node {
-    private final List<String> srcs;
+class BuildCommand extends Command {
+    public BuildCommand(final BuildGraph buildGraph) {
+        super("build", "builds the specified target", buildGraph);
+    }
 
-    public JavaLibrary(final String name, final List<String> deps, final List<String> srcs) {
-        super(name, deps, visibility);
-        this.srcs = srcs;
+    @Override
+    public int exec(final ArrayList<String> args) {
+        final SerialBuild serialBuild = new SerialBuild();
+        final String target = args.remove(0);
+
+        getBuildGraph().breadthFirstFrom(target, serialBuild);
+        serialBuild.build();
+
+        return 0;
     }
 }
 
-class PrebuiltJar extends Node {
-    private final String binaryJar;
-    private final List<String> visibility;
+class RunCommand extends Command {
+    public RunCommand(BuildGraph buildGraph) {
+        super("run", "runs the specified target", buildGraph);
+    }
 
-    public PrebuiltJar(final String name, final List<String> deps, final String binaryJar, final List<String> visibility) {
-        super(name, deps, visibility);
-        this.binaryJar = binaryJar;
-        this.visibility = visibility;
+    @Override
+    public int exec(final ArrayList<String> args) {
+        final BuildCommand build = new BuildCommand(getBuildGraph());
+        final int rc = build.exec(args);
+
+        if (rc != 0) {
+            return rc;
+        }
+
+        return 0;
     }
 }
-*/

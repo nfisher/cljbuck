@@ -1,8 +1,6 @@
 package ca.junctionbox.cljbuck.build;
 
 import java.io.PrintStream;
-import java.util.Iterator;
-import java.util.Stack;
 
 public class PrintGraph implements Walken {
     private final PrintStream out;
@@ -12,7 +10,7 @@ public class PrintGraph implements Walken {
     }
 
     @Override
-    public void step(Node node, int depth) {
+    public void step(BuildRule buildRule, int depth) {
         StringBuilder sb = new StringBuilder();
         for (int i = 1; i < depth; i++) {
             sb.append("    |");
@@ -22,9 +20,9 @@ public class PrintGraph implements Walken {
             sb.append("    +- ");
         }
 
-        sb.append(node.getName());
+        sb.append(buildRule.getName());
         sb.append(" - ");
-        sb.append(node.getArtefact());
+        sb.append(buildRule.getArtefact());
 
         out.println(sb.toString());
     }

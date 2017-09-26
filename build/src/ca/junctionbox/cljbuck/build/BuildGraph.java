@@ -3,14 +3,13 @@ package ca.junctionbox.cljbuck.build;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.graph.ImmutableGraph;
 
-import java.io.PrintStream;
 import java.util.*;
 
 public class BuildGraph {
-    final ImmutableGraph<Node> graph;
-    final ImmutableMap<String, Node> map;
+    final ImmutableGraph<BuildRule> graph;
+    final ImmutableMap<String, BuildRule> map;
 
-    BuildGraph(final ImmutableGraph<Node> graph, final ImmutableMap<String, Node> map) {
+    BuildGraph(final ImmutableGraph<BuildRule> graph, final ImmutableMap<String, BuildRule> map) {
         this.graph = graph;
         this.map = map;
     }
@@ -23,69 +22,69 @@ public class BuildGraph {
         return map.get(name) != null;
     }
 
-    public Set<Node> successors(final String name) throws NotFoundException {
-        final Node node = map.get(name);
-        if (node == null) {
+    public Set<BuildRule> successors(final String name) throws NotFoundException {
+        final BuildRule buildRule = map.get(name);
+        if (buildRule == null) {
             throw new NotFoundException(name);
         }
-        return graph.successors(node);
+        return graph.successors(buildRule);
     }
 
-    public Set<Node> predecessors(final String name) throws NotFoundException {
-        final Node node = map.get(name);
-        if (node == null) {
+    public Set<BuildRule> predecessors(final String name) throws NotFoundException {
+        final BuildRule buildRule = map.get(name);
+        if (buildRule == null) {
             throw new NotFoundException(name);
         }
-        return graph.predecessors(node);
+        return graph.predecessors(buildRule);
     }
 
     public void depthFirstFrom(final String start, final Walken christopher) {
-        final Stack<Node> nodes = new Stack<>();
+        final Stack<BuildRule> buildRules = new Stack<>();
         final Set<String> seen = new HashSet<>();
-        final Node startNode = map.get(start);
+        final BuildRule startRule = map.get(start);
 
-        nodes.push(map.get(start));
-        seen.add(startNode.getName());
-        christopher.step(startNode, 0);
+        buildRules.push(map.get(start));
+        seen.add(startRule.getName());
+        christopher.step(startRule, 0);
 
-        while (!nodes.isEmpty()) {
-            final Node parent = nodes.peek();
-            final Node child = unseenChild(parent, seen);
+        while (!buildRules.isEmpty()) {
+            final BuildRule parent = buildRules.peek();
+            final BuildRule child = unseenChild(parent, seen);
 
             if (null != child) {
                 seen.add(child.getName());
-                christopher.step(child, nodes.size());
-                nodes.push(child);
+                christopher.step(child, buildRules.size());
+                buildRules.push(child);
             } else {
-                nodes.pop();
+                buildRules.pop();
             }
         }
     }
 
     public void breadthFirstFrom(final String start, final Walken christopher) {
-        final Queue<Node> nodes = new LinkedList<>();
-        final Node startNode = map.get(start);
+        final Queue<BuildRule> buildRules = new LinkedList<>();
+        final BuildRule startRule = map.get(start);
         int depth = 0;
 
-        nodes.add(startNode);
-        christopher.step(startNode, depth);
+        buildRules.add(startRule);
+        christopher.step(startRule, depth);
 
-        while(!nodes.isEmpty()) {
-            final Node parent = nodes.remove();
+        while(!buildRules.isEmpty()) {
+            final BuildRule parent = buildRules.remove();
             depth++;
-            final Set<Node> children = graph.predecessors(parent);
-            for (final Node child : children) {
+            final Set<BuildRule> children = graph.predecessors(parent);
+            for (final BuildRule child : children) {
                 christopher.step(child, depth);
-                nodes.add(child);
+                buildRules.add(child);
             }
         }
     }
 
-    private Node unseenChild(final Node parent, final Set<String> seen) {
-        final Set<Node> children = graph.predecessors(parent);
-        Node child = null;
+    private BuildRule unseenChild(final BuildRule parent, final Set<String> seen) {
+        final Set<BuildRule> children = graph.predecessors(parent);
+        BuildRule child = null;
 
-        for (final Node n : children) {
+        for (final BuildRule n : children) {
             if (seen.contains(n.getName())) {
                 continue;
             }
@@ -99,5 +98,18 @@ public class BuildGraph {
 }
 
 interface Walken {
-    void step(final Node node, final int depth);
+    void step(final BuildRule buildRule, final int depth);
+}
+
+class TieredBuilder implements Walken {
+    final ArrayList<List<BuildRule>> tiers;
+
+    public TieredBuilder(final ArrayList<List<BuildRule>> tiers) {
+        this.tiers = tiers;
+    }
+
+    @Override
+    public void step(final BuildRule buildRule, int depth) {
+        this.tiers.size();
+    }
 }

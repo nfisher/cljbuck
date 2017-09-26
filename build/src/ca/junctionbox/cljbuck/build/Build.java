@@ -35,23 +35,23 @@ public class Build {
     }
 
     public static BuildGraph graph(Build... targets) throws Exception {
-        final ImmutableMap.Builder<String, Node> builder = new ImmutableMap.Builder<>();
-        final MutableGraph<Node> graph = GraphBuilder.directed().allowsSelfLoops(false).build();
+        final ImmutableMap.Builder<String, BuildRule> builder = new ImmutableMap.Builder<>();
+        final MutableGraph<BuildRule> graph = GraphBuilder.directed().allowsSelfLoops(false).build();
 
         // add all of the nodes
         for (final Build target : targets) {
-            Node node = target.build();
-            builder.put(node.getName(), node);
-            graph.addNode(node);
+            BuildRule buildRule = target.build();
+            builder.put(buildRule.getName(), buildRule);
+            graph.addNode(buildRule);
         }
 
-        ImmutableMap<String, Node> nodeMap = builder.build();
+        ImmutableMap<String, BuildRule> nodeMap = builder.build();
 
         // add all of the edges
-        for (final Node nodeV : nodeMap.values()) {
-            for (final String predecessor : nodeV.getDeps()) {
-                final Node nodeU = nodeMap.get(predecessor);
-                graph.putEdge(nodeU, nodeV);
+        for (final BuildRule buildRuleV : nodeMap.values()) {
+            for (final String predecessor : buildRuleV.getDeps()) {
+                final BuildRule buildRuleU = nodeMap.get(predecessor);
+                graph.putEdge(buildRuleU, buildRuleV);
             }
         }
 
@@ -95,7 +95,7 @@ public class Build {
         return new Build(name, deps, srcs, binaryJar, main, visibility, type);
     }
 
-    public Node build() throws Exception {
+    public BuildRule build() throws Exception {
         switch (type) {
             case Jar:
                 return new Jar(name, deps, visibility, binaryJar);
