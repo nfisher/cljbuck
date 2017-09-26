@@ -2,20 +2,18 @@ package ca.junctionbox.cljbuck.repl;
 
 import clojure.lang.RT;
 
+import java.io.IOException;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 
 public class Main {
-    public static void main(final String[] main) {
-        System.out.println("Start you're engines!");
+    public static void main(final String[] main) throws IOException {
         long start = System.nanoTime();
 
-        System.out.println(RT.var("clojure.core", "+").invoke(1, 2, 3));
+        RT.var("clojure.core", "+").invoke(1, 2, 3);
 
         long finish = System.nanoTime();
-        System.out.println("Clojure Load: " + (finish - start) + "ns");
-
-        printGCStats();
+        System.out.println((finish - start));
     }
 
     public static void printGCStats() {
