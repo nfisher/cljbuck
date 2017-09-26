@@ -67,10 +67,4 @@ abstract class Node {
         return name.substring(pos);
     }
 
-    public enum Type {
-        CljLib,
-        CljBinary,
-        CljTest,
-        Jar,
-    }
 }

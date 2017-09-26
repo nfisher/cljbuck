@@ -7,7 +7,7 @@ import com.google.common.graph.MutableGraph;
 
 import java.util.List;
 
-import static ca.junctionbox.cljbuck.build.Node.Type.*;
+import static ca.junctionbox.cljbuck.build.Type.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
@@ -18,9 +18,9 @@ public class Build {
     private final String binaryJar;
     private final String main;
     private final List<String> visibility;
-    private final Node.Type type;
+    private final Type type;
 
-    private Build(final String name, final List<String> deps, final List<String> srcs, final String binaryJar, final String main, final List<String> visibility, final Node.Type type) {
+    private Build(final String name, final List<String> deps, final List<String> srcs, final String binaryJar, final String main, final List<String> visibility, final Type type) {
         this.name = name;
         this.deps = deps;
         this.srcs = srcs;
@@ -30,7 +30,7 @@ public class Build {
         this.type = type;
     }
 
-    private Build(final String name, final Node.Type type) {
+    private Build(final String name, final Type type) {
         this(name, emptyList(), emptyList(), "", "", emptyList(), type);
     }
 
