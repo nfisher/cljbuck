@@ -6,7 +6,7 @@ public class Main {
     public static void main(final String[] args) {
         try {
             BuildGraph buildGraph = Build.graph(
-                    lib("//jbx:lib")
+                    cljLib("//jbx:lib")
                             .srcs("src/clj/**/*.clj")
                             .deps("//lib:clojure", "//lib:guava"),
 

@@ -63,7 +63,7 @@ public class Build {
         return new Build(name, Jar);
     }
 
-    public static Build lib(final String name) {
+    public static Build cljLib(final String name) {
         return new Build(name, Lib);
     }
 

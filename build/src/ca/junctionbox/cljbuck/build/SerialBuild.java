@@ -1,6 +1,5 @@
 package ca.junctionbox.cljbuck.build;
 
-import java.util.Iterator;
 import java.util.Stack;
 
 public class SerialBuild implements Walken {
