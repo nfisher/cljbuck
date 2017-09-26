@@ -43,11 +43,10 @@ public class BuildGraph {
         final Stack<Node> nodes = new Stack<>();
         final Set<String> seen = new HashSet<>();
         final Node startNode = map.get(start);
-        int depth = 0;
 
         nodes.push(map.get(start));
         seen.add(startNode.getName());
-        christopher.step(startNode, depth);
+        christopher.step(startNode, 0);
 
         while (!nodes.isEmpty()) {
             final Node parent = nodes.peek();
@@ -55,7 +54,7 @@ public class BuildGraph {
 
             if (null != child) {
                 seen.add(child.getName());
-                christopher.step(child, depth);
+                christopher.step(child, nodes.size());
                 nodes.push(child);
             } else {
                 nodes.pop();

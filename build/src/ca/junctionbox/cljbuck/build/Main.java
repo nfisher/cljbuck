@@ -36,8 +36,7 @@ public class Main {
             );
 
             if (buildGraph.contains(args[0])) {
-                buildGraph.breadthFirstFrom(args[0], new PrintGraph(System.out));
-
+                buildGraph.depthFirstFrom(args[0], new PrintGraph(System.out));
                 final SerialBuild build = new SerialBuild();
                 buildGraph.breadthFirstFrom(args[0], build);
                 System.out.println("Build order: ");
