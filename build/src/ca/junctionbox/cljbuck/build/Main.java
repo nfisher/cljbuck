@@ -1,8 +1,12 @@
 package ca.junctionbox.cljbuck.build;
 
+import java.io.PrintStream;
+
 import static ca.junctionbox.cljbuck.build.Build.*;
 
 public class Main {
+    private static final int USAGE = 1;
+
     public static void main(final String[] args) {
         try {
             BuildGraph buildGraph = Build.graph(
@@ -35,6 +39,11 @@ public class Main {
                         .binaryJar("hamcrest-core-1.3.jar")
             );
 
+            if (args.length < 1) {
+                printUsage(System.out);
+                System.exit(USAGE);
+            }
+
             if (buildGraph.contains(args[0])) {
                 buildGraph.depthFirstFrom(args[0], new PrintGraph(System.out));
                 final SerialBuild build = new SerialBuild();
@@ -52,6 +61,17 @@ public class Main {
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
+    }
+
+    private static void printUsage(final PrintStream out) {
+        out.println("Description:");
+        out.println("  cljbuild is a clojure/jvm build too.");
+        out.println("");
+        out.println("Usage:");
+        out.println("  cljbuild <command> [<command-options>]");
+        out.println("");
+        out.println("Available commands:");
+        out.println("");
     }
 }
 

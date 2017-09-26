@@ -66,5 +66,4 @@ abstract class Node {
         final int pos = name.indexOf(':') + 1;
         return name.substring(pos);
     }
-
 }
