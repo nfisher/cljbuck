@@ -3,7 +3,7 @@
 java_library(
     name = 'lib',
     srcs = glob(['src/**/*.java']),
-    deps = ['//lib:clojure','//lib:guava',],
+    deps = ['//lib:guava',],
 )
 
 java_test(

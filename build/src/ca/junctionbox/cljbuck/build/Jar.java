@@ -1,5 +1,6 @@
 package ca.junctionbox.cljbuck.build;
 
+import java.net.MalformedURLException;
 import java.util.List;
 
 public class Jar extends BuildRule {
@@ -12,7 +13,11 @@ public class Jar extends BuildRule {
 
     @Override
     public void build() {
-        System.out.println(getArtefact());
+        try {
+            addClasspath(getArtefact());
+        } catch (final MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

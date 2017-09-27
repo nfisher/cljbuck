@@ -1,5 +1,9 @@
 package ca.junctionbox.cljbuck.build;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.util.List;
 
 public class ClojureLib extends BuildRule {
@@ -12,7 +16,29 @@ public class ClojureLib extends BuildRule {
 
     @Override
     public void build() {
+        final File targetDir = new File("target");
+        targetDir.mkdirs();
+        final String glob = getArtefact();
+        final int pos = glob.indexOf('*');
+        try {
+            addClasspath(targetDir.getPath());
+            if (-1 != pos) {
+                addClasspath(glob.substring(0, pos));
+            }
 
+            final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+            final Class rt = Class.forName("clojure.lang.RT", true, classLoader);
+            final Method rtCompile = rt.getDeclaredMethod("compile", String.class);
+            final Method rtVar = rt.getDeclaredMethod("var", String.class, String.class, Object.class);
+
+            rtVar.invoke(null, "clojure.core", "*compile-path*", targetDir.getPath());
+
+            rtCompile.setAccessible(true);
+            rtCompile.invoke(null, "jbx/core.clj");
+        } catch (ClassNotFoundException | NoSuchMethodException | MalformedURLException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

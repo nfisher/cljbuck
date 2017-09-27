@@ -16,31 +16,26 @@ public class Main {
             BuildGraph buildGraph = Build.graph(
                     cljLib("//jbx:lib")
                             .srcs("src/clj/**/*.clj")
-                            .deps("//lib:clojure", "//lib:guava"),
+                            .deps("//lib:clojure1.9"),
 
                     cljBinary("//jbx:main")
                             .main("jbx.core")
                             .deps("//jbx:lib"),
 
                     cljTest("//jbx:test")
-                            .srcs("test/clj/**/*.clj")
-                            .deps("//lib:junit"),
+                            .srcs("test/clj/**/*.clj"),
 
-                    jar("//lib:guava")
-                            .binaryJar("guava-23.0.jar")
-                            .visibility("PUBLIC"),
-
-                    jar("//lib:clojure")
+                    jar("//lib:clojure1.9")
                             .binaryJar("clojure-1.9.0-beta1.jar")
+                            .deps("//lib:spec.alpha")
                             .visibility("PUBLIC"),
 
-                    jar("//lib:junit")
-                            .binaryJar("hamcrest-core-1.3.jar")
-                            .deps("//lib:hamcrest-core")
+                    jar("//lib:clojure1.8")
+                            .binaryJar("clojure-1.8.0.jar")
                             .visibility("PUBLIC"),
 
-                    jar("//lib:hamcrest-core")
-                        .binaryJar("hamcrest-core-1.3.jar")
+                    jar("//lib:spec.alpha")
+                            .binaryJar("spec.alpha-0.1.123.jar")
             );
 
             final ArrayList<String> argList = new ArrayList<>(Arrays.asList(args));
