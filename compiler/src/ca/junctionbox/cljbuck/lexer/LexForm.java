@@ -2,49 +2,64 @@ package ca.junctionbox.cljbuck.lexer;
 
 import java.util.EmptyStackException;
 
-import static ca.junctionbox.cljbuck.lexer.Funcs.*;
 import static ca.junctionbox.cljbuck.lexer.ItemType.*;
-import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftBracket;
-import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftParen;
 
 public class LexForm implements StateFunc {
-   public StateFunc func(final Lexable l) {
-        if (l.accept(WHITESPACE)) {
-            l.acceptRun(WHITESPACE);
+    private final LexComment lexComment;
+    private final LexFile lexFile;
+    private final LexForm lexForm;
+    private final LexKeyword lexKeyword;
+    private final LexSymbol lexSymbol;
+    private final LexNumeric lexNumeric;
+    private final LexString lexString;
+
+    public LexForm(final LexFile lexFile, final CljLex cljLex) {
+        this.lexComment = cljLex.comment(this);
+        this.lexFile = lexFile;
+        this.lexForm = this;
+        this.lexKeyword = cljLex.keyword(this);
+        this.lexString = cljLex.string(this);
+        this.lexSymbol = cljLex.symbol(this);
+        this.lexNumeric = cljLex.numeric(this);
+    }
+
+    public StateFunc func(final Lexable l) {
+        if (l.accept(Symbols.WHITESPACE)) {
+            l.acceptRun(Symbols.WHITESPACE);
             l.ignore();
         }
 
-       char ch = l.next();
+        char ch = l.next();
 
-       try {
-           if (ch == '(') {
-               l.push(ch);
-               l.emit(itemLeftParen);
-               return lexForm;
-           } else if (ch == ')') {
-               final char want = '(';
-               return matchRight(l, ch, want, itemRightParen);
-           } else if (ch == '[') {
-               l.push(ch);
-               l.emit(itemLeftBracket);
-               return lexForm;
-           } else if (ch == ']') {
-               final char want = '[';
-               return matchRight(l, ch, want, itemRightBracket);
-           } else if (ch == '{') {
-               l.push(ch);
-               l.emit(itemLeftBrace);
-               return lexForm;
-           } else if (ch == '}') {
-               final char want = '{';
-               return matchRight(l, ch, want, itemRightBrace);
-           }
-       } catch (EmptyStackException esex) {
-           l.errorf("unmatched bracket found %s", ch);
-           return null;
-       }
+        try {
+            if (ch == '(') {
+                l.push(ch);
+                l.emit(itemLeftParen);
+                return lexForm;
+            } else if (ch == ')') {
+                final char want = '(';
+                return matchRight(l, ch, want, itemRightParen);
+            } else if (ch == '[') {
+                l.push(ch);
+                l.emit(itemLeftBracket);
+                return lexForm;
+            } else if (ch == ']') {
+                final char want = '[';
+                return matchRight(l, ch, want, itemRightBracket);
+            } else if (ch == '{') {
+                l.push(ch);
+                l.emit(itemLeftBrace);
+                return lexForm;
+            } else if (ch == '}') {
+                final char want = '{';
+                return matchRight(l, ch, want, itemRightBrace);
+            }
+        } catch (EmptyStackException esex) {
+            l.errorf("unmatched bracket found %s", ch);
+            return null;
+        }
 
-        switch(ch) {
+        switch (ch) {
             case ';':
                 return lexComment;
 
@@ -96,7 +111,7 @@ public class LexForm implements StateFunc {
 
         }
 
-        if (SYMBOLIC.indexOf(ch) >= 0) {
+        if (Symbols.SYMBOLIC.indexOf(ch) >= 0) {
             return lexSymbol;
         }
 

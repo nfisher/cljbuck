@@ -2,11 +2,10 @@ package ca.junctionbox.cljbuck.lexer;
 
 import org.junit.Test;
 
-import static ca.junctionbox.cljbuck.lexer.Funcs.*;
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemError;
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftParen;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class LexFileTest {
@@ -14,10 +13,10 @@ public class LexFileTest {
     public void Test_left_list_form() {
         final WriterQueue q = new WriterQueue();
         final Lexable lexable = Lexable.create("test.clj", "(", q);
-        final StateFunc fn = lexFile.func(lexable);
+        final StateFunc fn = new CljLex().file().func(lexable);
 
-        assertEquals(lexForm, fn);
-        assertEquals(itemLeftParen, q.read().type);
+        assertThat(fn, instanceOf(LexForm.class));
+        assertThat(q.read().type, is(itemLeftParen));
     }
 
     @Test
@@ -25,29 +24,29 @@ public class LexFileTest {
         final WriterQueue q = new WriterQueue();
         final Lexable lexable = Lexable.create("test.clj", ")", q);
         assertTrue("Not Empty", lexable.empty());
-        final StateFunc fn = lexFile.func(lexable);
+        final StateFunc fn = new CljLex().file().func(lexable);
 
-        assertNull(fn);
-        assertEquals(itemError, q.read().type);
+        assertThat(fn, is(nullValue()));
+        assertThat(q.read().type, is(itemError));
     }
 
     @Test
     public void Test_whitespace_collapse() {
         final WriterQueue q = new WriterQueue();
         final Lexable lexable = Lexable.create("test.clj", " \n\t(", q);
-        final StateFunc fn = lexFile.func(lexable);
+        final StateFunc fn = new CljLex().file().func(lexable);
 
-        assertEquals(lexForm, fn);
-        assertEquals(itemLeftParen, q.read().type);
+        assertThat(fn, instanceOf(LexForm.class));
+        assertThat(q.read().type, is(itemLeftParen));
     }
 
     @Test
     public void Test_comment() {
         final WriterQueue q = new WriterQueue();
         final Lexable lexable = Lexable.create("test.clj", " \n\t; ", q);
-        final StateFunc fn = lexFile.func(lexable);
+        final StateFunc fn = new CljLex().file().func(lexable);
 
-        assertEquals(lexComment, fn);
-        assertEquals(0, q.size());
+        assertThat(fn, instanceOf(LexComment.class));
+        assertThat(q.size(), is(0));
     }
 }

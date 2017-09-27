@@ -4,8 +4,6 @@ import org.jcsp.lang.CSProcess;
 
 import java.util.Stack;
 
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexFile;
-
 public class CharLexer implements CSProcess, Lexable {
     private final String filename;
     private final char[] contents;
@@ -130,7 +128,8 @@ public class CharLexer implements CSProcess, Lexable {
     }
 
     public void run() {
-        StateFunc fn = lexFile;
+        final CljLex cljLex = new CljLex();
+        StateFunc fn = cljLex.file();
         for (int i = 0; ; i++) {
             if (i > 1 && i % 10_000_000 == 0)
                 System.out.println("::run() " + getFilename() + " is taking a long time " + fn + " pos: " + getPos());

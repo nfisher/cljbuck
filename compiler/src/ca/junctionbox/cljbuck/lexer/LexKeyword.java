@@ -1,10 +1,15 @@
 package ca.junctionbox.cljbuck.lexer;
 
-import static ca.junctionbox.cljbuck.lexer.Funcs.ALPHANUMERIC;
-import static ca.junctionbox.cljbuck.lexer.Funcs.BOUNDARY_CHAR;
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexForm;
+import static ca.junctionbox.cljbuck.lexer.Symbols.ALPHANUMERIC;
+import static ca.junctionbox.cljbuck.lexer.Symbols.BOUNDARY_CHAR;
 
 public class LexKeyword implements StateFunc {
+    private final StateFunc lexForm;
+
+    public LexKeyword(final StateFunc lexForm) {
+        this.lexForm = lexForm;
+    }
+
     public StateFunc func(Lexable l) {
         l.accept(ALPHANUMERIC);
         l.acceptRun(ALPHANUMERIC + ":.-_?");

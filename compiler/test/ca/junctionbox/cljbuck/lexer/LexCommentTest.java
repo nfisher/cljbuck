@@ -2,20 +2,19 @@ package ca.junctionbox.cljbuck.lexer;
 
 import org.junit.Test;
 
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexComment;
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexFile;
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexForm;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class LexCommentTest {
-
     @Test
     public void Test_newline() {
         final WriterQueue q = new WriterQueue();
         final Lexable lexable = Lexable.create("test.clj", " stuff it\n", q);
-        final StateFunc fn = lexComment.func(lexable);
+        final CljLex cljLex = new CljLex();
+        final StateFunc fn = cljLex.comment(cljLex.file()).func(lexable);
 
-        assertEquals(lexFile, fn);
+        assertThat(fn, instanceOf(LexFile.class));
         assertEquals(1, q.size());
     }
 
@@ -23,9 +22,10 @@ public class LexCommentTest {
     public void Test_eof() {
         final WriterQueue q = new WriterQueue();
         final Lexable lexable = Lexable.create("test.clj", " stuff it", q);
-        final StateFunc fn = lexComment.func(lexable);
+        final CljLex cljLex = new CljLex();
+        final StateFunc fn = cljLex.comment(cljLex.file()).func(lexable);
 
-        assertEquals(lexFile, fn);
+        assertThat(fn, instanceOf(LexFile.class));
         assertEquals(1, q.size());
     }
 }

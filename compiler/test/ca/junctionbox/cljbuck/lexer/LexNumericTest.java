@@ -2,10 +2,7 @@ package ca.junctionbox.cljbuck.lexer;
 
 import org.junit.Test;
 
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexNumeric;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class LexNumericTest {
 
@@ -22,7 +19,7 @@ public class LexNumericTest {
             WriterQueue q = new WriterQueue();
             Lexable lexable = Lexable.create("test.clj", td, q);
 
-            StateFunc fn = lexNumeric.func(lexable);
+            StateFunc fn = new CljLex().numeric(null).func(lexable);
 
             assertEquals(td,"NumberFormatException Invalid number", q.read().val);
             assertNull(td, fn);
@@ -31,7 +28,7 @@ public class LexNumericTest {
 
     @Test(timeout = 100L)
     public void Test_valid_numbers() {
-        String[][] testData = {
+        final String[][] testData = {
                 {"360 ", "360", "itemLong"},
                 {"2.78 ", "2.78", "itemDouble"},
                 {"-360 ", "-360", "itemLong"},
@@ -50,9 +47,10 @@ public class LexNumericTest {
         };
 
         for (String[] td  : testData) {
-            WriterQueue q = new WriterQueue();
-            Lexable lexable = Lexable.create("test.clj", td[0], q);
-            StateFunc fn = lexNumeric.func(lexable);
+            final WriterQueue q = new WriterQueue();
+            final Lexable lexable = Lexable.create("test.clj", td[0], q);
+            final CljLex cljLex = new CljLex();
+            final StateFunc fn = cljLex.numeric(cljLex.file()).func(lexable);
             assertEquals(td[1], q.read().val);
             assertNotNull(fn);
         }

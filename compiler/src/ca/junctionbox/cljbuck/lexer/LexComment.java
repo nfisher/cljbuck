@@ -1,13 +1,16 @@
 package ca.junctionbox.cljbuck.lexer;
 
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexFile;
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexForm;
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemComment;
 import static ca.junctionbox.cljbuck.lexer.Lexable.EOF;
 
 class LexComment implements StateFunc {
+    private final StateFunc parentFn;
 
-    public StateFunc func(Lexable l) {
+    public LexComment(final StateFunc parentFn) {
+        this.parentFn = parentFn;
+    }
+
+    public StateFunc func(final Lexable l) {
         for (;;) {
             char ch = l.next();
             if ('\n' == ch || '\r' == ch || EOF == ch) break;
@@ -15,9 +18,6 @@ class LexComment implements StateFunc {
 
         l.emit(itemComment);
 
-        if (l.empty()) {
-            return lexFile;
-        }
-        return lexForm;
+        return parentFn;
     }
 }

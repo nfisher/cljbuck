@@ -2,46 +2,53 @@ package ca.junctionbox.cljbuck.lexer;
 
 import java.util.EmptyStackException;
 
-import static ca.junctionbox.cljbuck.lexer.Funcs.*;
 import static ca.junctionbox.cljbuck.lexer.ItemType.*;
 import static ca.junctionbox.cljbuck.lexer.Lexable.EOF;
 
 public class LexFile implements StateFunc {
-   public StateFunc func(final Lexable l) {
-       if (l.accept(WHITESPACE)) {
-           l.acceptRun(WHITESPACE);
-           l.ignore();
-       }
+    private final StateFunc lexComment;
+    private final StateFunc lexForm;
 
-       final char ch = l.next();
+    public LexFile(final CljLex cljLex) {
+        this.lexComment = cljLex.comment(this);
+        this.lexForm = cljLex.form(this);
+    }
 
-       try {
-           if ('(' == ch) {
-               l.push(ch);
-               l.emit(itemLeftParen);
-               return lexForm;
-           } else if (')' == ch) {
-               final char last = l.pop();
+    public StateFunc func(final Lexable l) {
+        if (l.accept(Symbols.WHITESPACE)) {
+            l.acceptRun(Symbols.WHITESPACE);
+            l.ignore();
+        }
 
-               if ('(' != last) {
-                   l.errorf("want (, got %s", last);
-                   return null;
-               }
+        final char ch = l.next();
 
-               return lexFile;
-           } else if (';' == ch) {
-               return lexComment;
-           } else if (EOF == ch) {
-               l.close();
-               l.emit(itemEOF);
-               return null;
-           }
+        try {
+            if ('(' == ch) {
+                l.push(ch);
+                l.emit(itemLeftParen);
+                return lexForm;
+            } else if (')' == ch) {
+                final char last = l.pop();
 
-           l.errorf("unexpected character found %s", ch);
-           return null;
-       } catch(EmptyStackException esex) {
-           l.errorf("unmatched paren found %s", ch);
-           return null;
-       }
+                if ('(' != last) {
+                    l.errorf("want (, got %s", last);
+                    return null;
+                }
+
+                return this;
+            } else if (';' == ch) {
+                return lexComment;
+            } else if (EOF == ch) {
+                l.close();
+                l.emit(itemEOF);
+                return null;
+            }
+
+            l.errorf("unexpected character found %s", ch);
+            return null;
+        } catch (EmptyStackException esex) {
+            l.errorf("unmatched paren found %s", ch);
+            return null;
+        }
     }
 }

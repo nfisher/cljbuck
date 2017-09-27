@@ -1,11 +1,16 @@
 package ca.junctionbox.cljbuck.lexer;
 
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexForm;
-
 public class LexSymbol implements StateFunc {
-    public StateFunc func(Lexable lexable) {
-        lexable.acceptRun(Funcs.SYMBOLIC);
+    private final StateFunc lexForm;
+
+    public LexSymbol(final StateFunc lexForm) {
+        this.lexForm = lexForm;
+    }
+
+    public StateFunc func(final Lexable lexable) {
+        lexable.acceptRun(Symbols.SYMBOLIC);
         lexable.emit(ItemType.itemSymbol);
+
         return lexForm;
     }
 }

@@ -1,24 +1,30 @@
 package ca.junctionbox.cljbuck.lexer;
 
-import static ca.junctionbox.cljbuck.lexer.Funcs.BOUNDARY_CHAR;
+import static ca.junctionbox.cljbuck.lexer.Symbols.BOUNDARY_CHAR;
 
 public class LexNumeric implements StateFunc {
-    public StateFunc func(Lexable l) {
+    private final StateFunc lexForm;
+
+    public LexNumeric(final StateFunc lexForm) {
+        this.lexForm = lexForm;
+    }
+
+    public StateFunc func(final Lexable l) {
         ItemType type = ItemType.itemLong;
-        String digits = Funcs.NUMERIC;
+        String digits = Symbols.NUMERIC;
 
         l.accept("-+");
 
         if (l.accept("0")) {
             if (l.accept("xX")) {
-                l.acceptRun(Funcs.HEX);
+                l.acceptRun(Symbols.HEX);
                 char ch = l.peek();
                 if (BOUNDARY_CHAR.indexOf(ch) == -1) {
                     l.errorf("NumberFormatException Invalid number");
                     return null;
                 }
-            } else if (l.accept(Funcs.OCTAL)) {
-                l.accept(Funcs.OCTAL);
+            } else if (l.accept(Symbols.OCTAL)) {
+                l.accept(Symbols.OCTAL);
                 char ch = l.peek();
                 if (BOUNDARY_CHAR.indexOf(ch) == -1) {
                     l.errorf("NumberFormatException Invalid number");
@@ -26,11 +32,11 @@ public class LexNumeric implements StateFunc {
                 }
             }
         } else {
-            l.acceptRun(Funcs.NUMERIC);
+            l.acceptRun(Symbols.NUMERIC);
         }
 
         if (l.accept("/")) {
-            l.acceptRun(Funcs.NUMERIC);
+            l.acceptRun(Symbols.NUMERIC);
             type = ItemType.itemRational;
         } else if (l.accept(".")) {
             type = ItemType.itemDouble;
@@ -41,7 +47,7 @@ public class LexNumeric implements StateFunc {
 
         if (type != ItemType.itemBigInt && type != ItemType.itemRational && l.accept("Ee")) {
             l.accept("-+");
-            l.acceptRun(Funcs.NUMERIC);
+            l.acceptRun(Symbols.NUMERIC);
         } else if (type != ItemType.itemBigInt && type != ItemType.itemRational && l.accept("M")) {
             type = ItemType.itemBigDecimal;
         }
@@ -53,6 +59,7 @@ public class LexNumeric implements StateFunc {
         }
 
         l.emit(type);
-        return Funcs.lexForm;
+
+        return lexForm;
     }
 }

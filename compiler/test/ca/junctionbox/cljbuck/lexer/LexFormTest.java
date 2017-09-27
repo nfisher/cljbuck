@@ -2,11 +2,16 @@ package ca.junctionbox.cljbuck.lexer;
 
 import org.junit.Test;
 
-import static ca.junctionbox.cljbuck.lexer.Funcs.*;
 import static ca.junctionbox.cljbuck.lexer.ItemType.*;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.*;
 
 public class LexFormTest {
+    public String sn(final Class<?> c) {
+        return c.getSimpleName();
+    }
 
     @Test
     public void Test_collections_start() {
@@ -20,11 +25,11 @@ public class LexFormTest {
             final WriterQueue q = new WriterQueue();
             final Lexable lexable = Lexable.create("test.clj", (String) td[0], q);
 
-            StateFunc fn = lexForm.func(lexable);
+            StateFunc fn = new CljLex().form(null).func(lexable);
 
             Item item = q.read();
-            assertEquals(lexForm, fn);
-            assertEquals(td[1], item.type);
+            assertThat(fn, instanceOf(LexForm.class));
+            assertThat(item.type, is(td[1]));
         }
     }
 
@@ -40,30 +45,31 @@ public class LexFormTest {
             final WriterQueue q = new WriterQueue();
             final Lexable lexable = Lexable.create("test.clj", (String) td[0], q);
 
-            StateFunc fn = lexForm.func(lexable);
+            StateFunc fn = new CljLex().form(null).func(lexable);
 
             Item item = q.read();
-            assertNull(fn);
-            assertEquals(itemError, item.type);
+
+            assertThat(fn, is(nullValue()));
+            assertThat(item.type, is(itemError));
         }
     }
 
     @Test
     public void Test_values() {
         Object[][] table = {
-                {";", lexComment},
-                {":", lexKeyword},
-                {"\"", lexString},
+                {";", sn(LexComment.class)},
+                {":", sn(LexKeyword.class)},
+                {"\"", sn(LexString.class)},
         };
 
         for (Object[] td : table) {
             final WriterQueue q = new WriterQueue();
             final Lexable lexable = Lexable.create("test.clj", (String) td[0], q);
 
-            StateFunc fn = lexForm.func(lexable);
+            StateFunc fn = new CljLex().form(null).func(lexable);
 
-            assertEquals(0, q.size());
-            assertEquals(td[1], fn);
+            assertThat(q.size(), is(0));
+            assertThat(sn(fn.getClass()), is(td[1]));
         }
     }
 
@@ -81,34 +87,34 @@ public class LexFormTest {
             final WriterQueue q = new WriterQueue();
             final Lexable lexable = Lexable.create("test.clj", (String) td[0], q);
 
-            StateFunc fn = lexForm.func(lexable);
+            StateFunc fn = new CljLex().form(null).func(lexable);
 
-            assertEquals(lexSymbol, fn);
-            assertEquals(0, q.size());
+            assertThat(fn, instanceOf(LexSymbol.class));
+            assertThat(q.size(), is(0));
         }
     }
 
     @Test
     public void Test_macro_characters() {
         Object[][] table = {
-                {"'", lexForm, itemQuote},
-                {"\\", lexSymbol, itemLiteral},
-                {"@", lexSymbol, itemDeref},
-                {"^", lexForm, itemMeta},
-                {"#", lexForm, itemDispatch},
-                {"`", lexForm, itemBacktick},
-                {"~", lexForm, itemUnquote},
+                {"'", sn(LexForm.class), itemQuote},
+                {"\\", sn(LexSymbol.class), itemLiteral},
+                {"@", sn(LexSymbol.class), itemDeref},
+                {"^", sn(LexForm.class), itemMeta},
+                {"#", sn(LexForm.class), itemDispatch},
+                {"`", sn(LexForm.class), itemBacktick},
+                {"~", sn(LexForm.class), itemUnquote},
         };
 
         for (Object[] td : table) {
             final WriterQueue q = new WriterQueue();
             final Lexable lexable = Lexable.create("test.clj", (String) td[0], q);
 
-            StateFunc fn = lexForm.func(lexable);
+            StateFunc fn = new CljLex().form(null).func(lexable);
 
             Item item = q.read();
-            assertEquals(td[1], fn);
-            assertEquals(td[2], item.type);
+            assertThat(sn(fn.getClass()), is(td[1]));
+            assertThat(item.type, is(td[2]));
         }
     }
 
@@ -131,9 +137,9 @@ public class LexFormTest {
             final WriterQueue q = new WriterQueue();
             final Lexable lexable = Lexable.create("test.clj", (String) td[0], q);
 
-            StateFunc fn = lexForm.func(lexable);
+            StateFunc fn = new CljLex().form(null).func(lexable);
 
-            assertEquals(lexNumeric, fn);
+            assertThat(fn, instanceOf(LexNumeric.class));
             assertEquals(0, q.size());
         }
     }

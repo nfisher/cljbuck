@@ -3,6 +3,7 @@ package ca.junctionbox.cljbuck.lexer;
 import org.junit.Test;
 
 import static ca.junctionbox.cljbuck.lexer.ItemType.*;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 public class LexerTest {
@@ -328,9 +329,12 @@ public class LexerTest {
 
         l.run();
 
-        long count = q.stream().filter(item -> item.type == itemLeftParen).count();
+        final long countLeft = q.stream().filter(item -> item.type == itemLeftParen).count();
+        final long countRight = q.stream().filter(item -> item.type == itemRightParen).count();
 
-        assertEquals(200, count);
+        // quick verification that parens are balanced.
+        assertThat(countLeft, is(200L));
+        assertThat(countRight, is(200L));
     }
 
     @Test(timeout=100L)

@@ -1,11 +1,15 @@
 package ca.junctionbox.cljbuck.lexer;
 
-import static ca.junctionbox.cljbuck.lexer.Funcs.UNCLOSED_STRING;
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexFile;
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexForm;
 import static ca.junctionbox.cljbuck.lexer.Lexable.EOF;
 
 public class LexString implements StateFunc {
+    public static final String UNCLOSED_STRING = "unclosed string";
+    private final StateFunc lexParent;
+
+    public LexString(final StateFunc lexParent) {
+        this.lexParent = lexParent;
+    }
+
     public StateFunc func(final Lexable l) {
         l.next();
         for (;;) {
@@ -24,9 +28,7 @@ public class LexString implements StateFunc {
         }
 
         l.emit(ItemType.itemString);
-        if (l.empty()) {
-            return lexFile;
-        }
-        return lexForm;
+
+        return lexParent;
     }
 }

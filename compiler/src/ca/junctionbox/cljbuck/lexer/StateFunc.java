@@ -1,5 +1,5 @@
 package ca.junctionbox.cljbuck.lexer;
 
 public interface StateFunc {
-    StateFunc func(Lexable lexable);
+    StateFunc func(final Lexable lexable);
 }

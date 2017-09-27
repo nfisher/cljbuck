@@ -2,10 +2,10 @@ package ca.junctionbox.cljbuck.lexer;
 
 import org.junit.Test;
 
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexFile;
-import static ca.junctionbox.cljbuck.lexer.Funcs.lexString;
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemString;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class LexStringTest {
 
@@ -20,12 +20,15 @@ public class LexStringTest {
         for (Object[] td : table) {
             final WriterQueue q = new WriterQueue();
             final Lexable lexable = Lexable.create("test.clj", (String) td[0], q);
+            final CljLex cljLex = new CljLex();
 
-            StateFunc fn = lexString.func(lexable);
+            StateFunc fn = cljLex.string(cljLex.file()).func(lexable);
 
             Item i = q.read();
-            assertEquals(lexFile, fn);
+
             assertEquals(itemString, i.type);
+            assertThat(fn, instanceOf(LexFile.class));
+
             assertEquals(td[0], i.val);
         }
     }
