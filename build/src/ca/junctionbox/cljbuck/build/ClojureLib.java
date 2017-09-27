@@ -26,15 +26,17 @@ public class ClojureLib extends BuildRule {
                 addClasspath(glob.substring(0, pos));
             }
 
-            final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-
-            final Class rt = Class.forName("clojure.lang.RT", true, classLoader);
-            final Method rtCompile = rt.getDeclaredMethod("compile", String.class);
+            final Class<?> rt = forName("clojure.lang.RT", true);
             final Method rtVar = rt.getDeclaredMethod("var", String.class, String.class, Object.class);
 
             rtVar.invoke(null, "clojure.core", "*compile-path*", targetDir.getPath());
+            rtVar.invoke(null, "clojure.core", "*compile-files*", Boolean.TRUE);
 
+            final Method rtCompile = rt.getDeclaredMethod("compile", String.class);
             rtCompile.setAccessible(true);
+
+            // Okie so build order is important... so need to finish the lexer...
+            rtCompile.invoke(null, "jbx/pants.clj");
             rtCompile.invoke(null, "jbx/core.clj");
         } catch (ClassNotFoundException | NoSuchMethodException | MalformedURLException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();

@@ -27,7 +27,7 @@ public class Main {
 
                     jar("//lib:clojure1.9")
                             .binaryJar("clojure-1.9.0-beta1.jar")
-                            .deps("//lib:spec.alpha")
+                            .deps("//lib:core.specs.alpha", "//lib:spec.alpha")
                             .visibility("PUBLIC"),
 
                     jar("//lib:clojure1.8")
@@ -35,7 +35,10 @@ public class Main {
                             .visibility("PUBLIC"),
 
                     jar("//lib:spec.alpha")
-                            .binaryJar("spec.alpha-0.1.123.jar")
+                            .binaryJar("spec.alpha-0.1.123.jar"),
+
+                    jar("//lib:core.specs.alpha")
+                            .binaryJar("core.specs.alpha-0.1.24.jar")
             );
 
             final ArrayList<String> argList = new ArrayList<>(Arrays.asList(args));

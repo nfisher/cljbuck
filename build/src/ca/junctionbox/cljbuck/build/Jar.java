@@ -1,5 +1,6 @@
 package ca.junctionbox.cljbuck.build;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class Jar extends BuildRule {
     public void build() {
         try {
             addClasspath(getArtefact());
-        } catch (final MalformedURLException e) {
+        } catch (final MalformedURLException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             e.printStackTrace();
         }
     }
