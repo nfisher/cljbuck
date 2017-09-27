@@ -14,9 +14,11 @@ public class LexerTask implements CSProcess, SourceLexer {
 
     private final ChannelInput in;
     private final ChannelOutput<Object> out;
+    private final CljLex cljLex;
 
-    public LexerTask(final SourceCache cache, final ChannelInput in, final ChannelOutput<Object> out) {
+    public LexerTask(final SourceCache cache, final CljLex cljLex, final ChannelInput in, final ChannelOutput<Object> out) {
         this.cache = cache;
+        this.cljLex = cljLex;
         this.in = in;
         this.out = out;
     }
@@ -42,7 +44,7 @@ public class LexerTask implements CSProcess, SourceLexer {
 
     // rip off of Rob Pikes lexer talk :D
     public void lex(final Path path, final String contents) {
-        final Lexable lexable = Lexable.create(path.toString(), contents, out);
+        final Lexable lexable = Lexable.create(path.toString(), contents, cljLex, out);
 
         final long start = System.currentTimeMillis();
         lexable.run();

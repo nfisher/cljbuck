@@ -8,17 +8,20 @@ public class CharLexer implements CSProcess, Lexable {
     private final String filename;
     private final char[] contents;
     private final Writer out;
-    private final Stack<Character> brackets = new Stack<>();
+    private final Stack<Character> brackets;
+    private final CljLex cljLex;
     private int start;   // start position of this item
     private int pos;     // current position in the contents
     private int line;    // 1+number of newlines seen
 
     public static final char EOF = 3; // ASCII - ETX/End of Text
 
-    public CharLexer(final String path, final String contents, final Writer out) {
+    public CharLexer(final String path, final String contents, final Writer out, final CljLex cljLex) {
         this.filename = path;
         this.contents = contents.toCharArray();
         this.out = out;
+        this.cljLex = cljLex;
+        this.brackets = new Stack<>();
     }
 
     public void push(final Character c) {
@@ -128,7 +131,6 @@ public class CharLexer implements CSProcess, Lexable {
     }
 
     public void run() {
-        final CljLex cljLex = new CljLex();
         StateFunc fn = cljLex.file();
         for (int i = 0; ; i++) {
             if (i > 1 && i % 10_000_000 == 0)
