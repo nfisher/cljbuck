@@ -1,7 +1,7 @@
 java_library(
     name = 'lib',
     srcs = glob(['src/**/*.java']),
-    deps = ['//compiler:lib','//lib:jcsp', '//lib:jmh-core',],
+    deps = ['//compiler:lib', '//lib:jmh-core',],
     provided_deps = ['//lib:jmh-generator-annprocess',],
     visibility = ['PUBLIC'],
 )
