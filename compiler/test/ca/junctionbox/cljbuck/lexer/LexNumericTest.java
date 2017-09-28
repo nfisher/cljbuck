@@ -1,5 +1,6 @@
 package ca.junctionbox.cljbuck.lexer;
 
+import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -16,12 +17,13 @@ public class LexNumericTest {
 
 
         for (String td  : testData) {
-            WriterQueue q = new WriterQueue();
+            ReadWriterQueue q = new ReadWriterQueue();
             Lexable lexable = Lexable.create("test.clj", td, q);
 
             StateFunc fn = new CljLex().numeric(null).func(lexable);
 
-            assertEquals(td,"NumberFormatException Invalid number", q.read().val);
+            Item item = (Item) q.read();
+            assertEquals(td,"NumberFormatException Invalid number", item.val);
             assertNull(td, fn);
         }
     }
@@ -47,11 +49,12 @@ public class LexNumericTest {
         };
 
         for (String[] td  : testData) {
-            final WriterQueue q = new WriterQueue();
+            final ReadWriterQueue q = new ReadWriterQueue();
             final Lexable lexable = Lexable.create("test.clj", td[0], q);
             final CljLex cljLex = new CljLex();
             final StateFunc fn = cljLex.numeric(cljLex.file()).func(lexable);
-            assertEquals(td[1], q.read().val);
+            Item item = (Item) q.read();
+            assertEquals(td[1], item.val);
             assertNotNull(fn);
         }
     }

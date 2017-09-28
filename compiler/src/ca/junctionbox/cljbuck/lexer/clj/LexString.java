@@ -1,4 +1,8 @@
-package ca.junctionbox.cljbuck.lexer;
+package ca.junctionbox.cljbuck.lexer.clj;
+
+import ca.junctionbox.cljbuck.lexer.ItemType;
+import ca.junctionbox.cljbuck.lexer.Lexable;
+import ca.junctionbox.cljbuck.lexer.StateFunc;
 
 import static ca.junctionbox.cljbuck.lexer.Lexable.EOF;
 

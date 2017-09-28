@@ -1,4 +1,6 @@
-package ca.junctionbox.cljbuck.lexer;
+package ca.junctionbox.cljbuck.lexer.clj;
+
+import ca.junctionbox.cljbuck.lexer.*;
 
 import java.util.EmptyStackException;
 

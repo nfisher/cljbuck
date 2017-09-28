@@ -1,5 +1,7 @@
 package ca.junctionbox.cljbuck.lexer;
 
+import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
+import ca.junctionbox.cljbuck.lexer.clj.LexFile;
 import org.junit.Test;
 
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemString;
@@ -18,13 +20,13 @@ public class LexStringTest {
         };
 
         for (Object[] td : table) {
-            final WriterQueue q = new WriterQueue();
+            final ReadWriterQueue q = new ReadWriterQueue();
             final Lexable lexable = Lexable.create("test.clj", (String) td[0], q);
             final CljLex cljLex = new CljLex();
 
             StateFunc fn = cljLex.string(cljLex.file()).func(lexable);
 
-            Item i = q.read();
+            Item i = (Item) q.read();
 
             assertEquals(itemString, i.type);
             assertThat(fn, instanceOf(LexFile.class));

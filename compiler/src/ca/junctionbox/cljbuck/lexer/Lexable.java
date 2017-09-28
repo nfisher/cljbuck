@@ -1,15 +1,15 @@
 package ca.junctionbox.cljbuck.lexer;
 
-import org.jcsp.lang.ChannelOutput;
+import ca.junctionbox.cljbuck.channel.Writer;
 
 public interface Lexable {
     char EOF = 3; // ASCII - ETX/End of Text
 
-    static Lexable create(final String path, final String contents, final CljLex cljLex, final ChannelOutput<Object> out) {
-        return new CharLexer(path, contents, new WriterChannel(out), cljLex);
+    static Lexable create(final String path, final String contents, final CljLex cljLex, final Writer out) {
+        return new CharLexer(path, contents, out, cljLex);
     }
 
-    static Lexable create(final String path, final String contents, final WriterQueue out) {
+    static Lexable create(final String path, final String contents, final Writer out) {
         return new CharLexer(path, contents, out, new CljLex());
     }
 

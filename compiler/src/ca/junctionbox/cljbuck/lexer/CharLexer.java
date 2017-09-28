@@ -1,10 +1,10 @@
 package ca.junctionbox.cljbuck.lexer;
 
-import org.jcsp.lang.CSProcess;
+import ca.junctionbox.cljbuck.channel.Writer;
 
 import java.util.Stack;
 
-public class CharLexer implements CSProcess, Lexable {
+public class CharLexer implements Lexable {
     private final String filename;
     private final char[] contents;
     private final Writer out;
@@ -38,7 +38,7 @@ public class CharLexer implements CSProcess, Lexable {
 
     @Override
     public void emit(ItemType t) {
-        Item item = new Item(t, start, new String(contents, start, pos - start), line, filename);
+        final Item item = new Item(t, start, new String(contents, start, pos - start), line, filename);
         out.write(item);
         start = pos;
     }
@@ -105,7 +105,7 @@ public class CharLexer implements CSProcess, Lexable {
     public void acceptRun(final String valid) {
         for (int i = 0; ; i++) {
             char ch = next();
-            if (i > 0 && i % 10_00_000 == 0) {
+            if (i > 1 && i % 1_000 == 0) {
                 System.out.println(getFilename() + " is taking a long time with " + ch);
             }
             if (EOF == ch) {
@@ -133,9 +133,9 @@ public class CharLexer implements CSProcess, Lexable {
     public void run() {
         StateFunc fn = cljLex.file();
         for (int i = 0; ; i++) {
-            if (i > 1 && i % 10_000_000 == 0)
-                System.out.println("::run() " + getFilename() + " is taking a long time " + fn + " pos: " + getPos());
-            if (fn == null) break;
+            if (fn == null) {
+                break;
+            }
             fn = fn.func(this);
         }
     }

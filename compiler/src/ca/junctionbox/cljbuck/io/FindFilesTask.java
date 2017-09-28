@@ -1,22 +1,24 @@
 package ca.junctionbox.cljbuck.io;
 
-import org.jcsp.lang.AltingChannelInput;
-import org.jcsp.lang.CSProcess;
-import org.jcsp.lang.ChannelInput;
-import org.jcsp.lang.ChannelOutput;
+import ca.junctionbox.cljbuck.channel.Closer;
+import ca.junctionbox.cljbuck.channel.Reader;
+import ca.junctionbox.cljbuck.channel.Writer;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.logging.Logger;
 
 import static ca.junctionbox.cljbuck.channel.Closer.close;
 
-public class FindFilesTask implements CSProcess {
-    private final ChannelOutput<Object> out;
-    private final ChannelInput<Object> in;
+public class FindFilesTask implements Runnable {
+    private final Logger logger;
+    private final Reader in;
+    private final Writer out;
     private final int readers;
 
-    public FindFilesTask(ChannelInput<Object> in, ChannelOutput<Object> out, int readers) {
+    public FindFilesTask(final Logger logger, final Reader in, final Writer out, final int readers) {
+        this.logger = logger;
         this.in = in;
         this.out = out;
         this.readers = readers;
@@ -24,18 +26,20 @@ public class FindFilesTask implements CSProcess {
 
     @Override
     public void run() {
+        logger.info("started");
         boolean first = true;
         long start = 0;
         try {
             while (true) {
-                final Glob glob = (Glob) in.read();
+                final Object o = in.read();
                 if (first) {
                     first = false;
                     start = System.currentTimeMillis();
                 }
-                if (null == glob) {
+                if (o instanceof Closer) {
                     break;
                 }
+                final Glob glob = (Glob) o;
                 final PathTraversal pathTraversal = PathTraversal.create(glob.glob, out);
                 Files.walkFileTree(Paths.get(glob.start), pathTraversal);
             }
@@ -43,8 +47,8 @@ public class FindFilesTask implements CSProcess {
             e.printStackTrace();
         } finally {
             for (int i = 0; i < readers; i++) close(out);
-            long finish = System.currentTimeMillis();
-            System.out.println(this.getClass().getSimpleName() + " finish " + (finish - start) + "ms");
+            final long finish = System.currentTimeMillis();
+            logger.info("finished in " + (finish - start) + "ms");
         }
     }
 }

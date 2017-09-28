@@ -1,52 +1,105 @@
 package ca.junctionbox.cljbuck;
 
+import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
 import ca.junctionbox.cljbuck.io.FindFilesTask;
 import ca.junctionbox.cljbuck.io.GlobsTask;
 import ca.junctionbox.cljbuck.io.ReadFileTask;
 import ca.junctionbox.cljbuck.lexer.CljLex;
 import ca.junctionbox.cljbuck.lexer.LexerTask;
-import ca.junctionbox.cljbuck.source.FormsTable;
 import ca.junctionbox.cljbuck.source.SourceCache;
 import ca.junctionbox.cljbuck.syntax.SyntaxTask;
-import org.jcsp.lang.*;
-import org.jcsp.util.Buffer;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Main {
-    public static void main(final String[] args) throws IOException {
-        long start = System.currentTimeMillis();
-        final One2OneChannel<Object> globCh = Channel.one2one(new Buffer(2048), 0);
-        final One2AnyChannel<Object> pathCh = Channel.one2any(new Buffer(2048),0);
-        final One2AnyChannel<Object> cacheCh = Channel.one2any(new Buffer(2048),0);
-        final Any2OneChannel<Object> tokenCh = Channel.any2one(new Buffer(2048),0);
+    public static String logConfig = "handlers= java.util.logging.ConsoleHandler\n" +
+            ".level= INFO\n" +
+            "\n" +
+            "java.util.logging.ConsoleHandler.level = INFO\n" +
+            "java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter\n" +
+            "\n" +
+            "javax.jms.connection.level = INFO\n" +
+            "\n" +
+            "java.util.logging.SimpleFormatter.format=%1$tF %1$tT %4$s %2$s %5$s%6$s%n";
 
-        final SourceCache cache = SourceCache.create();
+
+    public static String logConfigNoDateTime = "handlers= java.util.logging.ConsoleHandler\n" +
+            ".level= INFO\n" +
+            "\n" +
+            "java.util.logging.ConsoleHandler.level = INFO\n" +
+            "java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter\n" +
+            "\n" +
+            "javax.jms.connection.level = INFO\n" +
+            "\n" +
+            "java.util.logging.SimpleFormatter.format=%4$s %2$s %5$s%6$s%n";
+
+    public static void main(final String[] args) throws IOException {
+        final InputStream is = new ByteArrayInputStream(logConfigNoDateTime.getBytes(UTF_8));
+        final Logger logger = Logger.getLogger("ca.junctionbox.cljbuck");
+        final long start = System.currentTimeMillis();
+        final ReadWriterQueue globCh = new ReadWriterQueue();
+        final ReadWriterQueue pathCh = new ReadWriterQueue();
+        final ReadWriterQueue cacheCh = new ReadWriterQueue();
+        final ReadWriterQueue tokenCh = new ReadWriterQueue();
+        
+
+        final SourceCache cache = SourceCache.create(logger);
         final CljLex cljLex = new CljLex();
 
-        int numReadFileTasks = 4;
-        int numLexerTasks = 16;
-        final CSProcess[] allTasks = new CSProcess[2 + numReadFileTasks + numLexerTasks + 1];
+        final int numReadFileTasks = 4;
+        final int numLexerTasks = 4;
+        final Callable<Object>[] allTasks = new Callable[2 + numReadFileTasks + numLexerTasks + 1];
 
-        allTasks[0] = new GlobsTask(args, globCh.out());
-        allTasks[1] = new FindFilesTask(globCh.in(), pathCh.out(), numReadFileTasks);
+        LogManager.getLogManager().readConfiguration(is);
 
-        for (int i = 2; i < numReadFileTasks + 2; i++) allTasks[i] = new ReadFileTask(cache, pathCh.in(), cacheCh.out(), numLexerTasks/numReadFileTasks);
-        for (int i = 2 + numReadFileTasks; i < numLexerTasks + numReadFileTasks + 2; i++) allTasks[i] = new LexerTask(cache, cljLex, cacheCh.in(), tokenCh.out());
+        allTasks[0] = Executors.callable(new GlobsTask(args, logger, globCh));
+        allTasks[1] = Executors.callable(new FindFilesTask(logger, globCh, pathCh, numReadFileTasks));
 
-        allTasks[allTasks.length - 1] = new SyntaxTask(tokenCh.in());
+        for (int i = 2; i < numReadFileTasks + 2; i++) {
+            allTasks[i] = Executors.callable(new ReadFileTask(cache, logger, pathCh, cacheCh, numLexerTasks/numReadFileTasks));
+        }
+        for (int i = 2 + numReadFileTasks; i < numLexerTasks + numReadFileTasks + 2; i++) {
+            allTasks[i] = Executors.callable(new LexerTask(cache, logger, cljLex, cacheCh, tokenCh));
+        }
 
-        new Parallel(allTasks).run();
+        allTasks[allTasks.length - 1] = Executors.callable(new SyntaxTask(logger, numLexerTasks, tokenCh));
 
-        long finish = System.currentTimeMillis();
-        System.out.println("finished in " + (finish - start) + "ms");
+        final ExecutorService pool = Executors.newFixedThreadPool(allTasks.length);
+        List<Future<Object>> results = Collections.emptyList();
+        try {
+            results = pool.invokeAll(Arrays.asList(allTasks));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
-        printGCStats();
+        final long finish = System.currentTimeMillis();
+
+        logger.info("finished in " + (finish - start) + "ms");
+        printGCStats(logger);
+
+        for (final Future f : results) {
+            try {
+                f.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+        pool.shutdown();
     }
 
-    public static void printGCStats() {
+    public static void printGCStats(Logger logger) {
         long totalGarbageCollections = 0;
         long garbageCollectionTime = 0;
 
@@ -65,8 +118,8 @@ public class Main {
             }
         }
 
-        System.out.println("Total Garbage Collections: " + totalGarbageCollections);
-        System.out.println("Total Garbage Collection Time (ms): " + garbageCollectionTime);
+        logger.info("Total Garbage Collections: " + totalGarbageCollections);
+        logger.info("Total Garbage Collection Time (ms): " + garbageCollectionTime);
     }
 }
 

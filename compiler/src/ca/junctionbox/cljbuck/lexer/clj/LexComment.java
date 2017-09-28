@@ -1,9 +1,12 @@
-package ca.junctionbox.cljbuck.lexer;
+package ca.junctionbox.cljbuck.lexer.clj;
+
+import ca.junctionbox.cljbuck.lexer.Lexable;
+import ca.junctionbox.cljbuck.lexer.StateFunc;
 
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemComment;
 import static ca.junctionbox.cljbuck.lexer.Lexable.EOF;
 
-class LexComment implements StateFunc {
+public class LexComment implements StateFunc {
     private final StateFunc parentFn;
 
     public LexComment(final StateFunc parentFn) {

@@ -1,5 +1,7 @@
 package ca.junctionbox.cljbuck.lexer;
 
+import ca.junctionbox.cljbuck.lexer.clj.*;
+
 public class CljLex {
     public LexComment comment(final StateFunc parentFn) {
         return new LexComment(parentFn);

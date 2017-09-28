@@ -7,19 +7,22 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 /**
  * SourceCache is a cache for raw source code files.
  */
 public class SourceCache {
     final ConcurrentHashMap<Path, String> codeCache;
+    private final Logger logger;
 
-    private SourceCache() {
-        codeCache = new ConcurrentHashMap<>();
+    private SourceCache(final Logger logger) {
+        this.codeCache = new ConcurrentHashMap<>();
+        this.logger = logger;
     }
 
-    public static SourceCache create() {
-        final SourceCache cache = new SourceCache();
+    public static SourceCache create(final Logger logger) {
+        final SourceCache cache = new SourceCache(logger);
 
         return cache;
     }
@@ -30,9 +33,10 @@ public class SourceCache {
         final long read = System.currentTimeMillis();
         final String contents = new String(bytes, StandardCharsets.UTF_8);
         final long finish = System.currentTimeMillis();
+
         codeCache.put(sourceFile, contents);
 
-        System.out.println("\tconsumed " + bytes.length + "B from " + sourceFile + " in " + (finish - start) + "ms, " + (read - start) + "ms read, " + (finish - read) + "ms conversion");
+        logger.info("" + bytes.length + "B from " + sourceFile + " in " + (finish - start) + "ms, " + (read - start) + "ms read, " + (finish - read) + "ms conversion");
     }
 
     public void apply(final Path sourceFile, final SourceLexer lexer) {

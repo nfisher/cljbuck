@@ -1,5 +1,7 @@
 package ca.junctionbox.cljbuck.lexer;
 
+import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
+import ca.junctionbox.cljbuck.lexer.clj.*;
 import org.junit.Test;
 
 import static ca.junctionbox.cljbuck.lexer.ItemType.*;
@@ -22,12 +24,12 @@ public class LexFormTest {
         };
 
         for (Object[] td : table) {
-            final WriterQueue q = new WriterQueue();
+            final ReadWriterQueue q = new ReadWriterQueue();
             final Lexable lexable = Lexable.create("test.clj", (String) td[0], q);
 
             StateFunc fn = new CljLex().form(null).func(lexable);
 
-            Item item = q.read();
+            Item item = (Item) q.read();
             assertThat(fn, instanceOf(LexForm.class));
             assertThat(item.type, is(td[1]));
         }
@@ -42,12 +44,12 @@ public class LexFormTest {
         };
 
         for (Object[] td : table) {
-            final WriterQueue q = new WriterQueue();
+            final ReadWriterQueue q = new ReadWriterQueue();
             final Lexable lexable = Lexable.create("test.clj", (String) td[0], q);
 
             StateFunc fn = new CljLex().form(null).func(lexable);
 
-            Item item = q.read();
+            Item item = (Item) q.read();
 
             assertThat(fn, is(nullValue()));
             assertThat(item.type, is(itemError));
@@ -63,7 +65,7 @@ public class LexFormTest {
         };
 
         for (Object[] td : table) {
-            final WriterQueue q = new WriterQueue();
+            final ReadWriterQueue q = new ReadWriterQueue();
             final Lexable lexable = Lexable.create("test.clj", (String) td[0], q);
 
             StateFunc fn = new CljLex().form(null).func(lexable);
@@ -84,7 +86,7 @@ public class LexFormTest {
         };
 
         for (Object[] td : table) {
-            final WriterQueue q = new WriterQueue();
+            final ReadWriterQueue q = new ReadWriterQueue();
             final Lexable lexable = Lexable.create("test.clj", (String) td[0], q);
 
             StateFunc fn = new CljLex().form(null).func(lexable);
@@ -107,12 +109,12 @@ public class LexFormTest {
         };
 
         for (Object[] td : table) {
-            final WriterQueue q = new WriterQueue();
+            final ReadWriterQueue q = new ReadWriterQueue();
             final Lexable lexable = Lexable.create("test.clj", (String) td[0], q);
 
             StateFunc fn = new CljLex().form(null).func(lexable);
 
-            Item item = q.read();
+            Item item = (Item) q.read();
             assertThat(sn(fn.getClass()), is(td[1]));
             assertThat(item.type, is(td[2]));
         }
@@ -134,7 +136,7 @@ public class LexFormTest {
         };
 
         for (Object[] td : table) {
-            final WriterQueue q = new WriterQueue();
+            final ReadWriterQueue q = new ReadWriterQueue();
             final Lexable lexable = Lexable.create("test.clj", (String) td[0], q);
 
             StateFunc fn = new CljLex().form(null).func(lexable);

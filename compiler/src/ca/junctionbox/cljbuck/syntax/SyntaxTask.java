@@ -1,32 +1,44 @@
 package ca.junctionbox.cljbuck.syntax;
 
+import ca.junctionbox.cljbuck.channel.Closer;
+import ca.junctionbox.cljbuck.channel.Reader;
 import ca.junctionbox.cljbuck.lexer.Item;
-import org.jcsp.lang.CSProcess;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
-import org.jcsp.lang.ChannelInput;
+public class SyntaxTask implements Runnable {
+    private final Logger logger;
+    private final Reader in;
 
-public class SyntaxTask implements CSProcess {
     final List<Item> items = new ArrayList<>();
-    private final ChannelInput<Object> in;
+    private int numLexerTasks;
 
-    public SyntaxTask(ChannelInput<Object> in) {
-       this.in = in;
+    public SyntaxTask(final Logger logger, int numLexerTasks, final Reader in) {
+        this.logger = logger;
+        this.in = in;
+        this.numLexerTasks = numLexerTasks;
     }
 
     @Override
     public void run() {
+        logger.info("started");
         LinkedList<Item> brackets = new LinkedList<>();
         for (;;) {
-            final Item item = (Item) in.read();
-            if (item == null) {
-                break;
+            final Object o = in.read();
+            if (o instanceof Closer) {
+                numLexerTasks--;
+                if (numLexerTasks < 1) {
+                    break;
+                }
+                continue;
             }
+            final Item item = (Item) o;
             items.add(item);
         }
+        logger.info("finished");
     }
 
     public int size() {

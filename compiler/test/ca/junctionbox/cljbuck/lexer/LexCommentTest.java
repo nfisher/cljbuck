@@ -1,5 +1,7 @@
 package ca.junctionbox.cljbuck.lexer;
 
+import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
+import ca.junctionbox.cljbuck.lexer.clj.LexFile;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -9,8 +11,8 @@ import static org.junit.Assert.assertThat;
 public class LexCommentTest {
     @Test
     public void Test_newline() {
-        final WriterQueue q = new WriterQueue();
-        final Lexable lexable = Lexable.create("test.clj", " stuff it\n", q);
+        final ReadWriterQueue q = new ReadWriterQueue();
+        final Lexable lexable = Lexable.create("test.clj", " stuff it\n", new CljLex(), q);
         final CljLex cljLex = new CljLex();
         final StateFunc fn = cljLex.comment(cljLex.file()).func(lexable);
 
@@ -20,8 +22,8 @@ public class LexCommentTest {
 
     @Test
     public void Test_eof() {
-        final WriterQueue q = new WriterQueue();
-        final Lexable lexable = Lexable.create("test.clj", " stuff it", q);
+        final ReadWriterQueue q = new ReadWriterQueue();
+        final Lexable lexable = Lexable.create("test.clj", " stuff it", new CljLex(), q);
         final CljLex cljLex = new CljLex();
         final StateFunc fn = cljLex.comment(cljLex.file()).func(lexable);
 
