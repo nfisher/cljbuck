@@ -1,5 +1,7 @@
 package ca.junctionbox.cljbuck.build;
 
+import ca.junctionbox.cljbuck.build.rules.BuildRule;
+
 import java.io.PrintStream;
 
 public class PrintGraph implements Walken {

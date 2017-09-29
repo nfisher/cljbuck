@@ -1,5 +1,6 @@
 package ca.junctionbox.cljbuck.build;
 
+import ca.junctionbox.cljbuck.build.rules.BuildRule;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.graph.ImmutableGraph;
 
@@ -97,19 +98,3 @@ public class BuildGraph {
     }
 }
 
-interface Walken {
-    void step(final BuildRule buildRule, final int depth);
-}
-
-class TieredBuilder implements Walken {
-    final ArrayList<List<BuildRule>> tiers;
-
-    public TieredBuilder(final ArrayList<List<BuildRule>> tiers) {
-        this.tiers = tiers;
-    }
-
-    @Override
-    public void step(final BuildRule buildRule, int depth) {
-        this.tiers.size();
-    }
-}

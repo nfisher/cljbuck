@@ -1,6 +1,7 @@
 package ca.junctionbox.cljbuck.lexer;
 
 import ca.junctionbox.cljbuck.channel.Writer;
+import ca.junctionbox.cljbuck.lexer.clj.CljLex;
 
 import java.util.Stack;
 

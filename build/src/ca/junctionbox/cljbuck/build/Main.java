@@ -15,7 +15,8 @@ public class Main {
         try {
             BuildGraph buildGraph = Build.graph(
                     cljLib("//jbx:lib")
-                            .srcs("src/clj/**/*.clj")
+                            .srcs("src/clj/**/*.clj", "src/cljc/**/*.cljc")
+                            .ns("jbx.core")
                             .deps("//lib:clojure1.9"),
 
                     cljBinary("//jbx:main")
@@ -100,37 +101,3 @@ public class Main {
     }
 }
 
-class BuildCommand extends Command {
-    public BuildCommand(final BuildGraph buildGraph) {
-        super("build", "builds the specified target", buildGraph);
-    }
-
-    @Override
-    public int exec(final ArrayList<String> args) {
-        final SerialBuild serialBuild = new SerialBuild();
-        final String target = args.remove(0);
-
-        getBuildGraph().breadthFirstFrom(target, serialBuild);
-        serialBuild.build();
-
-        return 0;
-    }
-}
-
-class RunCommand extends Command {
-    public RunCommand(BuildGraph buildGraph) {
-        super("run", "runs the specified target", buildGraph);
-    }
-
-    @Override
-    public int exec(final ArrayList<String> args) {
-        final BuildCommand build = new BuildCommand(getBuildGraph());
-        final int rc = build.exec(args);
-
-        if (rc != 0) {
-            return rc;
-        }
-
-        return 0;
-    }
-}

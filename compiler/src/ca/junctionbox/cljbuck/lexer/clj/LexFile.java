@@ -1,6 +1,5 @@
 package ca.junctionbox.cljbuck.lexer.clj;
 
-import ca.junctionbox.cljbuck.lexer.CljLex;
 import ca.junctionbox.cljbuck.lexer.Lexable;
 import ca.junctionbox.cljbuck.lexer.StateFunc;
 import ca.junctionbox.cljbuck.lexer.Symbols;

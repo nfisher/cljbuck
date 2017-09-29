@@ -1,6 +1,7 @@
 package ca.junctionbox.cljbuck.lexer;
 
 import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
+import ca.junctionbox.cljbuck.lexer.clj.CljLex;
 import ca.junctionbox.cljbuck.lexer.clj.LexComment;
 import ca.junctionbox.cljbuck.lexer.clj.LexForm;
 import org.junit.Test;

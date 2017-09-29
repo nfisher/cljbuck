@@ -1,4 +1,4 @@
-package ca.junctionbox.cljbuck.build;
+package ca.junctionbox.cljbuck.build.rules;
 
 import java.util.List;
 
@@ -8,6 +8,11 @@ public class ClojureBinary extends BuildRule {
     public ClojureBinary(final String name, final List<String> deps, final List<String> visibility, final String main) {
         super(name, deps, visibility);
         this.main = main;
+    }
+
+    @Override
+    public void prepare() {
+
     }
 
     @Override

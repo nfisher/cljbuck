@@ -1,4 +1,4 @@
-package ca.junctionbox.cljbuck.build;
+package ca.junctionbox.cljbuck.build.rules;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -9,12 +9,12 @@ import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.List;
 
-abstract class BuildRule {
+public abstract class BuildRule {
     private final String name;
     private final List<String> deps;
     private final List<String> visibility;
 
-    BuildRule(final String name, final List<String> deps, List<String> visibility) {
+    public BuildRule(final String name, final List<String> deps, List<String> visibility) {
         this.name = name;
         this.deps = deps;
         this.visibility = visibility;
@@ -54,6 +54,8 @@ abstract class BuildRule {
     public int hashCode() {
         return getName() != null ? getName().hashCode() : 0;
     }
+
+    public abstract void prepare();
 
     public abstract void build();
 

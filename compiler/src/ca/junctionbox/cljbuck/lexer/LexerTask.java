@@ -3,6 +3,7 @@ package ca.junctionbox.cljbuck.lexer;
 import ca.junctionbox.cljbuck.channel.Closer;
 import ca.junctionbox.cljbuck.channel.Reader;
 import ca.junctionbox.cljbuck.channel.Writer;
+import ca.junctionbox.cljbuck.lexer.clj.CljLex;
 import ca.junctionbox.cljbuck.source.SourceCache;
 
 import java.nio.file.Path;

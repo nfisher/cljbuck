@@ -1,5 +1,6 @@
 package ca.junctionbox.cljbuck.build;
 
+import ca.junctionbox.cljbuck.build.rules.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.ImmutableGraph;
@@ -12,15 +13,16 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
 public class Build {
-    private final String name;
-    private final List<String> deps;
-    private final List<String> srcs;
     private final String binaryJar;
+    private final List<String> deps;
     private final String main;
-    private final List<String> visibility;
+    private final String name;
+    private final String ns;
+    private final List<String> srcs;
     private final Type type;
+    private final List<String> visibility;
 
-    private Build(final String name, final List<String> deps, final List<String> srcs, final String binaryJar, final String main, final List<String> visibility, final Type type) {
+    private Build(final String name, final List<String> deps, final List<String> srcs, final String binaryJar, final String main, final List<String> visibility, final Type type, final String ns) {
         this.name = name;
         this.deps = deps;
         this.srcs = srcs;
@@ -28,10 +30,11 @@ public class Build {
         this.main = main;
         this.visibility = visibility;
         this.type = type;
+        this.ns = ns;
     }
 
     private Build(final String name, final Type type) {
-        this(name, emptyList(), emptyList(), "", "", emptyList(), type);
+        this(name, emptyList(), emptyList(), "", "", emptyList(), type, "");
     }
 
     public static BuildGraph graph(Build... targets) throws Exception {
@@ -40,12 +43,12 @@ public class Build {
 
         // add all of the nodes
         for (final Build target : targets) {
-            BuildRule buildRule = target.build();
+            final BuildRule buildRule = target.build();
             builder.put(buildRule.getName(), buildRule);
             graph.addNode(buildRule);
         }
 
-        ImmutableMap<String, BuildRule> nodeMap = builder.build();
+        final ImmutableMap<String, BuildRule> nodeMap = builder.build();
 
         // add all of the edges
         for (final BuildRule buildRuleV : nodeMap.values()) {
@@ -55,7 +58,7 @@ public class Build {
             }
         }
 
-        BuildGraph buildGraph = new BuildGraph(ImmutableGraph.copyOf(graph), nodeMap);
+        final BuildGraph buildGraph = new BuildGraph(ImmutableGraph.copyOf(graph), nodeMap);
         return buildGraph;
     }
 
@@ -76,23 +79,27 @@ public class Build {
     }
 
     public Build visibility(final String... visiblity) {
-        return new Build(name, deps, srcs, binaryJar, main, visibility, type);
+        return new Build(name, deps, srcs, binaryJar, main, visibility, type, ns);
     }
 
     public Build srcs(final String... srcs) {
-        return new Build(name, deps, asList(srcs), binaryJar, main, visibility, type);
+        return new Build(name, deps, asList(srcs), binaryJar, main, visibility, type, ns);
     }
 
     public Build main(final String main) {
-        return new Build(name, deps, srcs, binaryJar, main, visibility, type);
+        return new Build(name, deps, srcs, binaryJar, main, visibility, type, ns);
     }
 
     public Build deps(final String... deps) {
-        return new Build(name, asList(deps), srcs, binaryJar, main, visibility, type);
+        return new Build(name, asList(deps), srcs, binaryJar, main, visibility, type, ns);
     }
 
     public Build binaryJar(final String binaryJar) {
-        return new Build(name, deps, srcs, binaryJar, main, visibility, type);
+        return new Build(name, deps, srcs, binaryJar, main, visibility, type, ns);
+    }
+
+    public Build ns(final String ns) {
+        return new Build(name, deps, srcs, binaryJar, main, visibility, type, ns);
     }
 
     public BuildRule build() throws Exception {
@@ -101,7 +108,7 @@ public class Build {
                 return new Jar(name, deps, visibility, binaryJar);
 
             case CljLib:
-                return new ClojureLib(name, deps, visibility, srcs);
+                return new ClojureLib(name, deps, visibility, srcs, ns);
 
             case CljBinary:
                 return new ClojureBinary(name, deps, visibility, main);

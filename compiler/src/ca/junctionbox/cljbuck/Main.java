@@ -4,7 +4,7 @@ import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
 import ca.junctionbox.cljbuck.io.FindFilesTask;
 import ca.junctionbox.cljbuck.io.GlobsTask;
 import ca.junctionbox.cljbuck.io.ReadFileTask;
-import ca.junctionbox.cljbuck.lexer.CljLex;
+import ca.junctionbox.cljbuck.lexer.clj.CljLex;
 import ca.junctionbox.cljbuck.lexer.LexerTask;
 import ca.junctionbox.cljbuck.source.SourceCache;
 import ca.junctionbox.cljbuck.syntax.SyntaxTask;
@@ -46,7 +46,7 @@ public class Main {
             "java.util.logging.SimpleFormatter.format=%4$s %2$s %5$s%6$s%n";
 
     public static void main(final String[] args) throws IOException {
-        final InputStream is = new ByteArrayInputStream(logConfigNoDateTime.getBytes(UTF_8));
+        final InputStream is = new ByteArrayInputStream(logConfig.getBytes(UTF_8));
         final Logger logger = Logger.getLogger("ca.junctionbox.cljbuck");
         final long start = System.currentTimeMillis();
         final ReadWriterQueue globCh = new ReadWriterQueue();

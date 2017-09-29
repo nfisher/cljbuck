@@ -120,6 +120,7 @@ enum SyntaxType {
     UnquoteSplicing,    // ~@
 
     // DISPATCHES #
+    // Set                         #{}
     Regex,                      // #""
     AnonFn,                     // #()
     Tagged,                     // #symbol

@@ -1,33 +1,30 @@
 package ca.junctionbox.cljbuck.build;
 
-import java.util.Stack;
+import ca.junctionbox.cljbuck.build.rules.BuildRule;
+
+import java.util.ArrayList;
 
 public class SerialBuild implements Walken {
-    private Stack<BuildRule> buildStack;
+    private ArrayList<BuildRule> rules;
 
     public SerialBuild() {
-        this.buildStack = new Stack<>();
+        this.rules = new ArrayList<>();
     }
 
     @Override
     public void step(final BuildRule buildRule, final int depth) {
-        buildStack.push(buildRule);
-    }
-
-    public BuildRule pop() {
-        if (buildStack.isEmpty()) {
-            return null;
-        }
-        return buildStack.pop();
-    }
-
-    public boolean isEmpty() {
-        return buildStack.isEmpty();
+        rules.add(buildRule);
     }
 
     public void build() {
-        for (BuildRule n = pop(); n != null; n = pop()) {
-            n.build();
+        for (int i = rules.size() - 1; i >= 0; i--) {
+            rules.get(i).build();
+        }
+    }
+
+    public void prepare() {
+        for (int i = rules.size() - 1; i >= 0; i--) {
+            rules.get(i).prepare();
         }
     }
 }

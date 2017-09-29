@@ -1,6 +1,7 @@
 package ca.junctionbox.cljbuck.lexer;
 
 import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
+import ca.junctionbox.cljbuck.lexer.clj.CljLex;
 import org.junit.Test;
 
 import static ca.junctionbox.cljbuck.lexer.ItemType.*;
