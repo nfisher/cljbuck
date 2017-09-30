@@ -1,13 +1,14 @@
-package ca.junctionbox.cljbuck.build;
+package ca.junctionbox.cljbuck.build.graph;
 
+import ca.junctionbox.cljbuck.build.graph.Walken;
 import ca.junctionbox.cljbuck.build.rules.BuildRule;
 
 import java.io.PrintStream;
 
-public class PrintGraph implements Walken {
+public class PrintDepsGraph implements Walken {
     private final PrintStream out;
 
-    PrintGraph(final PrintStream out) {
+    public PrintDepsGraph(final PrintStream out) {
         this.out = out;
     }
 

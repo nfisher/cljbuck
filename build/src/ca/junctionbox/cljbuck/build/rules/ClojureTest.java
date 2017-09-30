@@ -1,12 +1,14 @@
 package ca.junctionbox.cljbuck.build.rules;
 
+import ca.junctionbox.cljbuck.build.ClassPath;
+
 import java.util.List;
 
 public class ClojureTest extends BuildRule {
     private final List<String> srcs;
 
-    public ClojureTest(final String name, final List<String> deps, final List<String> visibility, final List<String> srcs) {
-        super(name, deps, visibility);
+    public ClojureTest(final String name, final List<String> deps, final List<String> visibility, final List<String> srcs, ClassPath cp) {
+        super(name, deps, visibility, cp);
         this.srcs = srcs;
     }
 

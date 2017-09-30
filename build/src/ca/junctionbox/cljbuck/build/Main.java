@@ -1,11 +1,13 @@
 package ca.junctionbox.cljbuck.build;
 
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import ca.junctionbox.cljbuck.build.commands.*;
+import ca.junctionbox.cljbuck.build.graph.BuildGraph;
+import com.google.common.collect.ImmutableSortedMap;
 
-import static ca.junctionbox.cljbuck.build.Build.*;
+import java.io.PrintStream;
+import java.util.*;
+
+import static ca.junctionbox.cljbuck.build.Rules.*;
 
 public class Main {
     private static final int USAGE = 1;
@@ -13,9 +15,10 @@ public class Main {
 
     public static void main(final String[] args) {
         try {
-            BuildGraph buildGraph = Build.graph(
+            final ClassPath cp = new ClassPath();
+            final BuildGraph buildGraph = new Rules(cp).graph(
                     cljLib("//jbx:lib")
-                            .srcs("src/clj/**/*.clj", "src/cljc/**/*.cljc")
+                            .srcs("src/clj/", "src/cljc/")
                             .ns("jbx.core")
                             .deps("//lib:clojure1.9"),
 
@@ -43,7 +46,7 @@ public class Main {
             );
 
             final ArrayList<String> argList = new ArrayList<>(Arrays.asList(args));
-            final HashMap<String, Command> commandList = commandList(buildGraph);
+            final ImmutableSortedMap<String, Command> commandList = commandList(buildGraph, cp);
 
             if (args.length < 1) {
                 printUsage(System.out, commandList);
@@ -66,22 +69,24 @@ public class Main {
         }
     }
 
-    private static HashMap<String,Command> commandList(BuildGraph buildGraph) {
-        final HashMap<String,Command> commands = new HashMap<>();
+    private static ImmutableSortedMap<String, Command> commandList(final BuildGraph buildGraph, final ClassPath cp) {
+        final ImmutableSortedMap.Builder<String, Command> commands = new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
         final ArrayList<Command> list = new ArrayList<>();
 
         list.add(new BuildCommand(buildGraph));
-        list.add(new PrintCommand(buildGraph));
+        list.add(new PrintDepsCommand(buildGraph));
+        list.add(new ReplCommand(buildGraph, cp));
         list.add(new RunCommand(buildGraph));
+        list.add(new PrintTargetsCommand(buildGraph));
 
         for (final Command c : list) {
             commands.put(c.getTarget(), c);
         }
 
-        return commands;
+        return commands.build();
     }
 
-    private static void printUsage(final PrintStream out, HashMap<String, Command> commandList) {
+    private static void printUsage(final PrintStream out, final SortedMap<String, Command> commandList) {
         out.println("Description:");
         out.println("  cljbuild is a clojure/jvm build too.");
         out.println("");
@@ -91,9 +96,15 @@ public class Main {
         out.println("Available commands:");
 
         for (final Command c : commandList.values()) {
+            final String target = c.getTarget();
+            final int padLen = 14 - target.length();
+            final char[] padding = new char[padLen];
+            Arrays.fill(padding, ' ');
+
             out.print("  ");
-            out.print(c.getTarget());
-            out.print(" - ");
+            out.print(target);
+            out.print(padding);
+            out.print(" ");
             out.println(c.getDescription());
         }
 

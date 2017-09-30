@@ -1,4 +1,4 @@
-package ca.junctionbox.cljbuck.build;
+package ca.junctionbox.cljbuck.build.graph;
 
 import ca.junctionbox.cljbuck.build.rules.BuildRule;
 

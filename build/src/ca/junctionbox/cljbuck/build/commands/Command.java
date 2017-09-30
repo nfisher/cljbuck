@@ -1,4 +1,6 @@
-package ca.junctionbox.cljbuck.build;
+package ca.junctionbox.cljbuck.build.commands;
+
+import ca.junctionbox.cljbuck.build.graph.BuildGraph;
 
 import java.util.ArrayList;
 
@@ -13,9 +15,9 @@ public abstract class Command {
         this.buildGraph = buildGraph;
     }
 
-    abstract int exec(final ArrayList<String> args);
+    public abstract int exec(final ArrayList<String> args);
 
-    String getDescription() {
+    public String getDescription() {
         return description;
     }
 

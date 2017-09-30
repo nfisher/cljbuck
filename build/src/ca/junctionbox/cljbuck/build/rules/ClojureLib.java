@@ -1,5 +1,7 @@
 package ca.junctionbox.cljbuck.build.rules;
 
+import ca.junctionbox.cljbuck.build.ClassPath;
+
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -11,28 +13,28 @@ public class ClojureLib extends BuildRule {
     private final File targetDir;
     private final String ns;
 
-    public ClojureLib(final String name, final List<String> deps, final List<String> visibility, final List<String> srcs, final String ns) {
-        super(name, deps, visibility);
+    public ClojureLib(final String name, final List<String> deps, final List<String> visibility, final List<String> srcs, final String ns, ClassPath cp) {
+        super(name, deps, visibility, cp);
         this.srcs = srcs;
-        this.targetDir = new File("target");
         this.ns = ns;
+        this.targetDir = new File("target/" + getDirectory());
     }
 
     @Override
     public void prepare() {
         final List<String> srcs = getSrcs();
 
+        targetDir.mkdirs();
         try {
-            targetDir.mkdirs();
-            addClasspath(targetDir.getPath());
+            getCp().addClasspath(targetDir.getPath());
 
             for (final String glob : srcs) {
                 final int pos = glob.indexOf('*');
                 if (-1 != pos) {
                     final String p = glob.substring(0, pos);
-                    addClasspath(p);
+                    getCp().addClasspath(getDirectory() + "/" + p);
                 } else {
-                    addClasspath(glob);
+                    getCp().addClasspath(getDirectory() + "/" + glob);
                 }
             }
         } catch (MalformedURLException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
@@ -43,7 +45,7 @@ public class ClojureLib extends BuildRule {
     @Override
     public void build() {
         try {
-            final Class<?> rt = forName("clojure.lang.RT", true);
+            final Class<?> rt = getCp().forName("clojure.lang.RT", true);
             final Method rtVar = rt.getDeclaredMethod("var", String.class, String.class, Object.class);
 
             rtVar.invoke(null, "clojure.core", "*compile-path*", targetDir.getPath());

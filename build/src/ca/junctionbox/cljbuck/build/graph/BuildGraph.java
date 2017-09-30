@@ -1,16 +1,17 @@
-package ca.junctionbox.cljbuck.build;
+package ca.junctionbox.cljbuck.build.graph;
 
+import ca.junctionbox.cljbuck.build.NotFoundException;
 import ca.junctionbox.cljbuck.build.rules.BuildRule;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.ImmutableGraph;
 
 import java.util.*;
 
 public class BuildGraph {
-    final ImmutableGraph<BuildRule> graph;
-    final ImmutableMap<String, BuildRule> map;
+    private final ImmutableGraph<BuildRule> graph;
+    private final ImmutableSortedMap<String, BuildRule> map;
 
-    BuildGraph(final ImmutableGraph<BuildRule> graph, final ImmutableMap<String, BuildRule> map) {
+    BuildGraph(final ImmutableGraph<BuildRule> graph, final ImmutableSortedMap<String, BuildRule> map) {
         this.graph = graph;
         this.map = map;
     }
@@ -37,6 +38,12 @@ public class BuildGraph {
             throw new NotFoundException(name);
         }
         return graph.predecessors(buildRule);
+    }
+
+    public void forEach(final Walken christopher) {
+        for (final String key : map.keySet()) {
+            christopher.step(map.get(key), 0);
+        }
     }
 
     public void depthFirstFrom(final String start, final Walken christopher) {

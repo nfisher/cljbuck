@@ -1,0 +1,3 @@
+#!/bin/sh -eu
+
+java -jar buck-out/gen/build/cljbuck.jar $*

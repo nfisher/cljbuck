@@ -1,4 +1,6 @@
-package ca.junctionbox.cljbuck.build;
+package ca.junctionbox.cljbuck.build.commands;
+
+import ca.junctionbox.cljbuck.build.graph.BuildGraph;
 
 import java.util.ArrayList;
 

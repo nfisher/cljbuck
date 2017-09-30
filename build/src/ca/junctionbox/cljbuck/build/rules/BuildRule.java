@@ -1,24 +1,27 @@
 package ca.junctionbox.cljbuck.build.rules;
 
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Arrays;
+import ca.junctionbox.cljbuck.build.ClassPath;
+
 import java.util.List;
 
 public abstract class BuildRule {
     private final String name;
     private final List<String> deps;
     private final List<String> visibility;
+    private final ClassPath cp;
 
-    public BuildRule(final String name, final List<String> deps, List<String> visibility) {
+    public BuildRule(final String name, final List<String> deps, final List<String> visibility, final ClassPath cp) {
         this.name = name;
         this.deps = deps;
         this.visibility = visibility;
+        this.cp = cp;
     }
+
+    public abstract void prepare();
+
+    public abstract void build();
+
+    public abstract String getArtefact();
 
     public String getName() {
         return name;
@@ -55,36 +58,6 @@ public abstract class BuildRule {
         return getName() != null ? getName().hashCode() : 0;
     }
 
-    public abstract void prepare();
-
-    public abstract void build();
-
-    public abstract String getArtefact();
-
-    protected Class<?> forName(final String name, final boolean initialize) throws ClassNotFoundException {
-        final Class<?> clazz = BuildRule.class;
-        return Class.forName(name, initialize, clazz.getClassLoader());
-    }
-
-    protected void addClasspath(final String classPath) throws MalformedURLException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-        final URLClassLoader classLoader = (URLClassLoader)ClassLoader.getSystemClassLoader();
-        final URL jarFile = new File(classPath).toURI().toURL();
-
-        for (final URL url : Arrays.asList(classLoader.getURLs())){
-            if (url.equals(jarFile)){
-                return;
-            }
-        }
-
-        final Method addUrl = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-        try {
-            addUrl.setAccessible(true);
-            addUrl.invoke(classLoader, jarFile);
-        } finally {
-            addUrl.setAccessible(false);
-        }
-    }
-
     /**
      * Returns the directory path with trailing slash relative to the project root.
      *
@@ -101,4 +74,9 @@ public abstract class BuildRule {
         final int pos = name.indexOf(':') + 1;
         return name.substring(pos);
     }
+
+    public ClassPath getCp() {
+        return cp;
+    }
 }
+
