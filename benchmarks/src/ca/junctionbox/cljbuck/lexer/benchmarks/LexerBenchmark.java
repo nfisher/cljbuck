@@ -2,12 +2,6 @@ package ca.junctionbox.cljbuck.lexer.benchmarks;
 
 import ca.junctionbox.cljbuck.lexer.Item;
 import ca.junctionbox.cljbuck.lexer.Lexable;
-import org.jcsp.lang.CSProcess;
-import org.jcsp.lang.Channel;
-import org.jcsp.lang.ChannelInput;
-import org.jcsp.lang.One2OneChannel;
-import org.jcsp.lang.Parallel;
-import org.jcsp.util.Buffer;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -18,7 +12,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class LexerBenchmark {
-
+    /*
     @Benchmark
     public void BenchmarkLexer() {
         final One2OneChannel<Object> chan = Channel.one2one(new Buffer(2048));
@@ -41,24 +35,5 @@ public class LexerBenchmark {
 
         new Runner(opt).run();
     }
-}
-
-class ConsumeTask implements CSProcess {
-    final Queue<Item> items = new LinkedList<>();
-    private final ChannelInput<Object> in;
-
-    ConsumeTask(ChannelInput<Object> in) {
-        this.in = in;
-    }
-
-    @Override
-    public void run() {
-        for (;;) {
-            final Item item = (Item) in.read();
-            if (item == null) {
-                break;
-            }
-            items.add(item);
-        }
-    }
+    */
 }
