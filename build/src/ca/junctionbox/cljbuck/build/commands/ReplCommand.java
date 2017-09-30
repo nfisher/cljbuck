@@ -9,17 +9,20 @@ import java.util.ArrayList;
 
 public class ReplCommand extends Command {
     private final BuildCommand buildCommand;
-    private final ClassPath cp;
+    private final ClassPath classPath;
 
-    public ReplCommand(final BuildGraph buildGraph, final ClassPath cp) {
-        super("repl", "start a repl session either with the current project or standalone", buildGraph);
-        this.buildCommand = new BuildCommand(buildGraph);
-        this.cp = cp;
+    public ReplCommand(final BuildGraph buildGraph, final ClassPath classPath, final BuildCommand buildCommand) {
+        super("repl", "start a repl session with the target", buildGraph);
+        this.buildCommand = buildCommand;
+        this.classPath = classPath;
     }
 
     @Override
     public int exec(final ArrayList<String> args) {
-        buildCommand.exec(args);
+        final int rc = buildCommand.exec(args);
+        if (0 != rc) {
+            return rc;
+        }
 
         try {
             repl(args);
@@ -30,8 +33,8 @@ public class ReplCommand extends Command {
     }
 
     public void repl(final ArrayList<String> args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        final Class<?> main = cp.forName("clojure.main", true);
-        cp.printPath();
+        final Class<?> main = classPath.forName("clojure.main", true);
+        classPath.printPath();
 
         final Method mainMain = main.getDeclaredMethod("main", new Class[]{String[].class});
         final String[] args2 = {};

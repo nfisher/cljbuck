@@ -69,14 +69,15 @@ public class Main {
         }
     }
 
-    private static ImmutableSortedMap<String, Command> commandList(final BuildGraph buildGraph, final ClassPath cp) {
+    private static ImmutableSortedMap<String, Command> commandList(final BuildGraph buildGraph, final ClassPath classPath) {
         final ImmutableSortedMap.Builder<String, Command> commands = new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
         final ArrayList<Command> list = new ArrayList<>();
 
-        list.add(new BuildCommand(buildGraph));
+        final BuildCommand buildCommand = new BuildCommand(buildGraph);
+        list.add(buildCommand);
         list.add(new PrintDepsCommand(buildGraph));
-        list.add(new ReplCommand(buildGraph, cp));
-        list.add(new RunCommand(buildGraph));
+        list.add(new ReplCommand(buildGraph, classPath, buildCommand));
+        list.add(new RunCommand(buildGraph, classPath, buildCommand));
         list.add(new PrintTargetsCommand(buildGraph));
 
         for (final Command c : list) {

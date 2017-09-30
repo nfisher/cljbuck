@@ -11,7 +11,7 @@ public class BuildGraph {
     private final ImmutableGraph<BuildRule> graph;
     private final ImmutableSortedMap<String, BuildRule> map;
 
-    BuildGraph(final ImmutableGraph<BuildRule> graph, final ImmutableSortedMap<String, BuildRule> map) {
+    public BuildGraph(final ImmutableGraph<BuildRule> graph, final ImmutableSortedMap<String, BuildRule> map) {
         this.graph = graph;
         this.map = map;
     }
