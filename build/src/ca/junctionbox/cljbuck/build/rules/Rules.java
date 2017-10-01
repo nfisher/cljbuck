@@ -1,8 +1,6 @@
-package ca.junctionbox.cljbuck.build;
+package ca.junctionbox.cljbuck.build.rules;
 
 import ca.junctionbox.cljbuck.build.graph.BuildGraph;
-import ca.junctionbox.cljbuck.build.rules.*;
-import ca.junctionbox.cljbuck.build.rules.Jar;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.ImmutableGraph;
@@ -11,7 +9,8 @@ import com.google.common.graph.MutableGraph;
 import java.util.Comparator;
 import java.util.List;
 
-import static ca.junctionbox.cljbuck.build.Type.*;
+import static ca.junctionbox.cljbuck.build.rules.Type.*;
+import static ca.junctionbox.cljbuck.build.rules.Type.Jar;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 

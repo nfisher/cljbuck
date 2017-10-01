@@ -1,7 +1,5 @@
 package ca.junctionbox.cljbuck.build.rules;
 
-import ca.junctionbox.cljbuck.build.ClassPath;
-
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.util.List;

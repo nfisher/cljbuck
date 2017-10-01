@@ -1,4 +1,4 @@
-package ca.junctionbox.cljbuck.build;
+package ca.junctionbox.cljbuck.build.rules;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;

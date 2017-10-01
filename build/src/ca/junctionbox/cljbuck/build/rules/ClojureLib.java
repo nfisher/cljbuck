@@ -1,7 +1,5 @@
 package ca.junctionbox.cljbuck.build.rules;
 
-import ca.junctionbox.cljbuck.build.ClassPath;
-
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

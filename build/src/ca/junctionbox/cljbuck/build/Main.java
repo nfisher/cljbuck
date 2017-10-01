@@ -2,6 +2,8 @@ package ca.junctionbox.cljbuck.build;
 
 import ca.junctionbox.cljbuck.build.commands.*;
 import ca.junctionbox.cljbuck.build.graph.BuildGraph;
+import ca.junctionbox.cljbuck.build.rules.ClassPath;
+import ca.junctionbox.cljbuck.build.rules.Rules;
 import com.google.common.collect.ImmutableSortedMap;
 
 import java.io.PrintStream;
@@ -11,7 +13,7 @@ import java.util.Comparator;
 import java.util.SortedMap;
 import java.util.logging.Logger;
 
-import static ca.junctionbox.cljbuck.build.Rules.*;
+import static ca.junctionbox.cljbuck.build.rules.Rules.*;
 
 public class Main {
     public static final int ARG1 = 0;

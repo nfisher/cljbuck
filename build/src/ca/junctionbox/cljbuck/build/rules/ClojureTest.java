@@ -1,7 +1,5 @@
 package ca.junctionbox.cljbuck.build.rules;
 
-import ca.junctionbox.cljbuck.build.ClassPath;
-
 import java.util.List;
 
 public class ClojureTest extends BuildRule {

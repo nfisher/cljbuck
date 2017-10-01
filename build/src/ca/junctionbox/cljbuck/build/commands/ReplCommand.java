@@ -1,6 +1,6 @@
 package ca.junctionbox.cljbuck.build.commands;
 
-import ca.junctionbox.cljbuck.build.ClassPath;
+import ca.junctionbox.cljbuck.build.rules.ClassPath;
 import ca.junctionbox.cljbuck.build.graph.BuildGraph;
 
 import java.io.File;

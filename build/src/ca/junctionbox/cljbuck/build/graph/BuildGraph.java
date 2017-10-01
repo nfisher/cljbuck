@@ -1,6 +1,5 @@
 package ca.junctionbox.cljbuck.build.graph;
 
-import ca.junctionbox.cljbuck.build.NotFoundException;
 import ca.junctionbox.cljbuck.build.rules.BuildRule;
 import ca.junctionbox.cljbuck.build.rules.ClojureBinary;
 import com.google.common.collect.ImmutableSortedMap;

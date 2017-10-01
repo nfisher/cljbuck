@@ -1,6 +1,6 @@
 package ca.junctionbox.cljbuck.build.commands;
 
-import ca.junctionbox.cljbuck.build.ClassPath;
+import ca.junctionbox.cljbuck.build.rules.ClassPath;
 import ca.junctionbox.cljbuck.build.graph.BuildGraph;
 
 import java.lang.reflect.InvocationTargetException;
@@ -39,7 +39,6 @@ public class RunCommand extends Command {
     }
 
     public int run(final ArrayList<String> args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        System.out.println(args);
         final String ns = getBuildGraph().mainFor(args.get(0));
         if (null == ns || ns.equals("")) {
             return 2;
