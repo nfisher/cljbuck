@@ -1,5 +1,6 @@
 dist: trusty
 language: java
+install: ant deps
 
 before_install:
   # Install Buck
