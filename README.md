@@ -4,26 +4,26 @@
 
 Experiment in speeding up Clojure build times from the ground up.
 
-## Sample Project Structure
+## Sample Project Structure
 
 - WORKSPACE - used to mark the root of the project.
 - BUILD - sprinkled where desired in a project to specify build targets.
 
-### Simple Project Structure
+### Simple Project Structure
 
 ```
 project
  +-- WORKSPACE
  +-- lib/
- |     +-- BUILD
+ |     +-- CLJ
  |     +-- clojure-1.9.0-beta1.jar
  |     \-- ...
  +-- jbx
-       +-- BUILD
+       +-- CLJ
        +-- src/
 ```
 
-#### lib/BUILD
+#### jbx/CLJ
 
 ```
 (jar :name "clojure1.9"
@@ -38,7 +38,7 @@ project
      :jar "core.specs.alpha-0.1.24.jar")
 ```
 
-#### jbx/BUILD
+#### lib/CLJ
 
 ```
 (clj-lib :name "lib"
