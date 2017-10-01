@@ -5,7 +5,7 @@ before_install:
   - sudo apt-get update
   - sudo apt-get install -y ant
   # Install Buck
-  - test -d $HOME/.buck || git clone --branch v2017.09.04.02 --depth 1 https://github.com/facebook/buck.git $HOME/.buck
+  - test -f $HOME/.buck/bin/buck || git clone --branch v2017.09.04.02 --depth 1 https://github.com/facebook/buck.git $HOME/.buck
   - ls $HOME/.buck
   - cd $HOME/.buck; ant; cd - # build then jump back to prev directory
   - rm -rf $HOME/.buck/.git # don't bother caching the .git folder
