@@ -13,7 +13,7 @@ public class BuildCommand extends Command {
     @Override
     public int exec(final ArrayList<String> args) {
         final SerialBuild serialBuild = new SerialBuild();
-        final String target = args.remove(0);
+        final String target = args.get(0);
 
         getBuildGraph().breadthFirstFrom(target, serialBuild);
 

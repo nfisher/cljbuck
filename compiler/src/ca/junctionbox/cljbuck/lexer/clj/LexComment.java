@@ -14,7 +14,7 @@ public class LexComment implements StateFunc {
     }
 
     public StateFunc func(final Lexable l) {
-        for (;;) {
+        for (; ; ) {
             char ch = l.next();
             if ('\n' == ch || '\r' == ch || EOF == ch) break;
         }

@@ -3,18 +3,26 @@
 java_library(
     name = 'lib',
     srcs = glob(['src/**/*.java']),
-    deps = ['//lib:guava',],
+    deps = [
+        '//lib:guava',
+    ],
 )
 
 java_test(
     name = 'test',
     srcs = glob(['test/**/*.java']),
-    deps = ['//lib:junit', '//lib:hamcrest-core', ':lib',],
+    deps = [
+        ':lib',
+        '//lib:hamcrest-core',
+        '//lib:junit',
+    ],
 )
 
 java_binary(
     name = 'cljbuck',
     main_class = 'ca.junctionbox.cljbuck.build.Main',
-    deps = [':lib'],
+    deps = [
+        ':lib'
+    ],
 )
 

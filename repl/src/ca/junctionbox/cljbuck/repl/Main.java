@@ -24,13 +24,13 @@ public class Main {
 
             long count = gc.getCollectionCount();
 
-            if(count >= 0) {
+            if (count >= 0) {
                 totalGarbageCollections += count;
             }
 
             long time = gc.getCollectionTime();
 
-            if(time >= 0) {
+            if (time >= 0) {
                 garbageCollectionTime += time;
             }
         }

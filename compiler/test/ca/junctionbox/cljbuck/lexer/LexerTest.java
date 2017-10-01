@@ -6,7 +6,8 @@ import org.junit.Test;
 
 import static ca.junctionbox.cljbuck.lexer.ItemType.*;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class LexerTest {
     public static final String pedestalInterceptorHelpers = "; Copyright 2013 Relevance, Inc.\n" +
@@ -695,17 +696,17 @@ public class LexerTest {
             "  (.service ^javax.servlet.Servlet (::servlet service) servlet-req servlet-resp))\n" +
             "\n";
 
-    @Test(timeout=100L)
+    @Test(timeout = 100L)
     public void Test_lex_pedestal_interceptor_helpers() {
         final ReadWriterQueue q = new ReadWriterQueue();
         final Lexable l = Lexable.create("helpers.clj", pedestalInterceptorHelpers, new CljLex(), q);
 
         l.run();
 
-        final long countLeft = q.stream().filter(item -> ((Item)item).type == itemLeftParen).count();
-        final long countRight = q.stream().filter(item -> ((Item)item).type == itemRightParen).count();
-        final long countBracketLeft = q.stream().filter(item -> ((Item)item).type == itemLeftBracket).count();
-        final long countBracketRight = q.stream().filter(item -> ((Item)item).type == itemRightBracket).count();
+        final long countLeft = q.stream().filter(item -> ((Item) item).type == itemLeftParen).count();
+        final long countRight = q.stream().filter(item -> ((Item) item).type == itemRightParen).count();
+        final long countBracketLeft = q.stream().filter(item -> ((Item) item).type == itemLeftBracket).count();
+        final long countBracketRight = q.stream().filter(item -> ((Item) item).type == itemRightBracket).count();
 
         // quick verification that parens are balanced.
         assertThat(countLeft, is(200L));
@@ -720,10 +721,10 @@ public class LexerTest {
 
         l.run();
 
-        final long countLeft = q.stream().filter(item -> ((Item)item).type == itemLeftParen).count();
-        final long countRight = q.stream().filter(item -> ((Item)item).type == itemRightParen).count();
-        final long countBracketLeft = q.stream().filter(item -> ((Item)item).type == itemLeftBracket).count();
-        final long countBracketRight = q.stream().filter(item -> ((Item)item).type == itemRightBracket).count();
+        final long countLeft = q.stream().filter(item -> ((Item) item).type == itemLeftParen).count();
+        final long countRight = q.stream().filter(item -> ((Item) item).type == itemRightParen).count();
+        final long countBracketLeft = q.stream().filter(item -> ((Item) item).type == itemLeftBracket).count();
+        final long countBracketRight = q.stream().filter(item -> ((Item) item).type == itemRightBracket).count();
 
         // quick verification that parens are balanced.
         assertThat("left parens", countLeft, is(231L));
@@ -731,7 +732,7 @@ public class LexerTest {
         assertThat("brackets", countBracketLeft, is(countBracketRight));
     }
 
-    @Test(timeout=100L)
+    @Test(timeout = 100L)
     public void Test_next() {
         final ReadWriterQueue q = new ReadWriterQueue();
         final Lexable l = Lexable.create("test.clj", "a", new CljLex(), q);
@@ -743,7 +744,7 @@ public class LexerTest {
         assertEquals(3, c2);
     }
 
-    @Test(timeout=100L)
+    @Test(timeout = 100L)
     public void Test_ignore() {
         final ReadWriterQueue q = new ReadWriterQueue();
         final Lexable l = Lexable.create("test.clj", "   ", new CljLex(), q);
@@ -753,7 +754,7 @@ public class LexerTest {
         assertEquals(3, l.getPos());
     }
 
-    @Test(timeout=100L)
+    @Test(timeout = 100L)
     public void Test_accept() {
         final ReadWriterQueue q = new ReadWriterQueue();
         final Lexable l = Lexable.create("test.clj", " ) ", new CljLex(), q);
@@ -763,7 +764,7 @@ public class LexerTest {
         assertEquals(3, l.getPos());
     }
 
-    @Test(timeout=100L)
+    @Test(timeout = 100L)
     public void Test_Lexer_lex_single_line() {
         ReadWriterQueue q = new ReadWriterQueue();
         final Lexable l = Lexable.create("comment.clj",
@@ -772,9 +773,9 @@ public class LexerTest {
         l.run();
 
         String tokens = q.stream()
-                .filter(item -> ((Item)item).type != itemEOF)
-                .map(item -> ((Item)item).val)
-                .reduce((a,b) -> a + " " + b)
+                .filter(item -> ((Item) item).type != itemEOF)
+                .map(item -> ((Item) item).val)
+                .reduce((a, b) -> a + " " + b)
                 .get();
 
         assertEquals(q.size(), 13);
@@ -782,7 +783,7 @@ public class LexerTest {
     }
 
 
-    @Test(timeout=100L)
+    @Test(timeout = 100L)
     public void Test_Lexer_lex_multiple_lines() {
         ReadWriterQueue q = new ReadWriterQueue();
         final Lexable l = Lexable.create("comment.clj",
@@ -792,9 +793,9 @@ public class LexerTest {
         l.run();
 
         String tokens = q.stream()
-                .filter(item -> ((Item)item).type != itemEOF)
-                .map(item -> ((Item)item).val)
-                .reduce((a,b) -> a + " " + b)
+                .filter(item -> ((Item) item).type != itemEOF)
+                .map(item -> ((Item) item).val)
+                .reduce((a, b) -> a + " " + b)
                 .get();
 
         assertEquals(q.size(), 17);

@@ -19,6 +19,10 @@ public class RunCommand extends Command {
 
     @Override
     public int exec(final ArrayList<String> args) {
+        if (args.size() != 1) {
+            System.out.println("Argh matey");
+            return 1;
+        }
         final int rc = buildCommand.exec(args);
 
         if (rc != 0) {
@@ -26,19 +30,25 @@ public class RunCommand extends Command {
         }
 
         try {
-            run(args);
+            return run(args);
         } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             e.printStackTrace();
         }
 
-        return 0;
+        return 3;
     }
 
-    public void run(final ArrayList<String> args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        final Class<?> main = classPath.forName("jbx.core", true);
+    public int run(final ArrayList<String> args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        System.out.println(args);
+        final String ns = getBuildGraph().mainFor(args.get(0));
+        if (null == ns || ns.equals("")) {
+            return 2;
+        }
+        final Class<?> main = classPath.forName(ns, true);
 
         final Method mainMain = main.getDeclaredMethod("main", new Class[]{String[].class});
         final String[] args2 = {};
         mainMain.invoke(null, new Object[]{args2});
+        return 0;
     }
 }

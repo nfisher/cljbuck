@@ -2,6 +2,58 @@
 
 Experiment in speeding up Clojure build times from the ground up.
 
+## Sample Project Structure
+
+- WORKSPACE - used to mark the root of the project.
+- BUILD - sprinkled where desired in a project to specify build targets.
+
+### Simple Project Structure
+
+```
+project
+ +-- WORKSPACE
+ +-- lib/
+ |     +-- BUILD
+ |     +-- clojure-1.9.0-beta1.jar
+ |     \-- ...
+ +-- jbx
+       +-- BUILD
+       +-- src/
+```
+
+#### lib/BUILD
+
+```
+(jar :name "clojure1.9"
+     :jar "clojure-1.9.0-beta1.jar"
+     :deps [":core.specs.alpha", ":spec.alpha"]
+     :visibility ["PUBLIC"])
+
+(jar :name "spec.alpha"
+     :jar "spec.alpha-0.1.123.jar")
+
+(jar :name "core.specs.alpha"
+     :jar "core.specs.alpha-0.1.24.jar")
+```
+
+#### jbx/BUILD
+
+```
+(clj-lib :name "lib"
+         :ns "jbx.core"
+         :srcs ["src/clj/**/*.clj", "src/cljc/**/*.cljc"]
+         :deps ["//lib:clojure1.9"])
+
+(clj-binary :name "main"
+            :main "jbx.core"
+            :deps [":lib"])
+
+(clj-test :name "test"
+          :srcs ["test/clj/**/*.clj"]
+          :deps ["//lib:clojure1.9", ":lib"])
+
+```
+
 ## Next Steps
 
 - instrument JMH benchmarks for each stage.

@@ -6,6 +6,7 @@ import ca.junctionbox.cljbuck.lexer.clj.CljLex;
 import java.util.Stack;
 
 public class CharLexer implements Lexable {
+    public static final char EOF = 3; // ASCII - ETX/End of Text
     private final String filename;
     private final char[] contents;
     private final Writer out;
@@ -14,8 +15,6 @@ public class CharLexer implements Lexable {
     private int start;   // start position of this item
     private int pos;     // current position in the contents
     private int line;    // 1+number of newlines seen
-
-    public static final char EOF = 3; // ASCII - ETX/End of Text
 
     public CharLexer(final String path, final String contents, final Writer out, final CljLex cljLex) {
         this.filename = path;

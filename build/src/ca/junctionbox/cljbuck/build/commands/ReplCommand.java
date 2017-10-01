@@ -1,10 +1,13 @@
 package ca.junctionbox.cljbuck.build.commands;
 
-import ca.junctionbox.cljbuck.build.graph.BuildGraph;
 import ca.junctionbox.cljbuck.build.ClassPath;
+import ca.junctionbox.cljbuck.build.graph.BuildGraph;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 
 public class ReplCommand extends Command {
@@ -34,7 +37,16 @@ public class ReplCommand extends Command {
 
     public void repl(final ArrayList<String> args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         final Class<?> main = classPath.forName("clojure.main", true);
-        classPath.printPath();
+
+        for (final URL url : ((URLClassLoader) main.getClassLoader()).getURLs()) {
+            System.out.println(url);
+        }
+
+        final Class<?> rt = classPath.forName("clojure.lang.RT", true);
+        final Method rtVar = rt.getDeclaredMethod("var", String.class, String.class, Object.class);
+
+        rtVar.invoke(null, "clojure.core", "*compile-path*", new File("target/zzz/").getPath());
+        rtVar.invoke(null, "clojure.core", "*compile-files*", Boolean.FALSE);
 
         final Method mainMain = main.getDeclaredMethod("main", new Class[]{String[].class});
         final String[] args2 = {};

@@ -34,7 +34,7 @@ public class LexerTask implements SourceLexer, Runnable {
         long start = System.currentTimeMillis();
         long working = 0;
         try {
-            for (;;) {
+            for (; ; ) {
                 final Object o = r.read();
                 long workStart = System.currentTimeMillis();
                 if (o instanceof Closer) {

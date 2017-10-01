@@ -25,6 +25,10 @@ public class ClojureBinary extends BuildRule {
     @Override
     public String getArtefact() {
         final String target = getTarget();
-        return  target + ".jar";
+        return target + ".jar";
+    }
+
+    public String getMain() {
+        return main;
     }
 }

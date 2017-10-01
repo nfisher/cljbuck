@@ -1,10 +1,7 @@
 package ca.junctionbox.cljbuck.build;
 
 import ca.junctionbox.cljbuck.build.graph.BuildGraph;
-import ca.junctionbox.cljbuck.build.rules.BuildRule;
-import ca.junctionbox.cljbuck.build.rules.ClojureBinary;
-import ca.junctionbox.cljbuck.build.rules.ClojureLib;
-import ca.junctionbox.cljbuck.build.rules.ClojureTest;
+import ca.junctionbox.cljbuck.build.rules.*;
 import ca.junctionbox.cljbuck.build.rules.Jar;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.GraphBuilder;
@@ -57,6 +54,22 @@ public class Rules {
         this("", emptyList(), emptyList(), "", "", emptyList(), null, "", cp);
     }
 
+    public static Rules jar(final String name) {
+        return new Rules(name, Jar);
+    }
+
+    public static Rules cljLib(final String name) {
+        return new Rules(name, CljLib);
+    }
+
+    public static Rules cljBinary(final String name) {
+        return new Rules(name, CljBinary);
+    }
+
+    public static Rules cljTest(final String name) {
+        return new Rules(name, CljTest);
+    }
+
     public BuildGraph graph(Rules... targets) throws Exception {
         final ImmutableSortedMap.Builder<String, BuildRule> builder = new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
         final MutableGraph<BuildRule> graph = GraphBuilder.directed().allowsSelfLoops(false).build();
@@ -80,22 +93,6 @@ public class Rules {
 
         final BuildGraph buildGraph = new BuildGraph(ImmutableGraph.copyOf(graph), nodeMap);
         return buildGraph;
-    }
-
-    public static Rules jar(final String name) {
-        return new Rules(name, Jar);
-    }
-
-    public static Rules cljLib(final String name) {
-        return new Rules(name, CljLib);
-    }
-
-    public static Rules cljBinary(final String name) {
-        return new Rules(name, CljBinary);
-    }
-
-    public static Rules cljTest(final String name) {
-        return new Rules(name, CljTest);
     }
 
     public Rules visibility(final String... visiblity) {

@@ -8,9 +8,7 @@ import org.junit.Test;
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemError;
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemKeyword;
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 public class LexKeywordTest {
 

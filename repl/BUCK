@@ -3,19 +3,28 @@
 java_library(
     name = 'lib',
     srcs = glob(['src/**/*.java']),
-    deps = ['//lib:clojure',],
-    visibility = ['PUBLIC'],
+    deps = [
+        '//lib:clojure',
+    ],
+    visibility = [
+        'PUBLIC'
+    ],
 )
 
 java_test(
     name = 'test',
     srcs = glob(['test/**/*.java']),
-    deps = ['//lib:junit', ':lib',],
+    deps = [
+        ':lib',
+        '//lib:junit',
+    ],
 )
 
 java_binary(
     name = 'main',
     main_class = 'ca.junctionbox.cljbuck.repl.Main',
-    deps = [':lib'],
+    deps = [
+        ':lib'
+    ],
 )
 

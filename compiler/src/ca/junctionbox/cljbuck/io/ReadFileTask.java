@@ -32,7 +32,7 @@ public class ReadFileTask implements Runnable {
         final long start = System.currentTimeMillis();
         long working = 0;
         try {
-            for (;;) {
+            for (; ; ) {
                 final Object o = in.read();
                 long workStart = System.currentTimeMillis();
                 if (o instanceof Closer) {

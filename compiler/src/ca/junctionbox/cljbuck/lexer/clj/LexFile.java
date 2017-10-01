@@ -6,7 +6,8 @@ import ca.junctionbox.cljbuck.lexer.Symbols;
 
 import java.util.EmptyStackException;
 
-import static ca.junctionbox.cljbuck.lexer.ItemType.*;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemEOF;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftParen;
 import static ca.junctionbox.cljbuck.lexer.Lexable.EOF;
 
 public class LexFile implements StateFunc {

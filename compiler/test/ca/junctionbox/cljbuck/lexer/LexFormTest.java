@@ -5,10 +5,9 @@ import ca.junctionbox.cljbuck.lexer.clj.*;
 import org.junit.Test;
 
 import static ca.junctionbox.cljbuck.lexer.ItemType.*;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class LexFormTest {
     public String sn(final Class<?> c) {

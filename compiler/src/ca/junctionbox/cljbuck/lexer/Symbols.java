@@ -1,7 +1,7 @@
 package ca.junctionbox.cljbuck.lexer;
 
 public class Symbols {
-    public static final String ALPHA =  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    public static final String ALPHA = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public static final String OCTAL = "01234567";
     public static final String NUMERIC = "012345678";
     public static final String SYMBOLIC = "abcdefghijklmnopqrstuvwxyz-." + NUMERIC + "ABCDEFGHIJKLMNOPQRSTUVWXYZ*+!/_?:=@><\\%&";

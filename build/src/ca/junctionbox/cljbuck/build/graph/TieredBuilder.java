@@ -1,6 +1,5 @@
 package ca.junctionbox.cljbuck.build.graph;
 
-import ca.junctionbox.cljbuck.build.graph.Walken;
 import ca.junctionbox.cljbuck.build.rules.BuildRule;
 
 import java.util.ArrayList;

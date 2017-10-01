@@ -4,8 +4,8 @@ import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
 import ca.junctionbox.cljbuck.io.FindFilesTask;
 import ca.junctionbox.cljbuck.io.GlobsTask;
 import ca.junctionbox.cljbuck.io.ReadFileTask;
-import ca.junctionbox.cljbuck.lexer.clj.CljLex;
 import ca.junctionbox.cljbuck.lexer.LexerTask;
+import ca.junctionbox.cljbuck.lexer.clj.CljLex;
 import ca.junctionbox.cljbuck.source.SourceCache;
 import ca.junctionbox.cljbuck.syntax.SyntaxTask;
 
@@ -53,7 +53,7 @@ public class Main {
         final ReadWriterQueue pathCh = new ReadWriterQueue();
         final ReadWriterQueue cacheCh = new ReadWriterQueue();
         final ReadWriterQueue tokenCh = new ReadWriterQueue();
-        
+
 
         final SourceCache cache = SourceCache.create(logger);
         final CljLex cljLex = new CljLex();
@@ -68,7 +68,7 @@ public class Main {
         allTasks[1] = Executors.callable(new FindFilesTask(logger, globCh, pathCh, numReadFileTasks));
 
         for (int i = 2; i < numReadFileTasks + 2; i++) {
-            allTasks[i] = Executors.callable(new ReadFileTask(cache, logger, pathCh, cacheCh, numLexerTasks/numReadFileTasks));
+            allTasks[i] = Executors.callable(new ReadFileTask(cache, logger, pathCh, cacheCh, numLexerTasks / numReadFileTasks));
         }
         for (int i = 2 + numReadFileTasks; i < numLexerTasks + numReadFileTasks + 2; i++) {
             allTasks[i] = Executors.callable(new LexerTask(cache, logger, cljLex, cacheCh, tokenCh));
@@ -107,13 +107,13 @@ public class Main {
 
             long count = gc.getCollectionCount();
 
-            if(count >= 0) {
+            if (count >= 0) {
                 totalGarbageCollections += count;
             }
 
             long time = gc.getCollectionTime();
 
-            if(time >= 0) {
+            if (time >= 0) {
                 garbageCollectionTime += time;
             }
         }

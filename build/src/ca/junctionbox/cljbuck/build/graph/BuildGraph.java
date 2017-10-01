@@ -2,6 +2,7 @@ package ca.junctionbox.cljbuck.build.graph;
 
 import ca.junctionbox.cljbuck.build.NotFoundException;
 import ca.junctionbox.cljbuck.build.rules.BuildRule;
+import ca.junctionbox.cljbuck.build.rules.ClojureBinary;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.ImmutableGraph;
 
@@ -77,7 +78,7 @@ public class BuildGraph {
         buildRules.add(startRule);
         christopher.step(startRule, depth);
 
-        while(!buildRules.isEmpty()) {
+        while (!buildRules.isEmpty()) {
             final BuildRule parent = buildRules.remove();
             depth++;
             final Set<BuildRule> children = graph.predecessors(parent);
@@ -103,5 +104,13 @@ public class BuildGraph {
 
         return child;
     }
-}
 
+    public String mainFor(final String nodeName) {
+        final ClojureBinary clojureBinary = (ClojureBinary) map.get(nodeName);
+        if (null == clojureBinary) {
+            return "";
+        }
+
+        return clojureBinary.getMain();
+    }
+}

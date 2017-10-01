@@ -9,11 +9,60 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+enum SyntaxType {
+    CljFile,
+
+    // Collections
+    List,   // ()
+    Map,    // {}
+    Set,    // #{}
+    Vector, // []
+
+    Symbol,
+
+    // LITERALS
+
+    Bool,
+    Nil,
+
+    // Numbers
+    Long,
+    BigInt,
+    Ratio,
+    Double,
+    BigDecimal,
+
+    // Stringy
+    Str,                // "string"
+    Char,               // \a
+    Keyword,            // :hello/world
+
+    // MACROS
+
+    Comment,            // ;
+    Quote,              // '
+    Backslash,          // \
+    Deref,              // @
+    Metadata,           // ^
+    Backquote,          // `
+    Unquote,            // ~
+    UnquoteSplicing,    // ~@
+
+    // DISPATCHES #
+    // Set                         #{}
+    Regex,                      // #""
+    AnonFn,                     // #()
+    Tagged,                     // #symbol
+    // ReaderConditionals
+    ReaderConditional,          // #?
+    ReaderConditionalSplicing,  // #?@
+
+}
+
 public class SyntaxTask implements Runnable {
+    final List<Item> items = new ArrayList<>();
     private final Logger logger;
     private final Reader in;
-
-    final List<Item> items = new ArrayList<>();
     private int numLexerTasks;
 
     public SyntaxTask(final Logger logger, int numLexerTasks, final Reader in) {
@@ -26,7 +75,7 @@ public class SyntaxTask implements Runnable {
     public void run() {
         logger.info("started");
         LinkedList<Item> brackets = new LinkedList<>();
-        for (;;) {
+        for (; ; ) {
             final Object o = in.read();
             if (o instanceof Closer) {
                 numLexerTasks--;
@@ -78,54 +127,4 @@ class SyntaxNode {
     public String getValue() {
         return value;
     }
-}
-
-enum SyntaxType {
-    CljFile,
-
-    // Collections
-    List,   // ()
-    Map,    // {}
-    Set,    // #{}
-    Vector, // []
-
-    Symbol,
-
-    // LITERALS
-
-    Bool,
-    Nil,
-
-    // Numbers
-    Long,
-    BigInt,
-    Ratio,
-    Double,
-    BigDecimal,
-
-    // Stringy
-    Str,                // "string"
-    Char,               // \a
-    Keyword,            // :hello/world
-
-    // MACROS
-
-    Comment,            // ;
-    Quote,              // '
-    Backslash,          // \
-    Deref,              // @
-    Metadata,           // ^
-    Backquote,          // `
-    Unquote,            // ~
-    UnquoteSplicing,    // ~@
-
-    // DISPATCHES #
-    // Set                         #{}
-    Regex,                      // #""
-    AnonFn,                     // #()
-    Tagged,                     // #symbol
-    // ReaderConditionals
-    ReaderConditional,          // #?
-    ReaderConditionalSplicing,  // #?@
-
 }

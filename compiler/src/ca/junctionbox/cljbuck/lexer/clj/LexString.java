@@ -16,12 +16,12 @@ public class LexString implements StateFunc {
 
     public StateFunc func(final Lexable l) {
         l.next();
-        for (;;) {
+        for (; ; ) {
             char ch = l.next();
             if ('\\' == ch && l.accept("\"")) {
-               continue;
+                continue;
             } else if ('\\' == ch && l.accept("\\")) {
-               continue;
+                continue;
             }
 
             if ('\"' == ch) break;

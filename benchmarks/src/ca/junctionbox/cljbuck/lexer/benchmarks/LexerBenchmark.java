@@ -1,16 +1,5 @@
 package ca.junctionbox.cljbuck.lexer.benchmarks;
 
-import ca.junctionbox.cljbuck.lexer.Item;
-import ca.junctionbox.cljbuck.lexer.Lexable;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
-
-import java.util.LinkedList;
-import java.util.Queue;
-
 public class LexerBenchmark {
     /*
     @Benchmark

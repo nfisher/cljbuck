@@ -5,15 +5,21 @@ import ca.junctionbox.cljbuck.build.graph.BuildGraph;
 import com.google.common.collect.ImmutableSortedMap;
 
 import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.SortedMap;
+import java.util.logging.Logger;
 
 import static ca.junctionbox.cljbuck.build.Rules.*;
 
 public class Main {
-    private static final int USAGE = 1;
     public static final int ARG1 = 0;
+    private static final int USAGE = 1;
 
     public static void main(final String[] args) {
+        final Logger logger = Logger.getLogger("ca.junctionbox.cljbuck.build");
+
         try {
             final ClassPath cp = new ClassPath();
             final BuildGraph buildGraph = new Rules(cp).graph(

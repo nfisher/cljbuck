@@ -8,10 +8,10 @@ public class Item {
     final String filename;
 
     public Item(final ItemType type, final int pos, final String val, final int line, final String filename) {
-       this.type = type;
-       this.pos = pos;
-       this.val = val;
-       this.line = line;
-       this.filename = filename;
-   }
+        this.type = type;
+        this.pos = pos;
+        this.val = val;
+        this.line = line;
+        this.filename = filename;
+    }
 }
