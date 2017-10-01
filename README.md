@@ -1,5 +1,7 @@
 # cljbuck
 
+[![Build Status](https://travis-ci.org/nfisher/cljbuck.svg?branch=master)](https://travis-ci.org/nfisher/cljbuck)
+
 Experiment in speeding up Clojure build times from the ground up.
 
 ## Sample Project Structure
