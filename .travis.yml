@@ -2,7 +2,8 @@ dist: trusty
 language: java
 
 before_install:
-  - apt-get install -y ant
+  - sudo apt-get update
+  - sudo apt-get install -y ant
   # Install Buck
   - test -d $HOME/buck || git clone --branch tags/v2017.09.04.02 --depth 1 https://github.com/facebook/buck.git $HOME/buck
   - cd $HOME/buck
