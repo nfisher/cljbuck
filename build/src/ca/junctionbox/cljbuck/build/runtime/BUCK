@@ -1,0 +1,5 @@
+java_library(
+    name = 'runtime',
+    srcs = glob(['*.java']),
+    visibility = ["PUBLIC"],
+)

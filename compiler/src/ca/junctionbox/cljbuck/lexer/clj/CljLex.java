@@ -1,17 +1,22 @@
 package ca.junctionbox.cljbuck.lexer.clj;
 
+import ca.junctionbox.cljbuck.lexer.Lexeme;
 import ca.junctionbox.cljbuck.lexer.StateFunc;
 
-public class CljLex {
+public class CljLex implements Lexeme {
+    public CljLex() {
+
+    }
+
     public LexComment comment(final StateFunc parentFn) {
         return new LexComment(parentFn);
     }
 
-    public LexFile file() {
-        return new LexFile(this);
+    public StateFunc file() {
+        return (StateFunc) new LexFile(this);
     }
 
-    public LexForm form(final LexFile lexFile) {
+    public LexForm form(final StateFunc lexFile) {
         return new LexForm(lexFile, this);
     }
 
@@ -31,3 +36,4 @@ public class CljLex {
         return new LexSymbol(lexForm);
     }
 }
+

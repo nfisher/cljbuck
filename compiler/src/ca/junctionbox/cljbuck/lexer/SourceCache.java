@@ -1,6 +1,4 @@
-package ca.junctionbox.cljbuck.source;
-
-import ca.junctionbox.cljbuck.lexer.SourceLexer;
+package ca.junctionbox.cljbuck.lexer;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

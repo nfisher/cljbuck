@@ -11,14 +11,14 @@ import static ca.junctionbox.cljbuck.lexer.ItemType.*;
 
 public class LexForm implements StateFunc {
     private final LexComment lexComment;
-    private final LexFile lexFile;
+    private final StateFunc lexFile;
     private final LexForm lexForm;
     private final LexKeyword lexKeyword;
     private final LexSymbol lexSymbol;
     private final LexNumeric lexNumeric;
     private final LexString lexString;
 
-    public LexForm(final LexFile lexFile, final CljLex cljLex) {
+    public LexForm(final StateFunc lexFile, final CljLex cljLex) {
         this.lexComment = cljLex.comment(this);
         this.lexFile = lexFile;
         this.lexForm = this;

@@ -1,9 +1,10 @@
-package ca.junctionbox.cljbuck.lexer;
+package ca.junctionbox.cljbuck.lexer.clj;
 
 import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
-import ca.junctionbox.cljbuck.lexer.clj.CljLex;
-import ca.junctionbox.cljbuck.lexer.clj.LexComment;
-import ca.junctionbox.cljbuck.lexer.clj.LexForm;
+import ca.junctionbox.cljbuck.lexer.Item;
+import ca.junctionbox.cljbuck.lexer.Lexable;
+import ca.junctionbox.cljbuck.lexer.Lexeme;
+import ca.junctionbox.cljbuck.lexer.StateFunc;
 import org.junit.Test;
 
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemError;
@@ -16,8 +17,9 @@ public class LexFileTest {
     @Test
     public void Test_left_list_form() {
         final ReadWriterQueue q = new ReadWriterQueue();
-        final Lexable lexable = Lexable.create("test.clj", "(", q);
-        final StateFunc fn = new CljLex().file().func(lexable);
+        final Lexeme lexeme = new CljLex();
+        final Lexable lexable = Lexable.create("test.clj","(",lexeme, q);
+        final StateFunc fn = lexeme.file().func(lexable);
 
         Item item = (Item) q.read();
         assertThat(fn, instanceOf(LexForm.class));
@@ -27,9 +29,10 @@ public class LexFileTest {
     @Test
     public void Test_unmatched_right_list_form() {
         final ReadWriterQueue q = new ReadWriterQueue();
-        final Lexable lexable = Lexable.create("test.clj", ")", q);
+        final Lexeme lexeme = new CljLex();
+        final Lexable lexable = Lexable.create("test.clj", ")", lexeme, q);
         assertTrue("Not Empty", lexable.empty());
-        final StateFunc fn = new CljLex().file().func(lexable);
+        final StateFunc fn = lexeme.file().func(lexable);
 
         Item item = (Item) q.read();
         assertThat(fn, is(nullValue()));
@@ -39,8 +42,9 @@ public class LexFileTest {
     @Test
     public void Test_whitespace_collapse() {
         final ReadWriterQueue q = new ReadWriterQueue();
-        final Lexable lexable = Lexable.create("test.clj", " \n\t(", q);
-        final StateFunc fn = new CljLex().file().func(lexable);
+        final Lexeme lexeme = new CljLex();
+        final Lexable lexable = Lexable.create("test.clj", " \n\t(", lexeme, q);
+        final StateFunc fn = lexeme.file().func(lexable);
 
         Item item = (Item) q.read();
         assertThat(fn, instanceOf(LexForm.class));
@@ -50,8 +54,9 @@ public class LexFileTest {
     @Test
     public void Test_comment() {
         final ReadWriterQueue q = new ReadWriterQueue();
-        final Lexable lexable = Lexable.create("test.clj", " \n\t; ", q);
-        final StateFunc fn = new CljLex().file().func(lexable);
+        final Lexeme lexeme = new CljLex();
+        final Lexable lexable = Lexable.create("test.clj", " \n\t; ", lexeme, q);
+        final StateFunc fn = lexeme.file().func(lexable);
 
         assertThat(fn, instanceOf(LexComment.class));
         assertThat(q.size(), is(0));

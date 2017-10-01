@@ -1,0 +1,7 @@
+# channel:
+
+java_library(
+    name = 'channel',
+    srcs = glob(['*.java']),
+    visibility = ["PUBLIC"],
+)

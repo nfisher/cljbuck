@@ -6,7 +6,7 @@ import ca.junctionbox.cljbuck.io.GlobsTask;
 import ca.junctionbox.cljbuck.io.ReadFileTask;
 import ca.junctionbox.cljbuck.lexer.LexerTask;
 import ca.junctionbox.cljbuck.lexer.clj.CljLex;
-import ca.junctionbox.cljbuck.source.SourceCache;
+import ca.junctionbox.cljbuck.lexer.SourceCache;
 import ca.junctionbox.cljbuck.syntax.SyntaxTask;
 
 import java.io.ByteArrayInputStream;

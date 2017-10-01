@@ -1,0 +1,11 @@
+# //compiler:
+
+java_library(
+    name = 'syntax',
+    srcs = glob(['*.java']),
+    deps = [
+        '//compiler/src/ca/junctionbox/cljbuck/channel:channel',
+        '//compiler/src/ca/junctionbox/cljbuck/lexer:lexer',
+    ],
+    visibility = ["PUBLIC"],
+)

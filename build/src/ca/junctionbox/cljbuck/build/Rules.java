@@ -1,6 +1,13 @@
-package ca.junctionbox.cljbuck.build.rules;
+package ca.junctionbox.cljbuck.build;
 
 import ca.junctionbox.cljbuck.build.graph.BuildGraph;
+import ca.junctionbox.cljbuck.build.rules.BuildRule;
+import ca.junctionbox.cljbuck.build.rules.ClojureBinary;
+import ca.junctionbox.cljbuck.build.rules.ClojureLib;
+import ca.junctionbox.cljbuck.build.rules.ClojureTest;
+import ca.junctionbox.cljbuck.build.rules.Jar;
+import ca.junctionbox.cljbuck.build.rules.Type;
+import ca.junctionbox.cljbuck.build.runtime.ClassPath;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.ImmutableGraph;
@@ -24,6 +31,7 @@ public class Rules {
     private final Type type;
     private final List<String> visibility;
     private final ClassPath cp;
+    private final Workspace workspace;
 
     private Rules(final String name,
                   final List<String> deps,
@@ -33,7 +41,7 @@ public class Rules {
                   final List<String> visibility,
                   final Type type,
                   final String ns,
-                  final ClassPath cp) {
+                  final ClassPath cp, final Workspace workspace) {
         this.name = name;
         this.deps = deps;
         this.srcs = srcs;
@@ -43,14 +51,15 @@ public class Rules {
         this.type = type;
         this.ns = ns;
         this.cp = cp;
+        this.workspace = workspace;
     }
 
     private Rules(final String name, final Type type) {
-        this(name, emptyList(), emptyList(), "", "", emptyList(), type, "", null);
+        this(name, emptyList(), emptyList(), "", "", emptyList(), type, "", null, null);
     }
 
-    public Rules(final ClassPath cp) {
-        this("", emptyList(), emptyList(), "", "", emptyList(), null, "", cp);
+    public Rules(final Workspace workspace, final ClassPath cp) {
+        this("", emptyList(), emptyList(), "", "", emptyList(), null, "", cp, workspace);
     }
 
     public static Rules jar(final String name) {
@@ -95,27 +104,27 @@ public class Rules {
     }
 
     public Rules visibility(final String... visiblity) {
-        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp);
+        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public Rules srcs(final String... srcs) {
-        return new Rules(name, deps, asList(srcs), binaryJar, main, visibility, type, ns, cp);
+        return new Rules(name, deps, asList(srcs), binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public Rules main(final String main) {
-        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp);
+        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public Rules deps(final String... deps) {
-        return new Rules(name, asList(deps), srcs, binaryJar, main, visibility, type, ns, cp);
+        return new Rules(name, asList(deps), srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public Rules binaryJar(final String binaryJar) {
-        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp);
+        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public Rules ns(final String ns) {
-        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp);
+        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public BuildRule build(final ClassPath cp) throws Exception {

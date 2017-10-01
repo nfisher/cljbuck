@@ -1,0 +1,13 @@
+# //build:
+
+java_library(
+    name = 'commands',
+    srcs = glob(['*.java']),
+    deps = [
+        '//lib:guava',
+        '//build/src/ca/junctionbox/cljbuck/build/graph:graph',
+        '//build/src/ca/junctionbox/cljbuck/build/rules:rules',
+        '//build/src/ca/junctionbox/cljbuck/build/runtime:runtime',
+    ],
+    visibility = ["PUBLIC"],
+)

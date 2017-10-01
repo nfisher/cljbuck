@@ -1,31 +1,10 @@
 # //compiler:
 
-java_library(
-    name = 'lib',
-    srcs = glob(['src/**/*.java']),
-    deps = [
-        '//lib:guava',
-    ],
-    visibility = [
-        'PUBLIC'
-    ],
-)
-
-java_test(
-    name = 'test',
-    srcs = glob(['test/**/*.java',]),
-    deps = [
-        ':lib',
-        '//lib:hamcrest-core',
-        '//lib:junit',
-    ],
-)
-
 java_binary(
-    name = 'main',
+    name = 'compiler',
     main_class = 'ca.junctionbox.cljbuck.Main',
     deps = [
-        ':lib'
+        '//compiler/src/ca/junctionbox/cljbuck:lib',
     ],
 )
 

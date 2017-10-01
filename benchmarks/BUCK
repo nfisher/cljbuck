@@ -2,7 +2,7 @@ java_library(
     name = 'lib',
     srcs = glob(['src/**/*.java']),
     deps = [
-        '//compiler:lib',
+        '//compiler/src/ca/junctionbox/cljbuck:lib',
         '//lib:jmh-core',
     ],
     provided_deps = [

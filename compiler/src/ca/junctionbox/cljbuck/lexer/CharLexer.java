@@ -1,7 +1,6 @@
 package ca.junctionbox.cljbuck.lexer;
 
 import ca.junctionbox.cljbuck.channel.Writer;
-import ca.junctionbox.cljbuck.lexer.clj.CljLex;
 
 import java.util.Stack;
 
@@ -11,12 +10,12 @@ public class CharLexer implements Lexable {
     private final char[] contents;
     private final Writer out;
     private final Stack<Character> brackets;
-    private final CljLex cljLex;
+    private final Lexeme cljLex;
     private int start;   // start position of this item
     private int pos;     // current position in the contents
     private int line;    // 1+number of newlines seen
 
-    public CharLexer(final String path, final String contents, final Writer out, final CljLex cljLex) {
+    public CharLexer(final String path, final String contents, final Writer out, final Lexeme cljLex) {
         this.filename = path;
         this.contents = contents.toCharArray();
         this.out = out;

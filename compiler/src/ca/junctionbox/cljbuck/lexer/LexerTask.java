@@ -3,8 +3,6 @@ package ca.junctionbox.cljbuck.lexer;
 import ca.junctionbox.cljbuck.channel.Closer;
 import ca.junctionbox.cljbuck.channel.Reader;
 import ca.junctionbox.cljbuck.channel.Writer;
-import ca.junctionbox.cljbuck.lexer.clj.CljLex;
-import ca.junctionbox.cljbuck.source.SourceCache;
 
 import java.nio.file.Path;
 import java.util.logging.Logger;
@@ -15,12 +13,12 @@ import static java.util.logging.Level.SEVERE;
 public class LexerTask implements SourceLexer, Runnable {
     private final SourceCache cache;
     private final Logger logger;
-    private final CljLex cljLex;
+    private final Lexeme cljLex;
 
     private final Reader r;
     private final Writer w;
 
-    public LexerTask(final SourceCache cache, final Logger logger, final CljLex cljLex, final Reader r, final Writer w) {
+    public LexerTask(final SourceCache cache, final Logger logger, final Lexeme cljLex, final Reader r, final Writer w) {
         this.cache = cache;
         this.logger = logger;
         this.cljLex = cljLex;

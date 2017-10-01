@@ -1,0 +1,17 @@
+# cljbuck:
+
+java_library(
+    name = 'lib',
+    srcs = glob(['*.java']),
+    deps = [
+        '//lib:guava',
+        '//compiler/src/ca/junctionbox/cljbuck/channel:channel',
+        '//compiler/src/ca/junctionbox/cljbuck/io:io',
+        '//compiler/src/ca/junctionbox/cljbuck/lexer:lexer',
+        '//compiler/src/ca/junctionbox/cljbuck/syntax:syntax',
+        '//compiler/src/ca/junctionbox/cljbuck/lexer/clj:clj',
+    ],
+    visibility = [
+        'PUBLIC'
+    ],
+)

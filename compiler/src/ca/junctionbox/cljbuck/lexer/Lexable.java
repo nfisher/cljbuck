@@ -1,17 +1,12 @@
 package ca.junctionbox.cljbuck.lexer;
 
 import ca.junctionbox.cljbuck.channel.Writer;
-import ca.junctionbox.cljbuck.lexer.clj.CljLex;
 
 public interface Lexable {
     char EOF = 3; // ASCII - ETX/End of Text
 
-    static Lexable create(final String path, final String contents, final CljLex cljLex, final Writer out) {
-        return new CharLexer(path, contents, out, cljLex);
-    }
-
-    static Lexable create(final String path, final String contents, final Writer out) {
-        return new CharLexer(path, contents, out, new CljLex());
+    static Lexable create(final String path, final String contents, final Lexeme lexeme, final Writer out) {
+        return new CharLexer(path, contents, out, lexeme);
     }
 
     Character pop();

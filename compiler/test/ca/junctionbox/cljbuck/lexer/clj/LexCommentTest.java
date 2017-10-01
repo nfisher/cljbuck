@@ -1,8 +1,8 @@
-package ca.junctionbox.cljbuck.lexer;
+package ca.junctionbox.cljbuck.lexer.clj;
 
 import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
-import ca.junctionbox.cljbuck.lexer.clj.CljLex;
-import ca.junctionbox.cljbuck.lexer.clj.LexFile;
+import ca.junctionbox.cljbuck.lexer.Lexable;
+import ca.junctionbox.cljbuck.lexer.StateFunc;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.instanceOf;

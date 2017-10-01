@@ -1,0 +1,11 @@
+# //build:
+
+java_library(
+    name = 'graph',
+    srcs = glob(['*.java']),
+    deps = [
+        '//lib:guava',
+        '//build/src/ca/junctionbox/cljbuck/build/rules:rules',
+    ],
+    visibility = ["PUBLIC"],
+)

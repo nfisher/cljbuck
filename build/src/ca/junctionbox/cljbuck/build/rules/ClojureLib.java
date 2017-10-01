@@ -1,5 +1,7 @@
 package ca.junctionbox.cljbuck.build.rules;
 
+import ca.junctionbox.cljbuck.build.runtime.ClassPath;
+
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -15,7 +17,7 @@ public class ClojureLib extends BuildRule {
         super(name, deps, visibility, cp);
         this.srcs = srcs;
         this.ns = ns;
-        this.targetDir = new File("target/" + getDirectory());
+        this.targetDir = new File("clj-out");
     }
 
     @Override

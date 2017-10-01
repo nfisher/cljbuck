@@ -1,0 +1,10 @@
+# //compiler:
+
+java_library(
+    name = 'lexer',
+    srcs = glob(['*.java']),
+    deps = [
+        '//compiler/src/ca/junctionbox/cljbuck/channel:channel',
+    ],
+    visibility = ["PUBLIC"],
+)

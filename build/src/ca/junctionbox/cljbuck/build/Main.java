@@ -1,9 +1,13 @@
 package ca.junctionbox.cljbuck.build;
 
-import ca.junctionbox.cljbuck.build.commands.*;
+import ca.junctionbox.cljbuck.build.commands.BuildCommand;
+import ca.junctionbox.cljbuck.build.commands.Command;
+import ca.junctionbox.cljbuck.build.commands.PrintDepsCommand;
+import ca.junctionbox.cljbuck.build.commands.PrintTargetsCommand;
+import ca.junctionbox.cljbuck.build.commands.ReplCommand;
+import ca.junctionbox.cljbuck.build.commands.RunCommand;
 import ca.junctionbox.cljbuck.build.graph.BuildGraph;
-import ca.junctionbox.cljbuck.build.rules.ClassPath;
-import ca.junctionbox.cljbuck.build.rules.Rules;
+import ca.junctionbox.cljbuck.build.runtime.ClassPath;
 import com.google.common.collect.ImmutableSortedMap;
 
 import java.io.PrintStream;
@@ -13,7 +17,7 @@ import java.util.Comparator;
 import java.util.SortedMap;
 import java.util.logging.Logger;
 
-import static ca.junctionbox.cljbuck.build.rules.Rules.*;
+import static ca.junctionbox.cljbuck.build.Rules.*;
 
 public class Main {
     public static final int ARG1 = 0;
@@ -22,19 +26,22 @@ public class Main {
     public static void main(final String[] args) {
         final Logger logger = Logger.getLogger("ca.junctionbox.cljbuck.build");
 
+        final Workspace workspace = new Workspace().findRoot();
+
         try {
             final ClassPath cp = new ClassPath();
-            final BuildGraph buildGraph = new Rules(cp).graph(
-                    cljLib("//jbx:lib")
+            final BuildGraph buildGraph = new Rules(workspace, cp).graph(
+                    cljLib("//jbx:core")
                             .srcs("src/clj/", "src/cljc/")
                             .ns("jbx.core")
                             .deps("//lib:clojure1.9"),
 
                     cljBinary("//jbx:main")
                             .main("jbx.core")
-                            .deps("//jbx:lib"),
+                            .deps("//jbx:core"),
 
                     cljTest("//jbx:test")
+                            .deps("//jbx:core")
                             .srcs("test/clj/**/*.clj"),
 
                     jar("//lib:clojure1.9")

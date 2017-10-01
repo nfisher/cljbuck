@@ -1,18 +1,9 @@
 # //build:
 
-java_library(
-    name = 'lib',
-    srcs = glob(['src/**/*.java']),
-    deps = [
-        '//lib:guava',
-    ],
-)
-
 java_test(
     name = 'test',
     srcs = glob(['test/**/*.java']),
     deps = [
-        ':lib',
         '//lib:hamcrest-core',
         '//lib:junit',
     ],
@@ -22,7 +13,15 @@ java_binary(
     name = 'cljbuck',
     main_class = 'ca.junctionbox.cljbuck.build.Main',
     deps = [
-        ':lib'
+        "//build/src/ca/junctionbox/cljbuck/build:build",
+    ],
+    blacklist = [
+        'com/google/common/net/',
+        'com/google/common/math/',
+        'com/google/common/io/',
+        'com/google/common/eventbus/',
+        'com/google/common/escape/',
+        'com/google/common/cache/',
     ],
 )
 
