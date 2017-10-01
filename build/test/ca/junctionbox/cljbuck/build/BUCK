@@ -1,0 +1,10 @@
+# //build:
+
+java_test(
+    name = 'test',
+    srcs = glob(['*.java']),
+    deps = [
+        '//lib:hamcrest-core',
+        '//lib:junit',
+    ],
+)

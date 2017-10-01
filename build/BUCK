@@ -1,14 +1,5 @@
 # //build:
 
-java_test(
-    name = 'test',
-    srcs = glob(['test/**/*.java']),
-    deps = [
-        '//lib:hamcrest-core',
-        '//lib:junit',
-    ],
-)
-
 java_binary(
     name = 'cljbuck',
     main_class = 'ca.junctionbox.cljbuck.build.Main',

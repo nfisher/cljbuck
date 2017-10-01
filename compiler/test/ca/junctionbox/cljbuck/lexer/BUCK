@@ -1,0 +1,13 @@
+# clj:
+
+java_test(
+    name = 'test',
+    srcs = glob(['*.java',]),
+    deps = [
+        '//compiler/src/ca/junctionbox/cljbuck/channel:channel',
+        '//compiler/src/ca/junctionbox/cljbuck/lexer/clj:clj',
+        '//compiler/src/ca/junctionbox/cljbuck/lexer:lexer',
+        '//lib:hamcrest-core',
+        '//lib:junit',
+    ],
+)

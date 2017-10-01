@@ -1,0 +1,12 @@
+# //repl:
+
+java_library(
+    name = 'repl',
+    srcs = glob(['*.java']),
+    deps = [
+        '//lib:clojure',
+    ],
+    visibility = [
+        'PUBLIC'
+    ],
+)

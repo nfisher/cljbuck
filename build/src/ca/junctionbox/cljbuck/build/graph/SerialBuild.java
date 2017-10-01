@@ -18,13 +18,9 @@ public class SerialBuild implements Walken {
 
     public void build() {
         for (int i = rules.size() - 1; i >= 0; i--) {
-            rules.get(i).build();
-        }
-    }
-
-    public void prepare() {
-        for (int i = rules.size() - 1; i >= 0; i--) {
-            rules.get(i).prepare();
+            final BuildRule rule = rules.get(i);
+            rule.prepare();
+            rule.build();
         }
     }
 }

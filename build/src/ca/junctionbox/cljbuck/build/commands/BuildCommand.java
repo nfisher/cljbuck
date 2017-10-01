@@ -17,8 +17,6 @@ public class BuildCommand extends Command {
 
         getBuildGraph().breadthFirstFrom(target, serialBuild);
 
-        serialBuild.prepare();
-
         serialBuild.build();
 
         return 0;

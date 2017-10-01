@@ -4,7 +4,11 @@ import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
 import ca.junctionbox.cljbuck.lexer.clj.CljLex;
 import org.junit.Test;
 
-import static ca.junctionbox.cljbuck.lexer.ItemType.*;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemEOF;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftBracket;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftParen;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemRightBracket;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemRightParen;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
