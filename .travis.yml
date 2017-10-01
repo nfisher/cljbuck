@@ -2,13 +2,13 @@ dist: trusty
 language: java
 
 before_install:
-  - sudo apt-get update
-  - sudo apt-get install -y ant
+  - test -f $HOME/.buck/build/successful-build || sudo apt-get update
+  - test -f $HOME/.buck/build/successful-build || sudo apt-get install -y ant
   # Install Buck
-  - test -f $HOME/.buck/bin/buck || git clone --branch v2017.09.04.02 --depth 1 https://github.com/facebook/buck.git $HOME/.buck
+  - test -f $HOME/.buck/build/successful-build || git clone --branch v2017.09.04.02 --depth 1 https://github.com/facebook/buck.git $HOME/.buck
   - ls $HOME/.buck
-  - cd $HOME/.buck; ant; cd - # build then jump back to prev directory
-  - rm -rf $HOME/.buck/.git # don't bother caching the .git folder
+  - cd $HOME/.buck; test -f $HOME/.buck/build/successful-build || ant; cd - # build then jump back to project directory
+  - rm -rf $HOME/.buck/.git # don't bother caching the .git folder as it'll bloat the cache
   - $HOME/.buck/bin/buck --version
 
 script:
@@ -20,5 +20,5 @@ branches:
 
 cache:
   directories:
-    - $HOME/.buck/
-    - buck-out/cache # hopefully this speeds tings up a bit...
+    - $HOME/.buck/ # this prevents you from having to wait for buck to build every time
+    - buck-out/cache # this speeds tings up a bit by retaining the cache across builds
