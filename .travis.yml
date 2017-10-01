@@ -20,4 +20,5 @@ branches:
 
 cache:
   directories:
-    #- $HOME/buck/
+    - $HOME/.buck/
+    - buck-out/cache # hopefully this speeds tings up a bit...
