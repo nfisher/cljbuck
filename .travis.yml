@@ -6,8 +6,7 @@ before_install:
   - sudo apt-get install -y ant
   # Install Buck
   - test -d $HOME/buck || git clone --branch v2017.09.04.02 --depth 1 https://github.com/facebook/buck.git $HOME/buck
-  - cd $HOME/buck
-  - ant
+  - cd $HOME/buck; ant
   - $HOME/buck/bin/buck --version
 
 script:
