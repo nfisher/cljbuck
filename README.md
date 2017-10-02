@@ -7,7 +7,7 @@ Experiment in speeding up Clojure build times from the ground up.
 ## Sample Project Structure
 
 - WORKSPACE - used to mark the root of the project.
-- BUILD - sprinkled where desired in a project to specify build targets.
+- CLJ - sprinkled where desired in a project to specify build targets.
 
 ### Simple Project Structure
 
