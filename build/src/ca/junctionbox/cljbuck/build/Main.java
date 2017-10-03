@@ -77,32 +77,32 @@ public class Main {
         try {
             final ClassPath cp = new ClassPath();
             final BuildGraph buildGraph = new Rules(workspace, cp).graph(
-                    cljLib("//jbx:core")
+                    cljLib().name("//jbx:core")
                             .srcs("src/clj/", "src/cljc/")
                             .ns("jbx.core")
                             .deps("//lib:clojure1.9"),
 
-                    cljBinary("//jbx:main")
+                    cljBinary().name("//jbx:main")
                             .main("jbx.core")
                             .deps("//jbx:core"),
 
-                    cljTest("//jbx:test")
+                    cljTest().name("//jbx:test")
                             .deps("//jbx:core")
                             .srcs("test/clj/**/*.clj"),
 
-                    jar("//lib:clojure1.9")
+                    jar().name("//lib:clojure1.9")
                             .binaryJar("clojure-1.9.0-beta1.jar")
                             .deps("//lib:core.specs.alpha", "//lib:spec.alpha")
                             .visibility("PUBLIC"),
 
-                    jar("//lib:clojure1.8")
+                    jar().name("//lib:clojure1.8")
                             .binaryJar("clojure-1.8.0.jar")
                             .visibility("PUBLIC"),
 
-                    jar("//lib:spec.alpha")
+                    jar().name("//lib:spec.alpha")
                             .binaryJar("spec.alpha-0.1.123.jar"),
 
-                    jar("//lib:core.specs.alpha")
+                    jar().name("//lib:core.specs.alpha")
                             .binaryJar("core.specs.alpha-0.1.24.jar")
             );
 

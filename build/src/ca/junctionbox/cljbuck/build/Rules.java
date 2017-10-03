@@ -13,6 +13,7 @@ import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.ImmutableGraph;
 import com.google.common.graph.MutableGraph;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -22,16 +23,16 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
 public class Rules {
-    private final String binaryJar;
-    private final List<String> deps;
-    private final String main;
-    private final String name;
-    private final String ns;
-    private final List<String> srcs;
-    private final Type type;
-    private final List<String> visibility;
-    private final ClassPath cp;
-    private final Workspace workspace;
+    final String binaryJar;
+    final List<String> deps;
+    final String main;
+    final String name;
+    final String ns;
+    final List<String> srcs;
+    final Type type;
+    final List<String> visibility;
+    final ClassPath cp;
+    final Workspace workspace;
 
     private Rules(final String name,
                   final List<String> deps,
@@ -54,28 +55,28 @@ public class Rules {
         this.workspace = workspace;
     }
 
-    private Rules(final String name, final Type type) {
-        this(name, emptyList(), emptyList(), "", "", emptyList(), type, "", null, null);
+    private Rules(final Type type) {
+        this("", emptyList(), emptyList(), "", "", emptyList(), type, "", null, null);
     }
 
     public Rules(final Workspace workspace, final ClassPath cp) {
         this("", emptyList(), emptyList(), "", "", emptyList(), null, "", cp, workspace);
     }
 
-    public static Rules jar(final String name) {
-        return new Rules(name, Jar);
+    public static Rules jar() {
+        return new Rules(Jar);
     }
 
-    public static Rules cljLib(final String name) {
-        return new Rules(name, CljLib);
+    public static Rules cljLib() {
+        return new Rules(CljLib);
     }
 
-    public static Rules cljBinary(final String name) {
-        return new Rules(name, CljBinary);
+    public static Rules cljBinary() {
+        return new Rules(CljBinary);
     }
 
-    public static Rules cljTest(final String name) {
-        return new Rules(name, CljTest);
+    public static Rules cljTest() {
+        return new Rules(CljTest);
     }
 
     public BuildGraph graph(Rules... targets) throws Exception {
@@ -103,6 +104,10 @@ public class Rules {
         return buildGraph;
     }
 
+    public Rules name(final String name) {
+        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+    }
+
     public Rules visibility(final String... visiblity) {
         return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
@@ -125,6 +130,15 @@ public class Rules {
 
     public Rules ns(final String ns) {
         return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+    }
+
+    public Rules appendDep(final String dep) {
+        final ArrayList<String> newDeps = new ArrayList<>();
+        for (String s : deps) {
+            newDeps.add(s);
+        }
+        newDeps.add(dep);
+        return new Rules(name, newDeps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public BuildRule build(final ClassPath cp) throws Exception {
