@@ -7,11 +7,12 @@ import ca.junctionbox.cljbuck.channel.Writer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
 import static ca.junctionbox.cljbuck.channel.Closer.close;
 
-public class FindFilesTask implements Runnable {
+public class FindFilesTask implements Runnable, Callable<Integer> {
     private final Logger logger;
     private final Reader in;
     private final Writer out;
@@ -50,5 +51,11 @@ public class FindFilesTask implements Runnable {
             final long finish = System.currentTimeMillis();
             logger.info("finished in " + (finish - start) + "ms");
         }
+    }
+
+    @Override
+    public Integer call() throws Exception {
+        run();
+        return 0;
     }
 }

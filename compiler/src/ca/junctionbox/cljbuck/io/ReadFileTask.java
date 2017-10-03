@@ -7,11 +7,12 @@ import ca.junctionbox.cljbuck.lexer.SourceCache;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
 import static ca.junctionbox.cljbuck.channel.Closer.close;
 
-public class ReadFileTask implements Runnable {
+public class ReadFileTask implements Runnable, Callable<Integer> {
     private final SourceCache cache;
     private final Logger logger;
     private final Reader in;
@@ -50,5 +51,11 @@ public class ReadFileTask implements Runnable {
         }
         final long finish = System.currentTimeMillis();
         logger.info("finished in " + (finish - start) + "ms, work " + working + "ms");
+    }
+
+    @Override
+    public Integer call() throws Exception {
+        run();
+        return 0;
     }
 }

@@ -7,6 +7,7 @@ import ca.junctionbox.cljbuck.lexer.Item;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
 enum SyntaxType {
@@ -59,7 +60,7 @@ enum SyntaxType {
 
 }
 
-public class SyntaxTask implements Runnable {
+public class SyntaxTask implements Runnable, Callable<Integer> {
     final List<Item> items = new ArrayList<>();
     private final Logger logger;
     private final Reader in;
@@ -92,6 +93,12 @@ public class SyntaxTask implements Runnable {
 
     public int size() {
         return items.size();
+    }
+
+    @Override
+    public Integer call() throws Exception {
+        run();
+        return 0;
     }
 }
 

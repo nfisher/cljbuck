@@ -2,11 +2,12 @@ package ca.junctionbox.cljbuck.io;
 
 import ca.junctionbox.cljbuck.channel.Writer;
 
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
 import static ca.junctionbox.cljbuck.channel.Closer.close;
 
-public class GlobsTask implements Runnable {
+public class GlobsTask implements Runnable, Callable<Integer> {
     private final String[] startPaths;
     private final Logger logger;
     private final Writer out;
@@ -24,7 +25,7 @@ public class GlobsTask implements Runnable {
         final long start = System.currentTimeMillis();
 
         for (String s : startPaths) {
-            out.write(Glob.create(clj, s));
+            out.write(Glob.create(s, clj));
         }
 
         close(out);
@@ -32,5 +33,11 @@ public class GlobsTask implements Runnable {
         final long finish = System.currentTimeMillis();
 
         logger.info("finished in " + (finish - start) + "ms");
+    }
+
+    @Override
+    public Integer call() throws Exception {
+        run();
+        return 0;
     }
 }

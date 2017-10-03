@@ -5,12 +5,13 @@ import ca.junctionbox.cljbuck.channel.Reader;
 import ca.junctionbox.cljbuck.channel.Writer;
 
 import java.nio.file.Path;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
 import static ca.junctionbox.cljbuck.channel.Closer.close;
 import static java.util.logging.Level.SEVERE;
 
-public class LexerTask implements SourceLexer, Runnable {
+public class LexerTask implements SourceLexer, Runnable, Callable<Integer> {
     private final SourceCache cache;
     private final Logger logger;
     private final Lexeme cljLex;
@@ -60,6 +61,12 @@ public class LexerTask implements SourceLexer, Runnable {
         lexable.run();
         final long finish = System.currentTimeMillis();
         logger.info(path.toString() + " - finished lex in " + (finish - start) + "ms");
+    }
+
+    @Override
+    public Integer call() throws Exception {
+        run();
+        return 0;
     }
 }
 

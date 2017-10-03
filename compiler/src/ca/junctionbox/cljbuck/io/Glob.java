@@ -9,7 +9,7 @@ public class Glob {
         this.start = start;
     }
 
-    public static Glob create(final String glob, final String start) {
+    public static Glob create(final String start, final String glob) {
         return new Glob(glob, start);
     }
 }

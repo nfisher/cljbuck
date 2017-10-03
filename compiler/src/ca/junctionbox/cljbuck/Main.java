@@ -5,8 +5,8 @@ import ca.junctionbox.cljbuck.io.FindFilesTask;
 import ca.junctionbox.cljbuck.io.GlobsTask;
 import ca.junctionbox.cljbuck.io.ReadFileTask;
 import ca.junctionbox.cljbuck.lexer.LexerTask;
-import ca.junctionbox.cljbuck.lexer.clj.CljLex;
 import ca.junctionbox.cljbuck.lexer.SourceCache;
+import ca.junctionbox.cljbuck.lexer.clj.CljLex;
 import ca.junctionbox.cljbuck.syntax.SyntaxTask;
 
 import java.io.ByteArrayInputStream;
@@ -14,10 +14,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -49,37 +53,38 @@ public class Main {
         final InputStream is = new ByteArrayInputStream(logConfig.getBytes(UTF_8));
         final Logger logger = Logger.getLogger("ca.junctionbox.cljbuck");
         final long start = System.currentTimeMillis();
+
         final ReadWriterQueue globCh = new ReadWriterQueue();
         final ReadWriterQueue pathCh = new ReadWriterQueue();
         final ReadWriterQueue cacheCh = new ReadWriterQueue();
         final ReadWriterQueue tokenCh = new ReadWriterQueue();
-
 
         final SourceCache cache = SourceCache.create(logger);
         final CljLex cljLex = new CljLex();
 
         final int numReadFileTasks = 4;
         final int numLexerTasks = 4;
-        final Callable<Object>[] allTasks = new Callable[2 + numReadFileTasks + numLexerTasks + 1];
+        final ArrayList<Callable<Integer>> allTasks = new ArrayList<>();
 
         LogManager.getLogManager().readConfiguration(is);
 
-        allTasks[0] = Executors.callable(new GlobsTask(args, logger, globCh));
-        allTasks[1] = Executors.callable(new FindFilesTask(logger, globCh, pathCh, numReadFileTasks));
+        allTasks.add(new GlobsTask(args, logger, globCh));
 
-        for (int i = 2; i < numReadFileTasks + 2; i++) {
-            allTasks[i] = Executors.callable(new ReadFileTask(cache, logger, pathCh, cacheCh, numLexerTasks / numReadFileTasks));
+        allTasks.add(new FindFilesTask(logger, globCh, pathCh, numReadFileTasks));
+
+        for (int i = 0; i < numReadFileTasks; i++) {
+            allTasks.add(new ReadFileTask(cache, logger, pathCh, cacheCh, numLexerTasks / numReadFileTasks));
         }
-        for (int i = 2 + numReadFileTasks; i < numLexerTasks + numReadFileTasks + 2; i++) {
-            allTasks[i] = Executors.callable(new LexerTask(cache, logger, cljLex, cacheCh, tokenCh));
+        for (int i = 0; i < numLexerTasks; i++) {
+            allTasks.add(new LexerTask(cache, logger, cljLex, cacheCh, tokenCh));
         }
 
-        allTasks[allTasks.length - 1] = Executors.callable(new SyntaxTask(logger, numLexerTasks, tokenCh));
+        allTasks.add(new SyntaxTask(logger, numLexerTasks, tokenCh));
 
-        final ExecutorService pool = Executors.newFixedThreadPool(allTasks.length);
-        List<Future<Object>> results = Collections.emptyList();
+        final ExecutorService pool = Executors.newFixedThreadPool(allTasks.size());
+        List<Future<Integer>> results = Collections.emptyList();
         try {
-            results = pool.invokeAll(Arrays.asList(allTasks));
+            results = pool.invokeAll(allTasks);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
