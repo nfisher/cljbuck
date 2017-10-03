@@ -10,16 +10,16 @@ public class CharLexer implements Lexable {
     private final char[] contents;
     private final Writer out;
     private final Stack<Character> brackets;
-    private final Lexeme cljLex;
+    private final Lexeme lexeme;
     private int start;   // start position of this item
     private int pos;     // current position in the contents
     private int line;    // 1+number of newlines seen
 
-    public CharLexer(final String path, final String contents, final Writer out, final Lexeme cljLex) {
+    public CharLexer(final String path, final String contents, final Writer out, final Lexeme lexeme) {
         this.filename = path;
         this.contents = contents.toCharArray();
         this.out = out;
-        this.cljLex = cljLex;
+        this.lexeme = lexeme;
         this.brackets = new Stack<>();
     }
 
@@ -130,7 +130,7 @@ public class CharLexer implements Lexable {
     }
 
     public void run() {
-        StateFunc fn = cljLex.file();
+        StateFunc fn = lexeme.file();
         for (int i = 0; ; i++) {
             if (fn == null) {
                 break;
