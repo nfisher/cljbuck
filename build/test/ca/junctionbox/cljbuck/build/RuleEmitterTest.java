@@ -68,7 +68,7 @@ class RuleEmitterTask implements Callable<Integer> {
 }
 
 public class RuleEmitterTest {
-    @Test(timeout=10L)
+    @Test(timeout=100L)
     public void Test_emit_jar() throws Exception {
         // being lazy with the position here.
         final Item[] items = {
@@ -104,4 +104,56 @@ public class RuleEmitterTest {
         assertThat("incorrect jar", ruleBuilder.binaryJar, is("clojure1.9.0-beta1.jar"));
         assertThat("incorrect num of deps", ruleBuilder.deps.size(), is(2));
     }
+
+    /*
+    @Test
+    public void Test_emit_interleaved_tokens() throws Exception {
+        // being lazy with the position here.
+        final Item[] items = {
+                new Item(itemLeftParen, 0, "(", 0, "lib/CLJ"),
+                new Item(itemSymbol, 1, "jar", 0, "lib/CLJ"),
+                new Item(itemLeftParen, 0, "(", 0, "CLJ"),
+                new Item(itemKeyword, 5, ":name", 0, "lib/CLJ"),
+                new Item(itemString, 11, "clojure1.9", 0, "lib/CLJ"),
+                new Item(itemSymbol, 1, "jar", 0, "CLJ"),
+                new Item(itemKeyword, 5, ":name", 0, "CLJ"),
+                new Item(itemString, 11, "clojure1.9", 0, "CLJ"),
+                new Item(itemKeyword, 5, ":jar", 0, "lib/CLJ"),
+                new Item(itemString, 11, "clojure1.9.0-beta1.jar", 0, "lib/CLJ"),
+                new Item(itemKeyword, 5, ":deps", 0, "lib/CLJ"),
+                new Item(itemKeyword, 5, ":jar", 0, "CLJ"),
+                new Item(itemString, 11, "clojure1.9.0-beta1.jar", 0, "CLJ"),
+                new Item(itemKeyword, 5, ":deps", 0, "CLJ"),
+                new Item(itemLeftBracket, 5, "[", 0, "CLJ"),
+                new Item(itemLeftBracket, 5, "[", 0, "lib/CLJ"),
+                new Item(itemString, 11, ":core.specs.alpha", 0, "lib/CLJ"),
+                new Item(itemString, 11, ":spec.alpha", 0, "lib/CLJ"),
+                new Item(itemString, 11, ":core.specs.alpha", 0, "CLJ"),
+                new Item(itemString, 11, ":spec.alpha", 0, "CLJ"),
+                new Item(itemRightBracket, 5, "]", 0, "CLJ"),
+                new Item(itemRightParen, 0, ")", 0, "CLJ"),
+                new Item(itemEOF, 0, "", 0, "CLJ"),
+                new Item(itemRightBracket, 5, "]", 0, "lib/CLJ"),
+                new Item(itemRightParen, 0, ")", 0, "lib/CLJ"),
+                new Item(itemEOF, 0, "", 0, "lib/CLJ"),
+        };
+        final ReadWriterQueue in = new ReadWriterQueue();
+        final ReadWriterQueue out = new ReadWriterQueue();
+
+        for (Item i : items) {
+            in.write(i);
+        }
+
+        final int rc = new RuleEmitterTask(in, out).call();
+
+        assertThat("return code should be 0", rc, is(not(-1)));
+
+        final Rules ruleBuilder = (Rules)out.read();
+
+        assertThat("incorrect type", ruleBuilder.type, is(Jar));
+        assertThat("incorrect name", ruleBuilder.name, is("clojure1.9"));
+        assertThat("incorrect jar", ruleBuilder.binaryJar, is("clojure1.9.0-beta1.jar"));
+        assertThat("incorrect num of deps", ruleBuilder.deps.size(), is(2));
+    }
+    */
 }
