@@ -4,6 +4,9 @@ java_test(
     name = 'test',
     srcs = glob(['*.java']),
     deps = [
+        '//build/src/ca/junctionbox/cljbuck/build:build',
+        '//compiler/src/ca/junctionbox/cljbuck/lexer:lexer',
+        '//compiler/src/ca/junctionbox/cljbuck/channel:channel',
         '//lib:hamcrest-core',
         '//lib:junit',
     ],

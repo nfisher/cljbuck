@@ -8,25 +8,71 @@ import ca.junctionbox.cljbuck.build.commands.ReplCommand;
 import ca.junctionbox.cljbuck.build.commands.RunCommand;
 import ca.junctionbox.cljbuck.build.graph.BuildGraph;
 import ca.junctionbox.cljbuck.build.runtime.ClassPath;
+import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
+import ca.junctionbox.cljbuck.io.FindFilesTask;
+import ca.junctionbox.cljbuck.io.Glob;
+import ca.junctionbox.cljbuck.lexer.LexerTask;
+import ca.junctionbox.cljbuck.lexer.SourceCache;
 import com.google.common.collect.ImmutableSortedMap;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.SortedMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static ca.junctionbox.cljbuck.build.Rules.*;
+import static ca.junctionbox.cljbuck.build.Rules.cljBinary;
+import static ca.junctionbox.cljbuck.build.Rules.cljLib;
+import static ca.junctionbox.cljbuck.build.Rules.cljTest;
+import static ca.junctionbox.cljbuck.build.Rules.jar;
 
 public class Main {
     public static final int ARG1 = 0;
     private static final int USAGE = 1;
+    private static final int READER_TASKS = 4;
+    private static final int LEXER_TASKS= 4;
 
-    public static void main(final String[] args) {
+    public static void main(final String[] args) throws InterruptedException, ExecutionException {
         final Logger logger = Logger.getLogger("ca.junctionbox.cljbuck.build");
 
-        final Workspace workspace = new Workspace().findRoot();
+        final Workspace workspace = new Workspace(logger).findRoot();
+        final SourceCache cache = SourceCache.create(logger);
+        final ReadWriterQueue globCh = new ReadWriterQueue();
+        final ReadWriterQueue pathCh = new ReadWriterQueue();
+        final ReadWriterQueue cacheCh = new ReadWriterQueue();
+        final ReadWriterQueue tokenCh = new ReadWriterQueue();
+        final ReadWriterQueue ruleCh = new ReadWriterQueue();
+
+        globCh.write(Glob.create(workspace.getPath(), "**/CLJ"));
+
+        final ArrayList<Callable<Integer>> tasks = new ArrayList<>();
+        tasks.add(new FindFilesTask(logger, globCh, pathCh, READER_TASKS));
+        for (int i = 0; i < READER_TASKS; i++) {
+            tasks.add(new FindFilesTask(logger, pathCh, cacheCh, LEXER_TASKS/READER_TASKS));
+        }
+        for (int i = 0; i < LEXER_TASKS; i++) {
+            tasks.add(new LexerTask(cache, logger, new BuildFile(), cacheCh, tokenCh));
+        }
+
+        final ExecutorService pool = Executors.newFixedThreadPool(tasks.size());
+        final List<Future<Integer>> results = pool.invokeAll(tasks);
+        int rc = 0;
+        for (final Future<Integer> f : results) {
+            rc |= f.get();
+        }
+
+        if (0 != rc) {
+            logger.log(Level.SEVERE, "unexpected error result returned from pipeline");
+            System.exit(rc);
+        }
 
         try {
             final ClassPath cp = new ClassPath();
@@ -76,7 +122,7 @@ public class Main {
                 System.exit(USAGE);
             }
 
-            int rc = cmd.exec(argList);
+            rc = cmd.exec(argList);
 
             System.exit(rc);
         } catch (Exception e) {
@@ -84,6 +130,13 @@ public class Main {
         }
     }
 
+    /**
+     * Composes the list of commands and initialises them with the build graph.
+     *
+     * @param buildGraph
+     * @param classPath
+     * @return
+     */
     private static ImmutableSortedMap<String, Command> commandList(final BuildGraph buildGraph, final ClassPath classPath) {
         final ImmutableSortedMap.Builder<String, Command> commands = new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
         final ArrayList<Command> list = new ArrayList<>();
@@ -102,6 +155,12 @@ public class Main {
         return commands.build();
     }
 
+    /**
+     * Prints the applications help for available commands.
+     *
+     * @param out
+     * @param commandList
+     */
     private static void printUsage(final PrintStream out, final SortedMap<String, Command> commandList) {
         out.println("Description:");
         out.println("  cljbuild is a clojure/jvm build too.");
@@ -127,4 +186,3 @@ public class Main {
         out.println("");
     }
 }
-

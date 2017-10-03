@@ -5,6 +5,9 @@ java_library(
     srcs = glob(['*.java']),
     deps = [
         '//lib:guava',
+        '//compiler/src/ca/junctionbox/cljbuck/channel:channel',
+        '//compiler/src/ca/junctionbox/cljbuck/io:io',
+        '//compiler/src/ca/junctionbox/cljbuck/lexer:lexer',
         '//build/src/ca/junctionbox/cljbuck/build/commands:commands',
         '//build/src/ca/junctionbox/cljbuck/build/graph:graph',
         '//build/src/ca/junctionbox/cljbuck/build/rules:rules',
