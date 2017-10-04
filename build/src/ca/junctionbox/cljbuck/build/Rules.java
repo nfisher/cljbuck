@@ -16,6 +16,7 @@ import com.google.common.graph.MutableGraph;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static ca.junctionbox.cljbuck.build.rules.Type.*;
 import static ca.junctionbox.cljbuck.build.rules.Type.Jar;
@@ -33,8 +34,10 @@ public class Rules {
     final List<String> visibility;
     final ClassPath cp;
     final Workspace workspace;
+    private final Logger logger;
 
-    private Rules(final String name,
+    private Rules(final Logger logger,
+                  final String name,
                   final List<String> deps,
                   final List<String> srcs,
                   final String binaryJar,
@@ -43,6 +46,7 @@ public class Rules {
                   final Type type,
                   final String ns,
                   final ClassPath cp, final Workspace workspace) {
+        this.logger = logger;
         this.name = name;
         this.deps = deps;
         this.srcs = srcs;
@@ -56,11 +60,11 @@ public class Rules {
     }
 
     private Rules(final Type type) {
-        this("", emptyList(), emptyList(), "", "", emptyList(), type, "", null, null);
+        this(null, "", emptyList(), emptyList(), "", "", emptyList(), type, "", null, null);
     }
 
-    public Rules(final Workspace workspace, final ClassPath cp) {
-        this("", emptyList(), emptyList(), "", "", emptyList(), null, "", cp, workspace);
+    public Rules(final Logger logger, final Workspace workspace, final ClassPath cp) {
+        this(logger, "", emptyList(), emptyList(), "", "", emptyList(), null, "", cp, workspace);
     }
 
     public static Rules jar() {
@@ -96,6 +100,9 @@ public class Rules {
         for (final BuildRule buildRuleV : nodeMap.values()) {
             for (final String predecessor : buildRuleV.getDeps()) {
                 final BuildRule buildRuleU = nodeMap.get(predecessor);
+                if (null == buildRuleU) {
+                    logger.info("Unable to find " + predecessor);
+                }
                 graph.putEdge(buildRuleU, buildRuleV);
             }
         }
@@ -105,31 +112,31 @@ public class Rules {
     }
 
     public Rules name(final String name) {
-        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(logger, name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public Rules visibility(final String... visiblity) {
-        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(logger, name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public Rules srcs(final String... srcs) {
-        return new Rules(name, deps, asList(srcs), binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(logger, name, deps, asList(srcs), binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public Rules main(final String main) {
-        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(logger, name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public Rules deps(final String... deps) {
-        return new Rules(name, asList(deps), srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(logger, name, asList(deps), srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public Rules binaryJar(final String binaryJar) {
-        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(logger, name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public Rules ns(final String ns) {
-        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(logger, name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public Rules appendDep(final String dep) {
@@ -138,7 +145,7 @@ public class Rules {
             deps.add(s);
         }
         deps.add(dep);
-        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(logger, name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public BuildRule build(final ClassPath cp) throws Exception {
@@ -165,7 +172,7 @@ public class Rules {
             visibility.add(s);
         }
         visibility.add(v);
-        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(logger, name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public Rules appendSrc(final String v) {
@@ -174,6 +181,6 @@ public class Rules {
             srcs.add(s);
         }
         srcs.add(v);
-        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(logger, name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 }

@@ -8,7 +8,6 @@ import ca.junctionbox.cljbuck.build.commands.ReplCommand;
 import ca.junctionbox.cljbuck.build.commands.RunCommand;
 import ca.junctionbox.cljbuck.build.graph.BuildGraph;
 import ca.junctionbox.cljbuck.build.runtime.ClassPath;
-import ca.junctionbox.cljbuck.channel.Closer;
 import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
 import ca.junctionbox.cljbuck.io.FindFilesTask;
 import ca.junctionbox.cljbuck.io.Glob;
@@ -35,10 +34,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import static ca.junctionbox.cljbuck.build.Rules.cljBinary;
-import static ca.junctionbox.cljbuck.build.Rules.cljLib;
-import static ca.junctionbox.cljbuck.build.Rules.cljTest;
-import static ca.junctionbox.cljbuck.build.Rules.jar;
 import static ca.junctionbox.cljbuck.channel.Closer.close;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -48,11 +43,16 @@ public class Main {
     private static final int READER_TASKS = 4;
     private static final int LEXER_TASKS= 4;
 
-    public static String logConfig = "handlers= java.util.logging.ConsoleHandler\n" +
+    public static String logConfig = "handlers=java.util.logging.FileHandler\n" +
             ".level= INFO\n" +
+            "java.util.logging.FileHandler.pattern=clj-out/run.log\n" +
             "\n" +
             "java.util.logging.ConsoleHandler.level = INFO\n" +
             "java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter\n" +
+            "\n" +
+            "java.util.logging.FileHandler.limit=10000000\n" +
+            "java.util.logging.FileHandler.formatter = java.util.logging.SimpleFormatter\n" +
+            "java.util.logging.FileHandler.count=10\n" +
             "\n" +
             "javax.jms.connection.level = INFO\n" +
             "\n" +
@@ -85,14 +85,18 @@ public class Main {
             tasks.add(new LexerTask(logger, cacheCh, tokenCh, cache, new BuildFile()));
         }
 
-        tasks.add(new RuleEmitterTask(logger, tokenCh, ruleCh, LEXER_TASKS));
+        tasks.add(new RuleEmitterTask(logger, tokenCh, ruleCh, workspace, LEXER_TASKS));
 
         final ExecutorService pool = Executors.newFixedThreadPool(tasks.size());
-        final List<Future<Integer>> results = pool.invokeAll(tasks);
-
         int rc = 0;
-        for (final Future<Integer> f : results) {
-            rc |= f.get();
+        try {
+            final List<Future<Integer>> results = pool.invokeAll(tasks);
+
+            for (final Future<Integer> f : results) {
+                rc |= f.get();
+            }
+        } finally {
+            pool.shutdown();
         }
 
         if (0 != rc) {
@@ -100,17 +104,18 @@ public class Main {
             System.exit(rc);
         }
 
-        final Rules[] buildRules = new Rules[ruleCh.size()];
+        final ArrayList<Rules> buildRules = new ArrayList<>();
 
-        int i = 0;
         for (final Object o : ruleCh.toArray()) {
-            buildRules[i] = (Rules) o;
-            i++;
+            final Rules rule = (Rules) o;
+            if (null != rule) {
+                buildRules.add(rule);
+            }
         }
 
         try {
             final ClassPath cp = new ClassPath();
-            final BuildGraph buildGraph = new Rules(workspace, cp).graph(buildRules);
+            final BuildGraph buildGraph = new Rules(logger, workspace, cp).graph(buildRules.toArray(new Rules[0]));
 
             final ArrayList<String> argList = new ArrayList<>(Arrays.asList(args));
             final ImmutableSortedMap<String, Command> commandList = commandList(buildGraph, cp);
@@ -132,7 +137,7 @@ public class Main {
 
             System.exit(rc);
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -148,6 +153,7 @@ public class Main {
         final ArrayList<Command> list = new ArrayList<>();
 
         final BuildCommand buildCommand = new BuildCommand(buildGraph);
+
         list.add(buildCommand);
         list.add(new PrintDepsCommand(buildGraph));
         list.add(new ReplCommand(buildGraph, classPath, buildCommand));

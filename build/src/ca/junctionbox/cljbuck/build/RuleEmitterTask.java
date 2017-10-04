@@ -25,6 +25,7 @@ class RuleEmitterTask implements Callable<Integer> {
     private final Reader in;
     private final Writer out;
     private final Logger logger;
+    private final Workspace workspace;
     private int countDown;
 
     class Rule {
@@ -32,17 +33,18 @@ class RuleEmitterTask implements Callable<Integer> {
         String key;
     }
 
-    public RuleEmitterTask(final Logger logger, final Reader in, final Writer out, final int lexerTasks) {
+    public RuleEmitterTask(final Logger logger, final Reader in, final Writer out, final Workspace workspace, final int lexerTasks) {
         this.logger = logger;
         this.in = in;
         this.out = out;
         this.countDown = lexerTasks;
+        this.workspace = workspace;
     }
 
     @Override
     public Integer call() throws Exception {
         logger.info("started");
-        HashMap<String, Rule> map = new HashMap<>();
+        final HashMap<String, Rule> map = new HashMap<>();
 
         for (;;) {
             final Object o = in.read();
@@ -57,6 +59,7 @@ class RuleEmitterTask implements Callable<Integer> {
                     ? map.get(token.filename)
                     : new Rule();
 
+            // TODO: consider stripping /CLJ from filename as it's only really needed for fopen.
             map.put(token.filename, rule);
 
             if (itemShutdown == token.type) {
@@ -94,7 +97,9 @@ class RuleEmitterTask implements Callable<Integer> {
             } else if (itemString == token.type) {
                 switch (rule.key) {
                     case ":name":
-                        rule.rule = rule.rule.name(token.val);
+                        // TODO: add workspace path expansion here.
+                        final String targetname = workspace.workspaceRelative(token.filename, token.val);
+                        rule.rule = rule.rule.name(targetname);
                         break;
 
                     case ":jar":
@@ -102,6 +107,11 @@ class RuleEmitterTask implements Callable<Integer> {
                         break;
 
                     case ":deps":
+                        if (token.val.startsWith(":")) {
+                            final String depname = workspace.workspaceRelative(token.filename, token.val.substring(1, token.val.length()));
+                            rule.rule = rule.rule.appendDep(depname);
+                            break;
+                        }
                         rule.rule = rule.rule.appendDep(token.val);
                         break;
 
