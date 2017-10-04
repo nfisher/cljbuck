@@ -19,7 +19,7 @@ public class ReadFileTask implements Runnable, Callable<Integer> {
     private final Writer out;
     private final int lexers;
 
-    public ReadFileTask(final SourceCache cache, final Logger logger, final Reader in, Writer out, int lexers) {
+    public ReadFileTask(final Logger logger, final Reader in, Writer out, final SourceCache cache, int lexers) {
         this.cache = cache;
         this.logger = logger;
         this.in = in;

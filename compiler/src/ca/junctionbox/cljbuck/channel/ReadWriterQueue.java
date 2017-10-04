@@ -36,4 +36,8 @@ public class ReadWriterQueue implements Writer, Reader {
 
         return null;
     }
+
+    public Object[] toArray() {
+        return out.toArray();
+    }
 }

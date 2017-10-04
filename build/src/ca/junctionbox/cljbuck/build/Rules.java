@@ -133,12 +133,12 @@ public class Rules {
     }
 
     public Rules appendDep(final String dep) {
-        final ArrayList<String> newDeps = new ArrayList<>();
-        for (String s : deps) {
-            newDeps.add(s);
+        final ArrayList<String> deps = new ArrayList<>();
+        for (String s : this.deps) {
+            deps.add(s);
         }
-        newDeps.add(dep);
-        return new Rules(name, newDeps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        deps.add(dep);
+        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 
     public BuildRule build(final ClassPath cp) throws Exception {
@@ -157,5 +157,23 @@ public class Rules {
         }
 
         throw new Exception("Unknown build target type for target: " + name);
+    }
+
+    public Rules appendVisibility(final String v) {
+        final ArrayList<String> visibility = new ArrayList<>();
+        for (final String s : this.visibility) {
+            visibility.add(s);
+        }
+        visibility.add(v);
+        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+    }
+
+    public Rules appendSrc(final String v) {
+        final ArrayList<String> srcs = new ArrayList<>();
+        for (final String s : this.srcs) {
+            srcs.add(s);
+        }
+        srcs.add(v);
+        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
     }
 }

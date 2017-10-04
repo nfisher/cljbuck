@@ -1,99 +1,191 @@
 package ca.junctionbox.cljbuck.build;
 
 import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
-import ca.junctionbox.cljbuck.channel.Reader;
 import ca.junctionbox.cljbuck.channel.Writer;
 import ca.junctionbox.cljbuck.lexer.Item;
-import ca.junctionbox.cljbuck.lexer.ItemType;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import static ca.junctionbox.cljbuck.build.rules.Type.*;
-import static ca.junctionbox.cljbuck.build.Rules.jar;
-import static ca.junctionbox.cljbuck.lexer.ItemType.*;
+import static ca.junctionbox.cljbuck.build.rules.Type.CljBinary;
+import static ca.junctionbox.cljbuck.build.rules.Type.CljLib;
+import static ca.junctionbox.cljbuck.build.rules.Type.CljTest;
+import static ca.junctionbox.cljbuck.build.rules.Type.Jar;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemEOF;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemKeyword;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftBracket;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftParen;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemRightBracket;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemRightParen;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemShutdown;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemString;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemSymbol;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 
-class RuleEmitterTask implements Callable<Integer> {
-    private final Reader in;
-    private final Writer out;
-
-    public RuleEmitterTask(final Reader in, final Writer out) {
-        this.in = in;
-        this.out = out;
-    }
-
-    @Override
-    public Integer call() throws Exception {
-        Rules currentRule = null;
-        String ruleKey = null; // e.g. :name
-
-        for (;;) {
-            final Item token = (Item)in.read();
-
-            if (itemEOF == token.type) {
-                break;
-            } else if (itemLeftParen == token.type) {
-                // ignore it for now...
-            } else if (itemRightParen == token.type) {
-                out.write(currentRule);
-                currentRule = null;
-                ruleKey = null; // e.g. :name
-            } else if (itemSymbol == token.type) {
-                switch (token.val) {
-                    case "jar":
-                        currentRule = jar();
-                        break;
-                }
-            } else if (itemKeyword == token.type) {
-                ruleKey = token.val;
-            } else if (itemString == token.type) {
-                if (ruleKey.equals(":name")) {
-                    currentRule = currentRule.name(token.val);
-                } else if (ruleKey.equals(":jar")) {
-                    currentRule = currentRule.binaryJar(token.val);
-                } else if (ruleKey.equals(":deps")) {
-                    currentRule = currentRule.appendDep(token.val);
-                } else {
-                    return -1;
-                }
-            }
-        }
-        return 0;
-    }
-}
-
 public class RuleEmitterTest {
+    // (clj-lib :name "lib" :ns "jbx.core" :srcs ["src/clj/**/*.clj", "src/cljc/**/*.cljc"] :deps ["//lib:clojure1.9"])
+    @Test(timeout=100L)
+    public void Test_emit_clj_lib() throws Exception {
+        final Item[] items = {
+                new Item(itemLeftParen, 0, "(", 0, "CLJ"),
+                new Item(itemSymbol, 1, "clj-lib", 0, "CLJ"),
+
+                // :name lib
+                new Item(itemKeyword, 5, ":name", 0, "CLJ"),
+                new Item(itemString, 11, "lib", 0, "CLJ"),
+
+                // ns jbx.core
+                new Item(itemKeyword, 5, ":ns", 0, "CLJ"),
+                new Item(itemString, 11, "jbx.core", 0, "CLJ"),
+
+                // :srcs [test/clj/**/*.clj, test/cljc/**/*.cljc]
+                new Item(itemKeyword, 5, ":srcs", 0, "CLJ"),
+                new Item(itemLeftBracket, 5, "[", 0, "CLJ"),
+                new Item(itemString, 11, "src/clj/**/*.clj", 0, "CLJ"),
+                new Item(itemString, 11, "src/cljc/**/*.cljc", 0, "CLJ"),
+                new Item(itemRightBracket, 5, "]", 0, "CLJ"),
+
+                // :deps [//lib:clojure1.9]
+                new Item(itemKeyword, 5, ":deps", 0, "CLJ"),
+                new Item(itemLeftBracket, 5, "[", 0, "CLJ"),
+                new Item(itemString, 11, "//lib:clojure1.9", 0, "CLJ"),
+                new Item(itemRightBracket, 5, "]", 0, "CLJ"),
+
+                new Item(itemRightParen, 0, ")", 0, "CLJ"),
+                new Item(itemEOF, 0, "", 0, "CLJ"),
+                new Item(itemShutdown,0, "", 0, "CLJ")
+        };
+
+        final ReadWriterQueue out = new ReadWriterQueue();
+        final int rc = callEmitter(items, out);
+
+        assertThat("return code should be 0", rc, is(not(-1)));
+
+        final Rules ruleBuilder = (Rules)out.read();
+
+        assertThat("incorrect type", ruleBuilder.type, is(CljLib));
+        assertThat("incorrect name", ruleBuilder.name, is("lib"));
+        assertThat("incorrect name", ruleBuilder.ns, is("jbx.core"));
+        assertThat("incorrect num of deps", ruleBuilder.deps.size(), is(1));
+        assertThat("incorrect visibility", ruleBuilder.visibility.size(), is(0));
+    }
+
+    // (clj-binary :name "main" :main "jbx.core" :deps [":lib"])
+    @Test(timeout=100L)
+    public void Test_emit_clj_binary() throws Exception {
+        final Item[] items = {
+                new Item(itemLeftParen, 0, "(", 0, "CLJ"),
+                new Item(itemSymbol, 1, "clj-binary", 0, "CLJ"),
+
+                // :name test
+                new Item(itemKeyword, 5, ":name", 0, "CLJ"),
+                new Item(itemString, 11, "main", 0, "CLJ"),
+
+                // :srcs [test/clj/**/*.clj]
+                new Item(itemKeyword, 5, ":main", 0, "CLJ"),
+                new Item(itemString, 11, "jbx.core", 0, "CLJ"),
+
+                // :deps [:lib]
+                new Item(itemKeyword, 5, ":deps", 0, "CLJ"),
+                new Item(itemLeftBracket, 5, "[", 0, "CLJ"),
+                new Item(itemString, 11, ":lib", 0, "CLJ"),
+                new Item(itemRightBracket, 5, "]", 0, "CLJ"),
+
+                new Item(itemRightParen, 0, ")", 0, "CLJ"),
+                new Item(itemEOF, 0, "", 0, "CLJ"),
+                new Item(itemShutdown,0, "", 0, "CLJ")
+        };
+        final ReadWriterQueue out = new ReadWriterQueue();
+        final int rc = callEmitter(items, out);
+
+        assertThat("return code should be 0", rc, is(not(-1)));
+
+        final Rules ruleBuilder = (Rules)out.read();
+
+        assertThat("incorrect type", ruleBuilder.type, is(CljBinary));
+        assertThat("incorrect name", ruleBuilder.name, is("main"));
+        assertThat("incorrect name", ruleBuilder.main, is("jbx.core"));
+        assertThat("incorrect num of deps", ruleBuilder.deps.size(), is(1));
+        assertThat("incorrect visibility", ruleBuilder.visibility.size(), is(0));
+    }
+
+    // (clj-test :name "test" :srcs ["test/clj/ ** /*.clj"] :deps ["//lib:clojure1.9", ":lib"])
+    @Test(timeout=100L)
+    public void Test_emit_clj_test() throws Exception {
+        final Item[] items = {
+                new Item(itemLeftParen, 0, "(", 0, "CLJ"),
+                new Item(itemSymbol, 1, "clj-test", 0, "CLJ"),
+
+                // :name test
+                new Item(itemKeyword, 5, ":name", 0, "CLJ"),
+                new Item(itemString, 11, "test", 0, "CLJ"),
+
+                // :srcs [test/clj/**/*.clj]
+                new Item(itemKeyword, 5, ":srcs", 0, "CLJ"),
+                new Item(itemLeftBracket, 5, "[", 0, "CLJ"),
+                new Item(itemString, 11, "test/clj/**/*.clj", 0, "CLJ"),
+                new Item(itemRightBracket, 5, "]", 0, "CLJ"),
+
+                // :deps [//lib:clojure1.9, :lib]
+                new Item(itemKeyword, 5, ":deps", 0, "CLJ"),
+                new Item(itemLeftBracket, 5, "[", 0, "CLJ"),
+                new Item(itemString, 11, "//lib:clojure1.9", 0, "CLJ"),
+                new Item(itemString, 11, ":lib", 0, "CLJ"),
+                new Item(itemRightBracket, 5, "]", 0, "CLJ"),
+
+                new Item(itemRightParen, 0, ")", 0, "CLJ"),
+                new Item(itemEOF, 0, "", 0, "CLJ"),
+                new Item(itemShutdown,0, "", 0, "CLJ")
+        };
+        final ReadWriterQueue out = new ReadWriterQueue();
+        final int rc = callEmitter(items, out);
+
+        assertThat("return code should be 0", rc, is(not(-1)));
+
+        final Rules ruleBuilder = (Rules)out.read();
+
+        assertThat("incorrect type", ruleBuilder.type, is(CljTest));
+        assertThat("incorrect name", ruleBuilder.name, is("test"));
+        assertThat("incorrect num of deps", ruleBuilder.deps.size(), is(2));
+        assertThat("incorrect num of srcs", ruleBuilder.srcs.size(), is(1));
+        assertThat("incorrect visibility", ruleBuilder.visibility.size(), is(0));
+    }
+
     @Test(timeout=100L)
     public void Test_emit_jar() throws Exception {
-        // being lazy with the position here.
         final Item[] items = {
                 new Item(itemLeftParen, 0, "(", 0, "CLJ"),
                 new Item(itemSymbol, 1, "jar", 0, "CLJ"),
+
+                // :name clojure1.9
                 new Item(itemKeyword, 5, ":name", 0, "CLJ"),
                 new Item(itemString, 11, "clojure1.9", 0, "CLJ"),
+                // :jar clojure1.9.0-beta1.jar
                 new Item(itemKeyword, 5, ":jar", 0, "CLJ"),
                 new Item(itemString, 11, "clojure1.9.0-beta1.jar", 0, "CLJ"),
+
+                // :deps [":core.specs.alpha", ":spec.alpha"]
                 new Item(itemKeyword, 5, ":deps", 0, "CLJ"),
                 new Item(itemLeftBracket, 5, "[", 0, "CLJ"),
                 new Item(itemString, 11, ":core.specs.alpha", 0, "CLJ"),
                 new Item(itemString, 11, ":spec.alpha", 0, "CLJ"),
                 new Item(itemRightBracket, 5, "]", 0, "CLJ"),
+
+                // :visibility ["PUBLIC"]
+                new Item(itemKeyword, 5, ":visibility", 0, "CLJ"),
+                new Item(itemLeftBracket, 5, "[", 0, "CLJ"),
+                new Item(itemString, 11, "PUBLIC", 0, "CLJ"),
+                new Item(itemRightBracket, 5, "]", 0, "CLJ"),
+
                 new Item(itemRightParen, 0, ")", 0, "CLJ"),
                 new Item(itemEOF, 0, "", 0, "CLJ"),
+                new Item(itemShutdown,0, "", 0, "CLJ")
         };
-        final ReadWriterQueue in = new ReadWriterQueue();
         final ReadWriterQueue out = new ReadWriterQueue();
-
-        for (Item i : items) {
-            in.write(i);
-        }
-
-        final int rc = new RuleEmitterTask(in, out).call();
+        final int rc = callEmitter(items, out);
 
         assertThat("return code should be 0", rc, is(not(-1)));
 
@@ -103,57 +195,67 @@ public class RuleEmitterTest {
         assertThat("incorrect name", ruleBuilder.name, is("clojure1.9"));
         assertThat("incorrect jar", ruleBuilder.binaryJar, is("clojure1.9.0-beta1.jar"));
         assertThat("incorrect num of deps", ruleBuilder.deps.size(), is(2));
+        assertThat("incorrect visibility", ruleBuilder.visibility.get(0), is("PUBLIC"));
     }
 
-    /*
+    private int callEmitter(Item[] items, Writer out) throws Exception {
+        final ReadWriterQueue in = new ReadWriterQueue();
+
+        for (Item i : items) {
+            in.write(i);
+        }
+
+        Logger logger = Logger.getLogger("pants");
+        logger.setLevel(Level.OFF);
+        return new RuleEmitterTask(logger, in, out, 1).call();
+    }
+
     @Test
     public void Test_emit_interleaved_tokens() throws Exception {
-        // being lazy with the position here.
         final Item[] items = {
                 new Item(itemLeftParen, 0, "(", 0, "lib/CLJ"),
                 new Item(itemSymbol, 1, "jar", 0, "lib/CLJ"),
                 new Item(itemLeftParen, 0, "(", 0, "CLJ"),
                 new Item(itemKeyword, 5, ":name", 0, "lib/CLJ"),
-                new Item(itemString, 11, "clojure1.9", 0, "lib/CLJ"),
+                new Item(itemString, 11, "clojure1.8", 0, "lib/CLJ"),
                 new Item(itemSymbol, 1, "jar", 0, "CLJ"),
                 new Item(itemKeyword, 5, ":name", 0, "CLJ"),
                 new Item(itemString, 11, "clojure1.9", 0, "CLJ"),
                 new Item(itemKeyword, 5, ":jar", 0, "lib/CLJ"),
-                new Item(itemString, 11, "clojure1.9.0-beta1.jar", 0, "lib/CLJ"),
-                new Item(itemKeyword, 5, ":deps", 0, "lib/CLJ"),
                 new Item(itemKeyword, 5, ":jar", 0, "CLJ"),
+                new Item(itemString, 11, "clojure1.8.0.jar", 0, "lib/CLJ"),
                 new Item(itemString, 11, "clojure1.9.0-beta1.jar", 0, "CLJ"),
                 new Item(itemKeyword, 5, ":deps", 0, "CLJ"),
                 new Item(itemLeftBracket, 5, "[", 0, "CLJ"),
-                new Item(itemLeftBracket, 5, "[", 0, "lib/CLJ"),
-                new Item(itemString, 11, ":core.specs.alpha", 0, "lib/CLJ"),
-                new Item(itemString, 11, ":spec.alpha", 0, "lib/CLJ"),
                 new Item(itemString, 11, ":core.specs.alpha", 0, "CLJ"),
+                new Item(itemRightParen, 0, ")", 0, "lib/CLJ"),
                 new Item(itemString, 11, ":spec.alpha", 0, "CLJ"),
+                new Item(itemEOF, 0, "", 0, "lib/CLJ"),
                 new Item(itemRightBracket, 5, "]", 0, "CLJ"),
                 new Item(itemRightParen, 0, ")", 0, "CLJ"),
                 new Item(itemEOF, 0, "", 0, "CLJ"),
-                new Item(itemRightBracket, 5, "]", 0, "lib/CLJ"),
-                new Item(itemRightParen, 0, ")", 0, "lib/CLJ"),
-                new Item(itemEOF, 0, "", 0, "lib/CLJ"),
+                new Item(itemShutdown,0, "", 0, "CLJ")
         };
-        final ReadWriterQueue in = new ReadWriterQueue();
+
         final ReadWriterQueue out = new ReadWriterQueue();
 
-        for (Item i : items) {
-            in.write(i);
-        }
-
-        final int rc = new RuleEmitterTask(in, out).call();
+        final int rc = callEmitter(items, out);
 
         assertThat("return code should be 0", rc, is(not(-1)));
+        assertThat("out size", out.size(), is(2));
 
         final Rules ruleBuilder = (Rules)out.read();
 
         assertThat("incorrect type", ruleBuilder.type, is(Jar));
-        assertThat("incorrect name", ruleBuilder.name, is("clojure1.9"));
-        assertThat("incorrect jar", ruleBuilder.binaryJar, is("clojure1.9.0-beta1.jar"));
-        assertThat("incorrect num of deps", ruleBuilder.deps.size(), is(2));
+        assertThat("incorrect name", ruleBuilder.name, is("clojure1.8"));
+        assertThat("incorrect jar", ruleBuilder.binaryJar, is("clojure1.8.0.jar"));
+        assertThat("incorrect num of deps", ruleBuilder.deps.size(), is(0));
+
+        final Rules ruleBuilder2 = (Rules)out.read();
+
+        assertThat("incorrect type", ruleBuilder2.type, is(Jar));
+        assertThat("incorrect name", ruleBuilder2.name, is("clojure1.9"));
+        assertThat("incorrect jar", ruleBuilder2.binaryJar, is("clojure1.9.0-beta1.jar"));
+        assertThat("incorrect num of deps", ruleBuilder2.deps.size(), is(2));
     }
-    */
 }

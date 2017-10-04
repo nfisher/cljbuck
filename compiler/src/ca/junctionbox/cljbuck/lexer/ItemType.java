@@ -29,5 +29,5 @@ public enum ItemType {
     itemLeftVector,
     itemRightVector,
     itemText,
-    itemDecimal, itemDouble, itemRational, itemBigDecimal, itemBigInt, itemDeref, itemMeta, itemBacktick, itemUnquote, itemDispatch, itemQuote, itemLiteral,
+    itemDecimal, itemDouble, itemRational, itemBigDecimal, itemBigInt, itemDeref, itemMeta, itemBacktick, itemUnquote, itemDispatch, itemQuote, itemLiteral, itemShutdown,
 }

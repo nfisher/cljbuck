@@ -19,10 +19,10 @@ public class LexerTask implements SourceLexer, Runnable, Callable<Integer> {
     private final Reader r;
     private final Writer w;
 
-    public LexerTask(final SourceCache cache, final Logger logger, final Lexeme cljLex, final Reader r, final Writer w) {
+    public LexerTask(final Logger logger, final Reader r, final Writer w, final SourceCache cache, final Lexeme lexeme) {
         this.cache = cache;
         this.logger = logger;
-        this.cljLex = cljLex;
+        this.cljLex = lexeme;
         this.r = r;
         this.w = w;
     }

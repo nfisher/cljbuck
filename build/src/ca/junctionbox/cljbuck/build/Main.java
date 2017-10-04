@@ -8,13 +8,18 @@ import ca.junctionbox.cljbuck.build.commands.ReplCommand;
 import ca.junctionbox.cljbuck.build.commands.RunCommand;
 import ca.junctionbox.cljbuck.build.graph.BuildGraph;
 import ca.junctionbox.cljbuck.build.runtime.ClassPath;
+import ca.junctionbox.cljbuck.channel.Closer;
 import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
 import ca.junctionbox.cljbuck.io.FindFilesTask;
 import ca.junctionbox.cljbuck.io.Glob;
+import ca.junctionbox.cljbuck.io.ReadFileTask;
 import ca.junctionbox.cljbuck.lexer.LexerTask;
 import ca.junctionbox.cljbuck.lexer.SourceCache;
 import com.google.common.collect.ImmutableSortedMap;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,12 +32,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import static ca.junctionbox.cljbuck.build.Rules.cljBinary;
 import static ca.junctionbox.cljbuck.build.Rules.cljLib;
 import static ca.junctionbox.cljbuck.build.Rules.cljTest;
 import static ca.junctionbox.cljbuck.build.Rules.jar;
+import static ca.junctionbox.cljbuck.channel.Closer.close;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Main {
     public static final int ARG1 = 0;
@@ -40,8 +48,20 @@ public class Main {
     private static final int READER_TASKS = 4;
     private static final int LEXER_TASKS= 4;
 
-    public static void main(final String[] args) throws InterruptedException, ExecutionException {
+    public static String logConfig = "handlers= java.util.logging.ConsoleHandler\n" +
+            ".level= INFO\n" +
+            "\n" +
+            "java.util.logging.ConsoleHandler.level = INFO\n" +
+            "java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter\n" +
+            "\n" +
+            "javax.jms.connection.level = INFO\n" +
+            "\n" +
+            "java.util.logging.SimpleFormatter.format=%1$tF %1$tT %4$s %2$s %5$s%6$s%n";
+
+    public static void main(final String[] args) throws InterruptedException, ExecutionException, IOException {
+        final InputStream is = new ByteArrayInputStream(logConfig.getBytes(UTF_8));
         final Logger logger = Logger.getLogger("ca.junctionbox.cljbuck.build");
+        LogManager.getLogManager().readConfiguration(is);
 
         final Workspace workspace = new Workspace(logger).findRoot();
         final SourceCache cache = SourceCache.create(logger);
@@ -52,18 +72,24 @@ public class Main {
         final ReadWriterQueue ruleCh = new ReadWriterQueue();
 
         globCh.write(Glob.create(workspace.getPath(), "**/CLJ"));
+        close(globCh);
 
         final ArrayList<Callable<Integer>> tasks = new ArrayList<>();
+
         tasks.add(new FindFilesTask(logger, globCh, pathCh, READER_TASKS));
         for (int i = 0; i < READER_TASKS; i++) {
-            tasks.add(new FindFilesTask(logger, pathCh, cacheCh, LEXER_TASKS/READER_TASKS));
+            tasks.add(new ReadFileTask(logger, pathCh, cacheCh, cache, LEXER_TASKS/READER_TASKS));
         }
+
         for (int i = 0; i < LEXER_TASKS; i++) {
-            tasks.add(new LexerTask(cache, logger, new BuildFile(), cacheCh, tokenCh));
+            tasks.add(new LexerTask(logger, cacheCh, tokenCh, cache, new BuildFile()));
         }
+
+        tasks.add(new RuleEmitterTask(logger, tokenCh, ruleCh, LEXER_TASKS));
 
         final ExecutorService pool = Executors.newFixedThreadPool(tasks.size());
         final List<Future<Integer>> results = pool.invokeAll(tasks);
+
         int rc = 0;
         for (final Future<Integer> f : results) {
             rc |= f.get();
@@ -74,37 +100,17 @@ public class Main {
             System.exit(rc);
         }
 
+        final Rules[] buildRules = new Rules[ruleCh.size()];
+
+        int i = 0;
+        for (final Object o : ruleCh.toArray()) {
+            buildRules[i] = (Rules) o;
+            i++;
+        }
+
         try {
             final ClassPath cp = new ClassPath();
-            final BuildGraph buildGraph = new Rules(workspace, cp).graph(
-                    cljLib().name("//jbx:core")
-                            .srcs("src/clj/", "src/cljc/")
-                            .ns("jbx.core")
-                            .deps("//lib:clojure1.9"),
-
-                    cljBinary().name("//jbx:main")
-                            .main("jbx.core")
-                            .deps("//jbx:core"),
-
-                    cljTest().name("//jbx:test")
-                            .deps("//jbx:core")
-                            .srcs("test/clj/**/*.clj"),
-
-                    jar().name("//lib:clojure1.9")
-                            .binaryJar("clojure-1.9.0-beta1.jar")
-                            .deps("//lib:core.specs.alpha", "//lib:spec.alpha")
-                            .visibility("PUBLIC"),
-
-                    jar().name("//lib:clojure1.8")
-                            .binaryJar("clojure-1.8.0.jar")
-                            .visibility("PUBLIC"),
-
-                    jar().name("//lib:spec.alpha")
-                            .binaryJar("spec.alpha-0.1.123.jar"),
-
-                    jar().name("//lib:core.specs.alpha")
-                            .binaryJar("core.specs.alpha-0.1.24.jar")
-            );
+            final BuildGraph buildGraph = new Rules(workspace, cp).graph(buildRules);
 
             final ArrayList<String> argList = new ArrayList<>(Arrays.asList(args));
             final ImmutableSortedMap<String, Command> commandList = commandList(buildGraph, cp);

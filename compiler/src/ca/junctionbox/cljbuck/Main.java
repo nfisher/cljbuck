@@ -52,6 +52,7 @@ public class Main {
     public static void main(final String[] args) throws IOException {
         final InputStream is = new ByteArrayInputStream(logConfig.getBytes(UTF_8));
         final Logger logger = Logger.getLogger("ca.junctionbox.cljbuck");
+        LogManager.getLogManager().readConfiguration(is);
         final long start = System.currentTimeMillis();
 
         final ReadWriterQueue globCh = new ReadWriterQueue();
@@ -66,17 +67,16 @@ public class Main {
         final int numLexerTasks = 4;
         final ArrayList<Callable<Integer>> allTasks = new ArrayList<>();
 
-        LogManager.getLogManager().readConfiguration(is);
 
         allTasks.add(new GlobsTask(args, logger, globCh));
 
         allTasks.add(new FindFilesTask(logger, globCh, pathCh, numReadFileTasks));
 
         for (int i = 0; i < numReadFileTasks; i++) {
-            allTasks.add(new ReadFileTask(cache, logger, pathCh, cacheCh, numLexerTasks / numReadFileTasks));
+            allTasks.add(new ReadFileTask(logger, pathCh, cacheCh, cache, numLexerTasks / numReadFileTasks));
         }
         for (int i = 0; i < numLexerTasks; i++) {
-            allTasks.add(new LexerTask(cache, logger, cljLex, cacheCh, tokenCh));
+            allTasks.add(new LexerTask(logger, cacheCh, tokenCh, cache, cljLex));
         }
 
         allTasks.add(new SyntaxTask(logger, numLexerTasks, tokenCh));
