@@ -29,12 +29,13 @@ public class LexerTask implements SourceLexer, Runnable, Callable<Integer> {
 
     @Override
     public void run() {
-        logger.info("started");
+        logger.info("\"event\":\"started\"");
         long start = System.currentTimeMillis();
         long working = 0;
         try {
             for (; ; ) {
                 final Object o = r.read();
+
                 long workStart = System.currentTimeMillis();
                 if (o instanceof Closer) {
                     break;
@@ -50,17 +51,17 @@ public class LexerTask implements SourceLexer, Runnable, Callable<Integer> {
             close(w);
         }
         final long finish = System.currentTimeMillis();
-        logger.info("finished in " + (finish - start) + "ms, work " + working + "ms");
+        logger.info("\"event\":\"finished\",\"working\":" + working + ",\"total\":" + (finish - start));
     }
 
     public void lex(final Path path, final String contents) {
         final Lexable lexable = Lexable.create(path.toString(), contents, cljLex, w);
 
-        logger.info(path.toString() + " - started lex of " + contents.length() + " chars");
+        logger.info("\"event\":\"started\",\"source\":\"" + path.toString() + "\"");
         final long start = System.currentTimeMillis();
         lexable.run();
         final long finish = System.currentTimeMillis();
-        logger.info(path.toString() + " - finished lex in " + (finish - start) + "ms");
+        logger.info("\"event\":\"finished\",\"source\":\"" + path.toString() + "\",\"total\":" + (finish - start) +",\"bytes\":" + contents.length());
     }
 
     @Override

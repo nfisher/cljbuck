@@ -1,6 +1,4 @@
-# cljbuck
-
-[![Build Status](https://travis-ci.org/nfisher/cljbuck.svg?branch=master)](https://travis-ci.org/nfisher/cljbuck)
+# cljbuck [![Build Status](https://travis-ci.org/nfisher/cljbuck.svg?branch=master)](https://travis-ci.org/nfisher/cljbuck)
 
 Experiment in speeding up Clojure build times from the ground up.
 
@@ -58,12 +56,29 @@ project
 
 ## Next Steps
 
-- instrument JMH benchmarks for each stage.
-- finish symbol parsing.
-- build AST.
-- build evaluator.
-- generate bytecode, jar file, etc.
-- run a clojure program.
+- [X] compile a clojure target by namespace.
+- [X] serial compiler.
+- [ ] parallel "level" compiler.
+- [ ] parallel "notification" compiler.
+- [X] run a clojure program.
+- [X] load clojure repl.
+- [X] finish symbol parsing.
+- [ ] noop when there's no source modifications.
+- [ ] file IO optimisations (e.g. JNI).
+- [ ] instrument JMH benchmarks for each stage.
+- [ ] AST generation.
+- [ ] evaluator.
+- [ ] compile individual *.clj files.
+- [ ] generate bytecode.
+- [ ] generate jar.
+- [ ] generate uberjar.
+- [ ] run tests.
+- [ ] pom to target generator.
+- [X] structured logs for generating perf graphs.
+- [ ] ms or ns timestamp in structured logs.
+- [ ] uid for start/finish in structured logs.
+- [ ] analyse command/http server to render structured logs.
+- [ ] consider instrumenting structured logs to use nanoTime so time values are (mostly) guaranteed to be monotonic.
 
 ## Building
 
@@ -86,6 +101,7 @@ project
 - Single reader from Filesystem? (stream files)
 - Lower memory pressure/no-GC?
 - Fan-out to multiple Lexers/Parsers/Evaluators?
+- JNI or named pipe interface to C based "glob" service (svc: glob -> filelist).
 
 ## Assumptions
 

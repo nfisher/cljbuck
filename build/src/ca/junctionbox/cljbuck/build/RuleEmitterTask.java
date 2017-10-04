@@ -43,14 +43,14 @@ class RuleEmitterTask implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        logger.info("started");
+        final long started = System.currentTimeMillis();
+        logger.info("\"event:\":\"started\"");
         final HashMap<String, Rule> map = new HashMap<>();
 
         for (;;) {
             final Object o = in.read();
 
             if (o instanceof Closer) {
-                logger.info("received close");
                 break;
             }
 
@@ -64,7 +64,6 @@ class RuleEmitterTask implements Callable<Integer> {
 
             if (itemShutdown == token.type) {
                 countDown--;
-                logger.info("countdown: " + countDown);
                 if (countDown < 1) {
                     break;
                 }
@@ -97,7 +96,6 @@ class RuleEmitterTask implements Callable<Integer> {
             } else if (itemString == token.type) {
                 switch (rule.key) {
                     case ":name":
-                        // TODO: add workspace path expansion here.
                         final String targetname = workspace.workspaceRelative(token.filename, token.val);
                         rule.rule = rule.rule.name(targetname);
                         break;
@@ -107,6 +105,7 @@ class RuleEmitterTask implements Callable<Integer> {
                         break;
 
                     case ":deps":
+                        // if it's a dep like :lib expand to a workspace relative path
                         if (token.val.startsWith(":")) {
                             final String depname = workspace.workspaceRelative(token.filename, token.val.substring(1, token.val.length()));
                             rule.rule = rule.rule.appendDep(depname);
@@ -136,7 +135,8 @@ class RuleEmitterTask implements Callable<Integer> {
                 }
             }
         }
-        logger.info("finished");
+        final long finished = System.currentTimeMillis();
+        logger.info("\"event\":\"finished\",\"total\":" + (finished - started));
         return 0;
     }
 }

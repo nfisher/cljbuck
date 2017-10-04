@@ -17,6 +17,7 @@ import ca.junctionbox.cljbuck.lexer.SourceCache;
 import com.google.common.collect.ImmutableSortedMap;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -56,12 +57,14 @@ public class Main {
             "\n" +
             "javax.jms.connection.level = INFO\n" +
             "\n" +
-            "java.util.logging.SimpleFormatter.format=%1$tF %1$tT %4$s %2$s %5$s%6$s%n";
+            "java.util.logging.SimpleFormatter.format={\"date\":\"%1$tF\",\"time\":\"%1$tT\",\"level\":\"%4$s\",\"method\":\"%2$s\",%5$s%6$s}%n";
 
     public static void main(final String[] args) throws InterruptedException, ExecutionException, IOException {
+        new File("clj-out").mkdirs();
         final InputStream is = new ByteArrayInputStream(logConfig.getBytes(UTF_8));
         final Logger logger = Logger.getLogger("ca.junctionbox.cljbuck.build");
         LogManager.getLogManager().readConfiguration(is);
+        logger.info("\"args\": [\"" + String.join("\",\"", args) + "\"],\"event\":\"started\"");
 
         final Workspace workspace = new Workspace(logger).findRoot();
         final SourceCache cache = SourceCache.create(logger);

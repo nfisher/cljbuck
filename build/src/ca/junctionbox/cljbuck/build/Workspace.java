@@ -11,15 +11,22 @@ public class Workspace {
 
 
     public Workspace findRoot() {
-        File workspace = new File(String.valueOf(new File(WORKSPACE).getAbsoluteFile()));
+        final long started = System.currentTimeMillis();
+        logger.info("\"event\":\"started\"");
+
+        File workspace = new File(WORKSPACE).getAbsoluteFile();
+
         for (; ;) {
             if (workspace.exists()) {
                 break;
             }
+            System.out.println("searching...");
             final String parentDir = workspace.getParentFile().getParent();
             workspace = new File(parentDir, WORKSPACE);
         }
-        logger.info("workspace location");
+
+        final long finished = System.currentTimeMillis();
+        logger.info("\"event\":\"finished\",\"total\":" + (finished-started));
         return new Workspace(logger, workspace.getParent());
     }
 

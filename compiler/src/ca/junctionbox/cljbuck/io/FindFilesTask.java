@@ -27,7 +27,7 @@ public class FindFilesTask implements Runnable, Callable<Integer> {
 
     @Override
     public void run() {
-        logger.info("started");
+        logger.info("\"event\":\"started\"");
         boolean first = true;
         long start = 0;
         try {
@@ -50,7 +50,7 @@ public class FindFilesTask implements Runnable, Callable<Integer> {
         } finally {
             for (int i = 0; i < readers; i++) close(out);
             final long finish = System.currentTimeMillis();
-            logger.info("finished in " + (finish - start) + "ms");
+            logger.info("\"event\":\"finished\",\"total\":" + (finish - start));
         }
     }
 

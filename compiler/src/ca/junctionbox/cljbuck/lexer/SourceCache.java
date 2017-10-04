@@ -26,6 +26,7 @@ public class SourceCache {
     }
 
     public void consume(final Path sourceFile) throws IOException {
+        logger.info("\"event\":\"started\",\"source\":\"" + sourceFile + "\"");
         final long start = System.currentTimeMillis();
         final byte[] bytes = Files.readAllBytes(sourceFile);
         final long read = System.currentTimeMillis();
@@ -34,7 +35,7 @@ public class SourceCache {
 
         codeCache.put(sourceFile, contents);
 
-        logger.info("" + bytes.length + "B from " + sourceFile + " in " + (finish - start) + "ms, " + (read - start) + "ms read, " + (finish - read) + "ms conversion");
+        logger.info("\"event\":\"finished\",\"total\":" + (finish - start) + ",\"source\":\"" + sourceFile + "\",\"bytes\":"+ bytes.length +",\"read\":" + (read - start));
     }
 
     public void apply(final Path sourceFile, final SourceLexer lexer) {

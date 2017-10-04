@@ -13,10 +13,10 @@ import java.util.logging.Logger;
 import static ca.junctionbox.cljbuck.channel.Closer.close;
 
 public class ReadFileTask implements Runnable, Callable<Integer> {
-    private final SourceCache cache;
     private final Logger logger;
     private final Reader in;
     private final Writer out;
+    private final SourceCache cache;
     private final int lexers;
 
     public ReadFileTask(final Logger logger, final Reader in, Writer out, final SourceCache cache, int lexers) {
@@ -29,7 +29,7 @@ public class ReadFileTask implements Runnable, Callable<Integer> {
 
     @Override
     public void run() {
-        logger.info("started");
+        logger.info("\"event\":\"started\"");
         final long start = System.currentTimeMillis();
         long working = 0;
         try {
@@ -50,7 +50,7 @@ public class ReadFileTask implements Runnable, Callable<Integer> {
             for (int i = 0; i < lexers; i++) close(out);
         }
         final long finish = System.currentTimeMillis();
-        logger.info("finished in " + (finish - start) + "ms, work " + working + "ms");
+        logger.info("\"event\":\"finished\",\"total\":" + (finish - start) + ",\"worked\":" + working);
     }
 
     @Override

@@ -38,9 +38,11 @@ public class ReplCommand extends Command {
     public void repl(final ArrayList<String> args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         final Class<?> main = classPath.forName("clojure.main", true);
 
+        /*
         for (final URL url : ((URLClassLoader) main.getClassLoader()).getURLs()) {
             System.out.println(url);
         }
+        */
 
         final Class<?> rt = classPath.forName("clojure.lang.RT", true);
         final Method rtVar = rt.getDeclaredMethod("var", String.class, String.class, Object.class);
