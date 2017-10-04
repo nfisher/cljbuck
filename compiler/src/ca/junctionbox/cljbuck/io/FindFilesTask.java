@@ -42,6 +42,7 @@ public class FindFilesTask implements Runnable, Callable<Integer> {
                 }
                 final Glob glob = (Glob) o;
                 final PathTraversal pathTraversal = PathTraversal.create(glob.glob, out);
+                // TODO: Look at using JNI find . -name CLJ is done 54ms where this PoS is done in 300ms.
                 Files.walkFileTree(Paths.get(glob.start), pathTraversal);
             }
         } catch (IOException e) {

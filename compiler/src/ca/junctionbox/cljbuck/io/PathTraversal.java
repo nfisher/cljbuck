@@ -7,6 +7,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
+import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
 
 
 public class PathTraversal extends SimpleFileVisitor<Path> {
@@ -37,7 +38,13 @@ public class PathTraversal extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-        // need to make this more intelligent so it doesn't scan a sub-tree unnecessarily.
+        if (dir.getFileName().startsWith(".")) {
+            return SKIP_SUBTREE;
+        } else if (dir.getFileName().equals("clj-out")) {
+            return SKIP_SUBTREE;
+        } else if (dir.getFileName().equals("buck-out")) {
+            return SKIP_SUBTREE;
+        }
         find(dir);
         return CONTINUE;
     }
