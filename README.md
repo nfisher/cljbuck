@@ -106,13 +106,13 @@ Serial strategy is the easiest to implement and is likely to cause the fewest
 issues with bugs. The other two strategies are expected to provide improved
 performance through parallelism.
 
-### Serial
+### Serial
 
 As the tree is walked the dependencies are placed in a stack. Once the build
 starts classpaths and compilation occurs from the top of the stack down to the
 bottom.
 
-### Level
+### Level
 
 As the tree is walked the dependencies are placed in an array of lists. The
 index for the array is the depth in the tree. The list is simply a collection of
