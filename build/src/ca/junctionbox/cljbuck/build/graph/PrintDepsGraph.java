@@ -12,8 +12,8 @@ public class PrintDepsGraph implements Walken {
     }
 
     @Override
-    public void step(BuildRule buildRule, int depth) {
-        StringBuilder sb = new StringBuilder();
+    public void step(final BuildRule buildRule, final int depth) {
+        final StringBuilder sb = new StringBuilder();
         for (int i = 1; i < depth; i++) {
             sb.append("    |");
         }

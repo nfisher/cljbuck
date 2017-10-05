@@ -1,47 +1,37 @@
 package ca.junctionbox.cljbuck.build;
 
 import java.io.File;
-import java.util.logging.Logger;
 
 public class Workspace {
     public final static String WORKSPACE = "WORKSPACE";
     public static final String CLJ = "/CLJ";
     private final String path;
-    private final Logger logger;
-
 
     public Workspace findRoot() {
-        final long started = System.currentTimeMillis();
-        logger.info("\"event\":\"started\"");
-
         File workspace = new File(WORKSPACE).getAbsoluteFile();
 
         for (; ;) {
             if (workspace.exists()) {
                 break;
             }
-            System.out.println("searching...");
             final String parentDir = workspace.getParentFile().getParent();
             workspace = new File(parentDir, WORKSPACE);
         }
 
-        final long finished = System.currentTimeMillis();
-        logger.info("\"event\":\"finished\",\"total\":" + (finished-started));
-        return new Workspace(logger, workspace.getParent());
+        return new Workspace(workspace.getParent());
     }
 
-    public Workspace(final Logger logger) {
-        this(logger, "");
+    public Workspace() {
+        this("");
     }
 
-    public Workspace(final Logger logger, final String path) {
+    public Workspace(final String path) {
         this.path = path;
-        this.logger = logger;
     }
 
-    public String workspaceRelative(final String absolute, final String name) {
-        if (absolute.startsWith(path)) {
-            final String wsFilename = absolute.substring(path.length());
+    public String workspaceRelative(final String targetSource, final String name) {
+        if (targetSource.startsWith(path)) {
+            final String wsFilename = targetSource.substring(path.length());
             if (CLJ.length() == wsFilename.length()) {
                 // strips CLJ for root
                 return "/" + wsFilename.substring(0, wsFilename.length()-3) + ":" + name;
@@ -54,5 +44,17 @@ public class Workspace {
 
     public String getPath() {
         return path;
+    }
+
+    public String getOutputDir() {
+        return path + "/clj-out";
+    }
+
+    public String workspaceAbsolute(final String targetSource, final String targetRelative) {
+        if (targetSource.startsWith(path)) {
+            final String basedir = targetSource.substring(0, targetSource.length() - 3);
+            return basedir + targetRelative;
+        }
+        return "";
     }
 }

@@ -16,11 +16,12 @@ public class SerialBuild implements Walken {
         rules.add(buildRule);
     }
 
-    public void build() {
-        for (int i = rules.size() - 1; i >= 0; i--) {
-            final BuildRule rule = rules.get(i);
-            rule.prepare();
-            rule.build();
-        }
+    public int size() {
+        return rules.size();
+    }
+
+    public BuildRule get(final int i) {
+        final int pos = rules.size() - i - 1;
+        return rules.get(pos);
     }
 }

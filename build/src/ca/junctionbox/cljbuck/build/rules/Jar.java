@@ -1,35 +1,30 @@
 package ca.junctionbox.cljbuck.build.rules;
 
-import ca.junctionbox.cljbuck.build.runtime.ClassPath;
-
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
+import java.util.Collections;
 import java.util.List;
 
 public class Jar extends BuildRule {
     private final String binaryJar;
+    private static final String TYPE = "jar";
 
-    public Jar(final String name, final List<String> deps, List<String> visibility, final String binaryJar, final ClassPath cp) {
-        super(name, deps, visibility, cp);
+
+    public Jar(final String name, final List<String> deps, List<String> visibility, final String binaryJar) {
+        super(name, deps, visibility);
         this.binaryJar = binaryJar;
     }
 
     @Override
-    public void prepare() {
-        try {
-            getCp().addClasspath(getArtefact());
-        } catch (final MalformedURLException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void build() {
-    }
-
-    @Override
     public String getArtefact() {
-        final String directory = getDirectory();
-        return directory + binaryJar;
+        return binaryJar;
+    }
+
+    @Override
+    public List<String> getClassPaths() {
+        return Collections.singletonList(binaryJar);
+    }
+
+    @Override
+    public List<String> getNamespaces() {
+        return Collections.emptyList();
     }
 }

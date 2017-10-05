@@ -69,6 +69,8 @@ public class RuleEmitterTaskTest {
         assertThat("incorrect type", ruleBuilder.type, is(CljLib));
         assertThat("incorrect name", ruleBuilder.name, is("//:lib"));
         assertThat("incorrect name", ruleBuilder.ns, is("jbx.core"));
+        assertThat("incorrect srcs[0]", ruleBuilder.srcs.get(0), is("/home/nfisher/prj/src/clj/**/*.clj"));
+        assertThat("incorrect srcs[1]", ruleBuilder.srcs.get(1), is("/home/nfisher/prj/src/cljc/**/*.cljc"));
         assertThat("incorrect num of deps", ruleBuilder.deps.size(), is(1));
         assertThat("incorrect visibility", ruleBuilder.visibility.size(), is(0));
     }
@@ -195,7 +197,7 @@ public class RuleEmitterTaskTest {
 
         assertThat("incorrect type", ruleBuilder.type, is(Jar));
         assertThat("incorrect name", ruleBuilder.name, is("//:clojure1.9"));
-        assertThat("incorrect jar", ruleBuilder.binaryJar, is("clojure1.9.0-beta1.jar"));
+        assertThat("incorrect jar", ruleBuilder.binaryJar, is("/home/nfisher/prj/clojure1.9.0-beta1.jar"));
         assertThat("incorrect num of deps", ruleBuilder.deps.size(), is(2));
         assertThat("incorrect visibility", ruleBuilder.visibility.get(0), is("PUBLIC"));
     }
@@ -238,14 +240,14 @@ public class RuleEmitterTaskTest {
 
         assertThat("incorrect type", ruleBuilder.type, is(Jar));
         assertThat("incorrect name", ruleBuilder.name, is("//lib:clojure1.8"));
-        assertThat("incorrect jar", ruleBuilder.binaryJar, is("clojure1.8.0.jar"));
+        assertThat("incorrect jar", ruleBuilder.binaryJar, is("/home/nfisher/prj/lib/clojure1.8.0.jar"));
         assertThat("incorrect num of deps", ruleBuilder.deps.size(), is(0));
 
         final Rules ruleBuilder2 = (Rules)out.read();
 
         assertThat("incorrect type", ruleBuilder2.type, is(Jar));
         assertThat("incorrect name", ruleBuilder2.name, is("//:clojure1.9"));
-        assertThat("incorrect jar", ruleBuilder2.binaryJar, is("clojure1.9.0-beta1.jar"));
+        assertThat("incorrect jar", ruleBuilder2.binaryJar, is("/home/nfisher/prj/clojure1.9.0-beta1.jar"));
         assertThat("incorrect num of deps", ruleBuilder2.deps.size(), is(2));
     }
 
@@ -258,6 +260,6 @@ public class RuleEmitterTaskTest {
 
         Logger logger = Logger.getLogger("pants");
         logger.setLevel(Level.OFF);
-        return new RuleEmitterTask(logger, in, out, new Workspace(logger, "/home/nfisher/prj"), 1).call();
+        return new RuleEmitterTask(logger, in, out, new Workspace("/home/nfisher/prj"), 1).call();
     }
 }

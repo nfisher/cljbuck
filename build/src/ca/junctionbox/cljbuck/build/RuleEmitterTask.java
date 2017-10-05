@@ -101,7 +101,8 @@ class RuleEmitterTask implements Callable<Integer> {
                         break;
 
                     case ":jar":
-                        rule.rule = rule.rule.binaryJar(token.val);
+                        final String jar = workspace.workspaceAbsolute(token.filename, token.val);
+                        rule.rule = rule.rule.binaryJar(jar);
                         break;
 
                     case ":deps":
@@ -119,7 +120,8 @@ class RuleEmitterTask implements Callable<Integer> {
                         break;
 
                     case ":srcs":
-                        rule.rule = rule.rule.appendSrc(token.val);
+                        final String src = workspace.workspaceAbsolute(token.filename, token.val);
+                        rule.rule = rule.rule.appendSrc(src);
                         break;
 
                     case ":main":

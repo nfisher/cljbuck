@@ -65,6 +65,7 @@ project
 - [X] finish symbol parsing.
 - [ ] noop when there's no source modifications.
 - [ ] file IO optimisations (e.g. JNI).
+- [ ] remove or root all dependencies.
 - [ ] instrument JMH benchmarks for each stage.
 - [ ] AST generation.
 - [ ] evaluator.
@@ -75,7 +76,7 @@ project
 - [ ] run tests.
 - [ ] pom to target generator.
 - [X] structured logs for generating perf graphs.
-- [ ] ms or ns timestamp in structured logs.
+- [X] ms or ns timestamp in structured logs.
 - [ ] uid for start/finish in structured logs.
 - [ ] analyse command/http server to render structured logs.
 - [ ] consider instrumenting structured logs to use nanoTime so time values are (mostly) guaranteed to be monotonic.

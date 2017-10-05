@@ -5,7 +5,6 @@ java_library(
     srcs = glob(['*.java']),
     deps = [
         '//lib:guava',
-        '//build/src/ca/junctionbox/cljbuck/build/runtime:runtime',
     ],
     visibility = ["PUBLIC"],
 )

@@ -7,7 +7,6 @@ import ca.junctionbox.cljbuck.build.rules.ClojureLib;
 import ca.junctionbox.cljbuck.build.rules.ClojureTest;
 import ca.junctionbox.cljbuck.build.rules.Jar;
 import ca.junctionbox.cljbuck.build.rules.Type;
-import ca.junctionbox.cljbuck.build.runtime.ClassPath;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.ImmutableGraph;
@@ -16,9 +15,10 @@ import com.google.common.graph.MutableGraph;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.logging.Logger;
 
-import static ca.junctionbox.cljbuck.build.rules.Type.*;
+import static ca.junctionbox.cljbuck.build.rules.Type.CljBinary;
+import static ca.junctionbox.cljbuck.build.rules.Type.CljLib;
+import static ca.junctionbox.cljbuck.build.rules.Type.CljTest;
 import static ca.junctionbox.cljbuck.build.rules.Type.Jar;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -32,21 +32,15 @@ public class Rules {
     final List<String> srcs;
     final Type type;
     final List<String> visibility;
-    final ClassPath cp;
-    final Workspace workspace;
-    private final Logger logger;
 
-    private Rules(final Logger logger,
-                  final String name,
+    private Rules(final String name,
                   final List<String> deps,
                   final List<String> srcs,
                   final String binaryJar,
                   final String main,
                   final List<String> visibility,
                   final Type type,
-                  final String ns,
-                  final ClassPath cp, final Workspace workspace) {
-        this.logger = logger;
+                  final String ns) {
         this.name = name;
         this.deps = deps;
         this.srcs = srcs;
@@ -55,16 +49,14 @@ public class Rules {
         this.visibility = visibility;
         this.type = type;
         this.ns = ns;
-        this.cp = cp;
-        this.workspace = workspace;
     }
 
     private Rules(final Type type) {
-        this(null, "", emptyList(), emptyList(), "", "", emptyList(), type, "", null, null);
+        this("", emptyList(), emptyList(), "", "", emptyList(), type, "");
     }
 
-    public Rules(final Logger logger, final Workspace workspace, final ClassPath cp) {
-        this(logger, "", emptyList(), emptyList(), "", "", emptyList(), null, "", cp, workspace);
+    public Rules() {
+        this("", emptyList(), emptyList(), "", "", emptyList(), null, "");
     }
 
     public static Rules jar() {
@@ -89,7 +81,7 @@ public class Rules {
 
         // add all of the nodes
         for (final Rules target : targets) {
-            final BuildRule buildRule = target.build(cp);
+            final BuildRule buildRule = target.build();
             builder.put(buildRule.getName(), buildRule);
             graph.addNode(buildRule);
         }
@@ -101,7 +93,8 @@ public class Rules {
             for (final String predecessor : buildRuleV.getDeps()) {
                 final BuildRule buildRuleU = nodeMap.get(predecessor);
                 if (null == buildRuleU) {
-                    logger.info("Unable to find " + predecessor);
+                    System.err.println("Unable to find " + predecessor);
+                    continue;
                 }
                 graph.putEdge(buildRuleU, buildRuleV);
             }
@@ -112,31 +105,31 @@ public class Rules {
     }
 
     public Rules name(final String name) {
-        return new Rules(logger, name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns);
     }
 
     public Rules visibility(final String... visiblity) {
-        return new Rules(logger, name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns);
     }
 
     public Rules srcs(final String... srcs) {
-        return new Rules(logger, name, deps, asList(srcs), binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(name, deps, asList(srcs), binaryJar, main, visibility, type, ns);
     }
 
     public Rules main(final String main) {
-        return new Rules(logger, name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns);
     }
 
     public Rules deps(final String... deps) {
-        return new Rules(logger, name, asList(deps), srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(name, asList(deps), srcs, binaryJar, main, visibility, type, ns);
     }
 
     public Rules binaryJar(final String binaryJar) {
-        return new Rules(logger, name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns);
     }
 
     public Rules ns(final String ns) {
-        return new Rules(logger, name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns);
     }
 
     public Rules appendDep(final String dep) {
@@ -145,22 +138,22 @@ public class Rules {
             deps.add(s);
         }
         deps.add(dep);
-        return new Rules(logger, name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns);
     }
 
-    public BuildRule build(final ClassPath cp) throws Exception {
+    public BuildRule build() throws Exception {
         switch (type) {
             case Jar:
-                return new Jar(name, deps, visibility, binaryJar, cp);
+                return new Jar(name, deps, visibility, binaryJar);
 
             case CljLib:
-                return new ClojureLib(name, deps, visibility, srcs, ns, cp);
+                return new ClojureLib(name, deps, visibility, srcs, ns);
 
             case CljBinary:
-                return new ClojureBinary(name, deps, visibility, main, cp);
+                return new ClojureBinary(name, deps, visibility, main);
 
             case CljTest:
-                return new ClojureTest(name, deps, visibility, srcs, cp);
+                return new ClojureTest(name, deps, visibility, srcs);
         }
 
         throw new Exception("Unknown build target type for target: " + name);
@@ -172,7 +165,7 @@ public class Rules {
             visibility.add(s);
         }
         visibility.add(v);
-        return new Rules(logger, name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns);
     }
 
     public Rules appendSrc(final String v) {
@@ -181,6 +174,6 @@ public class Rules {
             srcs.add(s);
         }
         srcs.add(v);
-        return new Rules(logger, name, deps, srcs, binaryJar, main, visibility, type, ns, cp, workspace);
+        return new Rules(name, deps, srcs, binaryJar, main, visibility, type, ns);
     }
 }

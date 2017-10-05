@@ -46,27 +46,30 @@ public class Main {
 
     public static String logConfig = "handlers=java.util.logging.FileHandler\n" +
             ".level= INFO\n" +
-            "java.util.logging.FileHandler.pattern=clj-out/run.log\n" +
+            "java.util.logging.FileHandler.pattern = clj-out/run.log\n" +
             "\n" +
             "java.util.logging.ConsoleHandler.level = INFO\n" +
             "java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter\n" +
             "\n" +
-            "java.util.logging.FileHandler.limit=10000000\n" +
+            "java.util.logging.FileHandler.limit = 10000000\n" +
             "java.util.logging.FileHandler.formatter = java.util.logging.SimpleFormatter\n" +
-            "java.util.logging.FileHandler.count=10\n" +
+            "java.util.logging.FileHandler.count = 25\n" +
             "\n" +
             "javax.jms.connection.level = INFO\n" +
             "\n" +
-            "java.util.logging.SimpleFormatter.format={\"date\":\"%1$tF\",\"time\":\"%1$tT\",\"level\":\"%4$s\",\"method\":\"%2$s\",%5$s%6$s}%n";
+            "java.util.logging.SimpleFormatter.format={\"ts\":%1$tQ,\"level\":\"%4$s\",\"method\":\"%2$s\",%5$s%6$s}%n";
 
     public static void main(final String[] args) throws InterruptedException, ExecutionException, IOException {
-        new File("clj-out").mkdirs();
+        final Workspace workspace = new Workspace().findRoot();
+        final File targetDir = new File(workspace.getOutputDir());
+        targetDir.mkdirs();
+
         final InputStream is = new ByteArrayInputStream(logConfig.getBytes(UTF_8));
         final Logger logger = Logger.getLogger("ca.junctionbox.cljbuck.build");
+        // TODO: replace relative log path with absolute path.
         LogManager.getLogManager().readConfiguration(is);
         logger.info("\"args\": [\"" + String.join("\",\"", args) + "\"],\"event\":\"started\"");
 
-        final Workspace workspace = new Workspace(logger).findRoot();
         final SourceCache cache = SourceCache.create(logger);
         final ReadWriterQueue globCh = new ReadWriterQueue();
         final ReadWriterQueue pathCh = new ReadWriterQueue();
@@ -117,11 +120,11 @@ public class Main {
         }
 
         try {
-            final ClassPath cp = new ClassPath();
-            final BuildGraph buildGraph = new Rules(logger, workspace, cp).graph(buildRules.toArray(new Rules[0]));
+            final ClassPath classPath = new ClassPath();
+            final BuildGraph buildGraph = new Rules().graph(buildRules.toArray(new Rules[0]));
 
             final ArrayList<String> argList = new ArrayList<>(Arrays.asList(args));
-            final ImmutableSortedMap<String, Command> commandList = commandList(buildGraph, cp);
+            final ImmutableSortedMap<String, Command> commandList = commandList(buildGraph, classPath, workspace);
 
             if (args.length < 1) {
                 printUsage(System.out, commandList);
@@ -149,13 +152,14 @@ public class Main {
      *
      * @param buildGraph
      * @param classPath
+     * @param workspace
      * @return
      */
-    private static ImmutableSortedMap<String, Command> commandList(final BuildGraph buildGraph, final ClassPath classPath) {
+    private static ImmutableSortedMap<String, Command> commandList(final BuildGraph buildGraph, final ClassPath classPath, final Workspace workspace) {
         final ImmutableSortedMap.Builder<String, Command> commands = new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
         final ArrayList<Command> list = new ArrayList<>();
 
-        final BuildCommand buildCommand = new BuildCommand(buildGraph);
+        final BuildCommand buildCommand = new BuildCommand(buildGraph, classPath, workspace.getOutputDir());
 
         list.add(buildCommand);
         list.add(new PrintDepsCommand(buildGraph));

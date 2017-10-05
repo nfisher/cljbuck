@@ -1,25 +1,17 @@
 package ca.junctionbox.cljbuck.build.rules;
 
-import ca.junctionbox.cljbuck.build.runtime.ClassPath;
-
 import java.util.List;
 
 public abstract class BuildRule {
     private final String name;
     private final List<String> deps;
     private final List<String> visibility;
-    private final ClassPath cp;
 
-    public BuildRule(final String name, final List<String> deps, final List<String> visibility, final ClassPath cp) {
+    public BuildRule(final String name, final List<String> deps, final List<String> visibility) {
         this.name = name;
         this.deps = deps;
         this.visibility = visibility;
-        this.cp = cp;
     }
-
-    public abstract void prepare();
-
-    public abstract void build();
 
     public abstract String getArtefact();
 
@@ -34,6 +26,8 @@ public abstract class BuildRule {
     public List<String> getVisibility() {
         return visibility;
     }
+
+    public abstract List<String> getClassPaths();
 
     @Override
     public String toString() {
@@ -75,8 +69,7 @@ public abstract class BuildRule {
         return name.substring(pos);
     }
 
-    public ClassPath getCp() {
-        return cp;
-    }
+    public abstract List<String> getNamespaces();
+
 }
 

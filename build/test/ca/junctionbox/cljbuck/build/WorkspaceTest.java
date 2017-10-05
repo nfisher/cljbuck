@@ -9,20 +9,26 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 public class WorkspaceTest {
+    static final Logger logger = Logger.getLogger("pants");
+    static {
+        logger.setLevel(Level.OFF);
+    }
 
     @Test
     public void Test_workspaceRelative_subdir() {
-        Logger logger = Logger.getLogger("abc");
-        logger.setLevel(Level.OFF);
-        Workspace workspace = new Workspace(logger, "/home/nfisher/workspace/pedestal");
+        Workspace workspace = new Workspace("/home/nfisher/workspace/pedestal");
         assertThat(workspace.workspaceRelative("/home/nfisher/workspace/pedestal/lib/CLJ", "lib"), is("//lib:lib"));
     }
 
     @Test
     public void Test_workspaceRelative_root() {
-        Logger logger = Logger.getLogger("abc");
-        logger.setLevel(Level.OFF);
-        Workspace workspace = new Workspace(logger, "/home/nfisher/workspace/pedestal");
+        Workspace workspace = new Workspace("/home/nfisher/workspace/pedestal");
         assertThat(workspace.workspaceRelative("/home/nfisher/workspace/pedestal/CLJ", "lib"), is("//:lib"));
+    }
+
+    @Test
+    public void Test_workspaceAbsolute_subdir() {
+        Workspace workspace = new Workspace("/home/nfisher/workspace/pedestal");
+        assertThat(workspace.workspaceAbsolute("/home/nfisher/workspace/pedestal/service/CLJ", "src/**/*.clj"), is("/home/nfisher/workspace/pedestal/service/src/**/*.clj"));
     }
 }
