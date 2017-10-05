@@ -12,7 +12,6 @@ before_install:
 script:
   - "$HOME/.buck/bin/buck test --all"
   - "$HOME/.buck/bin/buck build //..."
-  - find . -name cljbuck.jar
 branches:
   except:
     - gh-pages
@@ -30,3 +29,4 @@ deploy:
     - 'buck-out/gen/build/cljbuck.jar'
   on:
     repo: nfisher/cljbuck
+    tags: true
