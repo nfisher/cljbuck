@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
+import static ca.junctionbox.cljbuck.build.json.Event.finished;
+import static ca.junctionbox.cljbuck.build.json.Event.started;
 import static ca.junctionbox.cljbuck.channel.Closer.close;
 
 public class ReadFileTask implements Runnable, Callable<Integer> {
@@ -29,9 +31,9 @@ public class ReadFileTask implements Runnable, Callable<Integer> {
 
     @Override
     public void run() {
-        logger.info("\"event\":\"started\"");
-        final long start = System.currentTimeMillis();
-        long working = 0;
+        final long started = System.currentTimeMillis();
+        logger.info(started(hashCode()).toString());
+        long worked = 0;
         try {
             for (; ; ) {
                 final Object o = in.read();
@@ -42,15 +44,16 @@ public class ReadFileTask implements Runnable, Callable<Integer> {
                 final Path path = (Path) o;
                 cache.consume(path);
                 out.write(path);
-                working += System.currentTimeMillis() - workStart;
+                worked += System.currentTimeMillis() - workStart;
             }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             for (int i = 0; i < lexers; i++) close(out);
         }
-        final long finish = System.currentTimeMillis();
-        logger.info("\"event\":\"finished\",\"total\":" + (finish - start) + ",\"worked\":" + working);
+        logger.info(finished(hashCode(), started)
+                        .add("worked", worked)
+                        .toString());
     }
 
     @Override

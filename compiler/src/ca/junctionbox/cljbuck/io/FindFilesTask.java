@@ -10,6 +10,8 @@ import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
+import static ca.junctionbox.cljbuck.build.json.Event.finished;
+import static ca.junctionbox.cljbuck.build.json.Event.started;
 import static ca.junctionbox.cljbuck.channel.Closer.close;
 
 public class FindFilesTask implements Runnable, Callable<Integer> {
@@ -27,7 +29,7 @@ public class FindFilesTask implements Runnable, Callable<Integer> {
 
     @Override
     public void run() {
-        logger.info("\"event\":\"started\"");
+        logger.info(started(hashCode()).toString());
         boolean first = true;
         long start = 0;
         try {
@@ -49,8 +51,7 @@ public class FindFilesTask implements Runnable, Callable<Integer> {
             e.printStackTrace();
         } finally {
             for (int i = 0; i < readers; i++) close(out);
-            final long finish = System.currentTimeMillis();
-            logger.info("\"event\":\"finished\",\"total\":" + (finish - start));
+            logger.info(finished(hashCode(), start).toString());
         }
     }
 

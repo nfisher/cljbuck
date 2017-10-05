@@ -12,6 +12,7 @@ java_library(
         '//build/src/ca/junctionbox/cljbuck/build/graph:graph',
         '//build/src/ca/junctionbox/cljbuck/build/rules:rules',
         '//build/src/ca/junctionbox/cljbuck/build/runtime:runtime',
+        '//build/src/ca/junctionbox/cljbuck/build/json:json',
     ],
     visibility = ["PUBLIC"],
 )

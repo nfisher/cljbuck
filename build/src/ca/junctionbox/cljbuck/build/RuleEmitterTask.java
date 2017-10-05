@@ -13,6 +13,8 @@ import static ca.junctionbox.cljbuck.build.Rules.cljBinary;
 import static ca.junctionbox.cljbuck.build.Rules.cljLib;
 import static ca.junctionbox.cljbuck.build.Rules.cljTest;
 import static ca.junctionbox.cljbuck.build.Rules.jar;
+import static ca.junctionbox.cljbuck.build.json.Event.finished;
+import static ca.junctionbox.cljbuck.build.json.Event.started;
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemEOF;
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemKeyword;
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftParen;
@@ -44,7 +46,7 @@ class RuleEmitterTask implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         final long started = System.currentTimeMillis();
-        logger.info("\"event:\":\"started\"");
+        logger.info(started(hashCode()).toString());
         final HashMap<String, Rule> map = new HashMap<>();
 
         for (;;) {
@@ -137,8 +139,8 @@ class RuleEmitterTask implements Callable<Integer> {
                 }
             }
         }
-        final long finished = System.currentTimeMillis();
-        logger.info("\"event\":\"finished\",\"total\":" + (finished - started));
+
+        logger.info(finished(hashCode(), started).toString());
         return 0;
     }
 }

@@ -10,6 +10,7 @@ java_library(
         '//compiler/src/ca/junctionbox/cljbuck/lexer:lexer',
         '//compiler/src/ca/junctionbox/cljbuck/syntax:syntax',
         '//compiler/src/ca/junctionbox/cljbuck/lexer/clj:clj',
+        '//build/src/ca/junctionbox/cljbuck/build/json:json',
     ],
     visibility = [
         'PUBLIC'

@@ -5,6 +5,7 @@ java_library(
     srcs = glob(['*.java']),
     deps = [
         '//compiler/src/ca/junctionbox/cljbuck/channel:channel',
+        '//build/src/ca/junctionbox/cljbuck/build/json:json',
     ],
     visibility = ["PUBLIC"],
 )

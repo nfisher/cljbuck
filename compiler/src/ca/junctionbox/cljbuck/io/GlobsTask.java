@@ -5,6 +5,8 @@ import ca.junctionbox.cljbuck.channel.Writer;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
+import static ca.junctionbox.cljbuck.build.json.Event.finished;
+import static ca.junctionbox.cljbuck.build.json.Event.started;
 import static ca.junctionbox.cljbuck.channel.Closer.close;
 
 public class GlobsTask implements Runnable, Callable<Integer> {
@@ -20,7 +22,7 @@ public class GlobsTask implements Runnable, Callable<Integer> {
 
     @Override
     public void run() {
-        logger.info("started");
+        logger.info(started(hashCode()).toString());
         final String clj = "**/*.clj";
         final long start = System.currentTimeMillis();
 
@@ -30,9 +32,7 @@ public class GlobsTask implements Runnable, Callable<Integer> {
 
         close(out);
 
-        final long finish = System.currentTimeMillis();
-
-        logger.info("finished in " + (finish - start) + "ms");
+        logger.info(finished(hashCode(), start).toString());
     }
 
     @Override

@@ -6,8 +6,20 @@ import ca.junctionbox.cljbuck.lexer.Lexable;
 import ca.junctionbox.cljbuck.lexer.StateFunc;
 import org.junit.Test;
 
-import static ca.junctionbox.cljbuck.lexer.ItemType.*;
-import static org.hamcrest.CoreMatchers.*;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemBacktick;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemDeref;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemDispatch;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemError;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftBrace;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftBracket;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftParen;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemLiteral;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemMeta;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemQuote;
+import static ca.junctionbox.cljbuck.lexer.ItemType.itemUnquote;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 

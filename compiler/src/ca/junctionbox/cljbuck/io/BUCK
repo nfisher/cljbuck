@@ -6,6 +6,7 @@ java_library(
     deps = [
         '//compiler/src/ca/junctionbox/cljbuck/channel:channel',
         '//compiler/src/ca/junctionbox/cljbuck/lexer:lexer',
+        '//build/src/ca/junctionbox/cljbuck/build/json:json',
     ],
     visibility = ["PUBLIC"],
 )

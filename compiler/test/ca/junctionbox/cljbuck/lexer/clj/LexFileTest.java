@@ -9,7 +9,9 @@ import org.junit.Test;
 
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemError;
 import static ca.junctionbox.cljbuck.lexer.ItemType.itemLeftParen;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 

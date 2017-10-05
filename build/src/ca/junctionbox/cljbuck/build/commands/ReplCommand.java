@@ -1,13 +1,11 @@
 package ca.junctionbox.cljbuck.build.commands;
 
-import ca.junctionbox.cljbuck.build.runtime.ClassPath;
 import ca.junctionbox.cljbuck.build.graph.BuildGraph;
+import ca.junctionbox.cljbuck.build.runtime.ClassPath;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 
 public class ReplCommand extends Command {

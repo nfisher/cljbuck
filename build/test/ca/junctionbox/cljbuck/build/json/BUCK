@@ -1,0 +1,11 @@
+# //build:
+
+java_test(
+    name = 'test',
+    srcs = glob(['*.java']),
+    deps = [
+        '//build/src/ca/junctionbox/cljbuck/build/json:json',
+        '//lib:hamcrest-core',
+        '//lib:junit',
+    ],
+)

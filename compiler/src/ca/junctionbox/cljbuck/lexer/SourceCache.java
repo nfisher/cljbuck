@@ -7,6 +7,9 @@ import java.nio.file.Path;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import static ca.junctionbox.cljbuck.build.json.Event.finished;
+import static ca.junctionbox.cljbuck.build.json.Event.started;
+
 /**
  * SourceCache is a cache for raw source code files.
  */
@@ -26,16 +29,22 @@ public class SourceCache {
     }
 
     public void consume(final Path sourceFile) throws IOException {
-        logger.info("\"event\":\"started\",\"source\":\"" + sourceFile + "\"");
+        logger.info(started(hashCode())
+                        .add("source", sourceFile)
+                        .toString());
+
         final long start = System.currentTimeMillis();
         final byte[] bytes = Files.readAllBytes(sourceFile);
         final long read = System.currentTimeMillis();
         final String contents = new String(bytes, StandardCharsets.UTF_8);
-        final long finish = System.currentTimeMillis();
 
         codeCache.put(sourceFile, contents);
 
-        logger.info("\"event\":\"finished\",\"total\":" + (finish - start) + ",\"source\":\"" + sourceFile + "\",\"bytes\":"+ bytes.length +",\"read\":" + (read - start));
+        logger.info(finished(hashCode(), start)
+                .add("source", sourceFile)
+                .add("bytes", bytes.length)
+                .add("read", (read - start))
+                .toString());
     }
 
     public void apply(final Path sourceFile, final SourceLexer lexer) {

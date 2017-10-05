@@ -1,0 +1,9 @@
+# //build:
+
+java_library(
+    name = 'json',
+    srcs = glob(['*.java']),
+    deps = [
+    ],
+    visibility = ["PUBLIC"],
+)

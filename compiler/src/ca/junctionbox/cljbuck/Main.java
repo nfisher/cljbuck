@@ -25,6 +25,8 @@ import java.util.concurrent.Future;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import static ca.junctionbox.cljbuck.build.json.Event.finished;
+import static ca.junctionbox.cljbuck.build.json.Event.started;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Main {
@@ -50,10 +52,11 @@ public class Main {
             "java.util.logging.SimpleFormatter.format=%4$s %2$s %5$s%6$s%n";
 
     public static void main(final String[] args) throws IOException {
+        final long start = System.currentTimeMillis();
         final InputStream is = new ByteArrayInputStream(logConfig.getBytes(UTF_8));
         final Logger logger = Logger.getLogger("ca.junctionbox.cljbuck");
         LogManager.getLogManager().readConfiguration(is);
-        final long start = System.currentTimeMillis();
+        logger.info(started(0).toString());
 
         final ReadWriterQueue globCh = new ReadWriterQueue();
         final ReadWriterQueue pathCh = new ReadWriterQueue();
@@ -91,7 +94,7 @@ public class Main {
 
         final long finish = System.currentTimeMillis();
 
-        logger.info("finished in " + (finish - start) + "ms");
+        logger.info(finished(0, start).toString());
         printGCStats(logger);
 
         for (final Future f : results) {

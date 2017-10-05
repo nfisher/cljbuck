@@ -8,13 +8,15 @@ import java.nio.file.Path;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
+import static ca.junctionbox.cljbuck.build.json.Event.finished;
+import static ca.junctionbox.cljbuck.build.json.Event.started;
 import static ca.junctionbox.cljbuck.channel.Closer.close;
 import static java.util.logging.Level.SEVERE;
 
 public class LexerTask implements SourceLexer, Runnable, Callable<Integer> {
     private final SourceCache cache;
     private final Logger logger;
-    private final Lexeme cljLex;
+    private final Lexeme lexeme;
 
     private final Reader r;
     private final Writer w;
@@ -22,15 +24,15 @@ public class LexerTask implements SourceLexer, Runnable, Callable<Integer> {
     public LexerTask(final Logger logger, final Reader r, final Writer w, final SourceCache cache, final Lexeme lexeme) {
         this.cache = cache;
         this.logger = logger;
-        this.cljLex = lexeme;
+        this.lexeme = lexeme;
         this.r = r;
         this.w = w;
     }
 
     @Override
     public void run() {
-        logger.info("\"event\":\"started\"");
-        long start = System.currentTimeMillis();
+        long started = System.currentTimeMillis();
+        logger.info(started(hashCode()).toString());
         long working = 0;
         try {
             for (; ; ) {
@@ -50,18 +52,24 @@ public class LexerTask implements SourceLexer, Runnable, Callable<Integer> {
         } finally {
             close(w);
         }
-        final long finish = System.currentTimeMillis();
-        logger.info("\"event\":\"finished\",\"working\":" + working + ",\"total\":" + (finish - start));
+        logger.info(finished(hashCode(), started)
+                .add("working", working)
+                .toString());
     }
 
     public void lex(final Path path, final String contents) {
-        final Lexable lexable = Lexable.create(path.toString(), contents, cljLex, w);
+        final long started = System.currentTimeMillis();
+        final Lexable lexable = Lexable.create(path.toString(), contents, lexeme, w);
 
-        logger.info("\"event\":\"started\",\"source\":\"" + path.toString() + "\"");
-        final long start = System.currentTimeMillis();
+        logger.info(started(hashCode())
+                .add("source", path)
+                .toString());
         lexable.run();
-        final long finish = System.currentTimeMillis();
-        logger.info("\"event\":\"finished\",\"source\":\"" + path.toString() + "\",\"total\":" + (finish - start) +",\"bytes\":" + contents.length());
+
+        logger.info(finished(hashCode(), started)
+                .add("source", path)
+                .add("bytes", contents.length())
+                .toString());
     }
 
     @Override

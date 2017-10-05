@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
+import static ca.junctionbox.cljbuck.build.json.Event.finished;
+import static ca.junctionbox.cljbuck.build.json.Event.started;
+
 enum SyntaxType {
     CljFile,
 
@@ -74,7 +77,8 @@ public class SyntaxTask implements Runnable, Callable<Integer> {
 
     @Override
     public void run() {
-        logger.info("started");
+        final long started = System.currentTimeMillis();
+        logger.info(started(hashCode()).toString());
         LinkedList<Item> brackets = new LinkedList<>();
         for (; ; ) {
             final Object o = in.read();
@@ -88,7 +92,7 @@ public class SyntaxTask implements Runnable, Callable<Integer> {
             final Item item = (Item) o;
             items.add(item);
         }
-        logger.info("finished");
+        logger.info(finished(hashCode(), started).toString());
     }
 
     public int size() {

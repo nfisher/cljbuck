@@ -21,6 +21,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.lang.management.GarbageCollectorMXBean;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -35,12 +37,15 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import static ca.junctionbox.cljbuck.build.json.Event.finished;
+import static ca.junctionbox.cljbuck.build.json.Event.started;
 import static ca.junctionbox.cljbuck.channel.Closer.close;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Main {
     public static final int ARG1 = 0;
-    private static final int USAGE = 1;
+    private static final int RC_USAGE = 1;
+    private static final int RC_EXCEPTION = -1;
     private static final int READER_TASKS = 4;
     private static final int LEXER_TASKS= 4;
 
@@ -60,6 +65,7 @@ public class Main {
     }
 
     public static void main(final String[] args) throws InterruptedException, ExecutionException, IOException {
+        final long started = System.currentTimeMillis();
         final Workspace workspace = new Workspace().findRoot();
         final File targetDir = new File(workspace.getOutputDir());
         targetDir.mkdirs();
@@ -68,7 +74,9 @@ public class Main {
         final Logger logger = Logger.getLogger("ca.junctionbox.cljbuck.build");
         LogManager.getLogManager().readConfiguration(is);
 
-        logger.info("\"args\": [\"" + String.join("\",\"", args) + "\"],\"event\":\"started\"");
+        logger.info(started(0)
+                .add("args", args)
+                .toString());
 
         final SourceCache cache = SourceCache.create(logger);
         final ReadWriterQueue globCh = new ReadWriterQueue();
@@ -107,7 +115,7 @@ public class Main {
 
         if (0 != rc) {
             logger.log(Level.SEVERE, "unexpected error result returned from pipeline");
-            System.exit(rc);
+            exit(logger, rc, started);
         }
 
         final ArrayList<Rules> buildRules = new ArrayList<>();
@@ -128,7 +136,7 @@ public class Main {
 
             if (args.length < 1) {
                 printUsage(System.out, commandList);
-                System.exit(USAGE);
+                exit(logger, RC_USAGE, started);
             }
 
             final String arg1 = argList.remove(ARG1);
@@ -136,15 +144,43 @@ public class Main {
 
             if (null == cmd) {
                 printUsage(System.out, commandList);
-                System.exit(USAGE);
+                exit(logger, RC_USAGE, started);
             }
 
             rc = cmd.exec(argList);
 
-            System.exit(rc);
+            exit(logger, rc, started);
         } catch (Exception e) {
             e.printStackTrace();
+            exit(logger, RC_EXCEPTION, started);
         }
+    }
+
+    public static void exit(final Logger logger, final int rc, final long started) {
+        long garbageCollections = 0;
+        long garbageCollectionTime = 0;
+
+        for (GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans()) {
+
+            long count = gc.getCollectionCount();
+
+            if (count >= 0) {
+                garbageCollections += count;
+            }
+
+            long time = gc.getCollectionTime();
+
+            if (time >= 0) {
+                garbageCollectionTime += time;
+            }
+        }
+
+        logger.info(finished(0, started)
+                .add("rc", RC_USAGE)
+                .add("gc", garbageCollections)
+                .add("ingc", garbageCollectionTime)
+                .toString());
+        System.exit(rc);
     }
 
     /**
