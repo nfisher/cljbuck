@@ -16,10 +16,10 @@ script:
 branches:
   except:
     - gh-pages
-  cache:
-    directories:
-      - "$HOME/.buck/"
-      - buck-out/cache
+cache:
+  directories:
+    - "$HOME/.buck/"
+    - buck-out/cache
 deploy:
   provider: releases
   api_key:
