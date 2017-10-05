@@ -1,24 +1,29 @@
 dist: trusty
 language: java
-
 before_install:
   - test -f $HOME/.buck/build/successful-build || sudo apt-get update
   - test -f $HOME/.buck/build/successful-build || sudo apt-get install -y ant
-  # Install Buck
-  - test -f $HOME/.buck/build/successful-build || git clone --branch v2017.09.04.02 --depth 1 https://github.com/facebook/buck.git $HOME/.buck
+  - test -f $HOME/.buck/build/successful-build || git clone --branch v2017.09.04.02
+    --depth 1 https://github.com/facebook/buck.git $HOME/.buck
   - ls $HOME/.buck
-  - cd $HOME/.buck; test -f $HOME/.buck/build/successful-build || ant; cd - # build then jump back to project directory
-  - rm -rf $HOME/.buck/.git # don't bother caching the .git folder as it'll bloat the cache
-  - $HOME/.buck/bin/buck --version
-
+  - cd $HOME/.buck; test -f $HOME/.buck/build/successful-build || ant; cd -
+  - rm -rf $HOME/.buck/.git
+  - "$HOME/.buck/bin/buck --version"
 script:
-  - $HOME/.buck/bin/buck test --all
-
+  - "$HOME/.buck/bin/buck test --all"
 branches:
   except:
-    - gh-pages
-
+  - gh-pages
 cache:
   directories:
-    - $HOME/.buck/ # this prevents you from having to wait for buck to build every time
-    - buck-out/cache # this speeds tings up a bit by retaining the cache across builds
+  - "$HOME/.buck/"
+  - buck-out/cache
+deploy:
+  provider: releases
+  api_key:
+    secure: hOieuigJTprK1ugxxWoETCH1V1RwbcGdlL5DK+BftqZPuEs/9I3wEZOV8IuASGonjbjdo6cDgepykP4DfG9bBOaAzCcOm4elvrWl83b6c5vg97JvhVF1D7tox/B9ZGiNCmcqOKuwqIPBgm+cWant/bcnb6sgPtARJutbe4LDzgO5l6rGQ5J9VUATt+fZbL9GKgJ3LSWcroZ1Yb+tXs80acohKmaGF0NX/lLla4wwL2OLjFxIb14EWU4uPCrLooX65ufn9bUQ515mQbJOyVrYnuOgQdLQEkuNnsboFS0Ml7ubku52+RTYChRA8U2pxNeiCqiR8aBRchsTFF43Y3l/YJ9jBksttj6I0Kr92rMNhpj0l8pmrn9+P3Zhts0C3m7VWAqDhl3MZzpKkrEBEhLOkxqQg6N33eOxEi6vni6w0uiho4YEbY8k94PxBC1ufoQworQKa3X1bWvWOh5SIxXnTy9w7vEPNriFjV7Z/eCVKn17ZNx9wJ0vE1yJdyjW+JLGBFj6J5hgefvJ+JuRvx4o7/omAP0eWsYTohzrVrEsfjE79BK0VhWl3nIyp38CNktRzPgBzfStoAlfIwzwTr4GkaqPMd0+mldWk4I4cQEzxA4g6KGSqw7b5hW9Y0G9izjn8tPUM468gQxVmojWO7qz/0I79dd73HPaOSsU+1dcX1U=
+  file:
+    - buck-out/gen/build/cljbuck.jar
+    - cljbuck
+  on:
+    repo: nfisher/cljbuck
