@@ -2,4 +2,4 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-java -jar "${DIR}/cljbuck.jar" $*
+java -Xmx1g -Xms1g -jar "${DIR}/cljbuck.jar" $*

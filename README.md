@@ -10,15 +10,15 @@ Experiment in speeding up Clojure build times from the ground up.
 ### Simple Project Structure
 
 ```
-project
- +-- WORKSPACE
- +-- lib/
- |     +-- CLJ
- |     +-- clojure-1.9.0-beta1.jar
- |     \-- ...
- +-- jbx
-       +-- CLJ
-       +-- src/
+  project
+    +-- WORKSPACE
+    +-- lib/
+    |     +-- CLJ
+    |     +-- clojure-1.9.0-beta1.jar
+    |     \-- ...
+    +-- jbx
+        +-- CLJ
+        +-- src/
 ```
 
 #### jbx/CLJ
@@ -40,9 +40,9 @@ project
 
 ```
 (clj-lib :name "lib"
-         :ns "jbx.core"
-         :srcs ["src/clj/**/*.clj", "src/cljc/**/*.cljc"]
-         :deps ["//lib:clojure1.9"])
+        :ns "jbx.core"
+        :srcs ["src/clj/**/*.clj", "src/cljc/**/*.cljc"]
+        :deps ["//lib:clojure1.9"])
 
 (clj-binary :name "main"
             :main "jbx.core"
@@ -59,17 +59,18 @@ project
 - [X] compile a clojure target by namespace.
 - [X] serial compiler.
 - [ ] parallel "level" compiler.
-- [ ] parallel "notification" compiler.
+- [ ] parallel "event" compiler.
 - [X] run a clojure program.
 - [X] load clojure repl.
 - [X] finish symbol parsing.
+- [ ] check for circular dependency violations.
 - [ ] noop when there's no source modifications.
 - [ ] file IO optimisations (e.g. JNI).
-- [ ] remove or root all dependencies.
+- [ ] remove or root all dependencies required by cljbuck.
 - [ ] instrument JMH benchmarks for each stage.
 - [ ] AST generation.
 - [ ] evaluator.
-- [ ] compile individual *.clj files.
+- [ ] compile individual \*.clj files rather than namespace.
 - [ ] generate bytecode.
 - [ ] generate jar.
 - [ ] generate uberjar.
@@ -77,9 +78,12 @@ project
 - [ ] pom to target generator.
 - [X] structured logs for generating perf graphs.
 - [X] ms or ns timestamp in structured logs.
-- [ ] uid for start/finish in structured logs.
+- [X] uid for start/finish in structured logs.
 - [ ] analyse command/http server to render structured logs.
-- [ ] consider instrumenting structured logs to use nanoTime so time values are (mostly) guaranteed to be monotonic.
+- [ ] consider instrumenting structured logs to use nanoTime so time values are
+  (mostly) guaranteed to be monotonic.
+- [ ] allow extension of build rules, should probably turn the build rules into
+  a map.
 
 ## Building
 
@@ -87,6 +91,58 @@ project
 - buck test --all # run tests
 - buck build //... # build project
 - buck run //compiler:main -- "$CLJ_PROJECT" # run
+
+## Compiler Strategies
+
+For all strategies the following process is carried out to evaluate the build
+graph:
+
+1. The specified target becomes the root node.
+2. The graph is walked breadth first evaluating dependencies.
+3. Once all transitive dependencies have been walked to leaf nodes compilation
+   can commence.
+
+Serial strategy is the easiest to implement and is likely to cause the fewest
+issues with bugs. The other two strategies are expected to provide improved
+performance through parallelism.
+
+### Serial
+
+As the tree is walked the dependencies are placed in a stack. Once the build
+starts classpaths and compilation occurs from the top of the stack down to the
+bottom.
+
+### Level
+
+As the tree is walked the dependencies are placed in an array of lists. The
+index for the array is the depth in the tree. The list is simply a collection of
+elements that can be processed at the same time because they do not have
+peer dependencies. Classpaths and compilation can commence in parallel from the
+deepest nodes and will only proceed to the next level once all nodes are
+complete in the current level. Using the sample //jbx:main as an example:
+
+```
+//jbx:main - main.jar
+    +- //jbx:lib - /Users/nathanfisher/workspace/cljbuck/jbx/src/clj/**/*.clj,/Users/nathanfisher/workspace/cljbuck/jbx/src/cljc/**/*.cljc,
+    |    +- //lib:clojure1.9 - /Users/nathanfisher/workspace/cljbuck/lib/clojure-1.9.0-beta1.jar
+    |    |    +- //lib:core.specs.alpha - /Users/nathanfisher/workspace/cljbuck/lib/core.specs.alpha-0.1.24.jar
+    |    |    +- //lib:spec.alpha - /Users/nathanfisher/workspace/cljbuck/lib/spec.alpha-0.1.123.jar
+```
+
+The above graph of dependencies would look as follows:
+
+1. (//jbx:lib)
+2. (//lib:clojure1.9)
+3. (//lib:core.specs.alpha, //lib:spec.alpha)
+
+Similar to the serial strategy processing would start at the furthest point from
+the target in this case level 3 would be processed, then level 2, and finally
+level 1.
+
+### Notification
+
+Notification will involve an event bus. That all nodes subscribe to as their
+dependencies are completed they will enqueue themselves to be processed.
 
 ## Design
 
@@ -108,7 +164,8 @@ project
 
 Dynamic language makes it more difficult to specify an ABI.
 
-Using multiples of 4096 for number bytes to keep it around memory page boundaries
+Using multiples of 4096 for number bytes to keep it around memory page
+boundaries
 
   File Size
 
@@ -130,17 +187,15 @@ Using multiples of 4096 for number bytes to keep it around memory page boundarie
 ```
 Small
 
-50 * (3 * 64 + 3904)
-= 204,800 Bytes
+50 * (3 * 64 + 3904) = 204,800 Bytes
 
 Large
 
-1000 * (3 * 64 + 12096)
-= 12,288,000 Bytes
+1000 * (3 * 64 + 12096) = 12,288,000 Bytes
 
 Dependencies
 
-??
+?? 
 ```
 
 ## Slab Structure
@@ -151,12 +206,12 @@ Dependencies
 - SHA256 is the checksum of the file.
 
 ```
-    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    |  Frame Length (int)       |  Src Length (int)               |
-    +-------------------------------------------------------------+
-    |                       SHA256 (8 bytes)                      |
-    +-------------------------------------------------------------+
-    |                       CLJ Src                               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Frame Length (int)       |  Src Length (int)               |
++-------------------------------------------------------------+
+| SHA256 (8 bytes)                                            |
++-------------------------------------------------------------+
+| CLJ Src                               ...  
 ```
 
 ## Project File Specification
@@ -174,5 +229,6 @@ Dependencies
 
 ## Inspiration
 
-- Aeron Protocol Specification - https://github.com/real-logic/aeron/wiki/Protocol-Specification
+- Aeron Protocol Specification -
+  https://github.com/real-logic/aeron/wiki/Protocol-Specification
 - Buck Build - https://buckbuild.com/
