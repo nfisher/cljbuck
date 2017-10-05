@@ -12,6 +12,7 @@ before_install:
 script:
   - "$HOME/.buck/bin/buck test --all"
   - "$HOME/.buck/bin/buck build //..."
+  - find . -name cljbuck.jar
 branches:
   except:
   - gh-pages
