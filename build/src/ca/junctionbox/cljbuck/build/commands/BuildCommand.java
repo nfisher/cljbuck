@@ -31,18 +31,13 @@ public class BuildCommand extends Command {
         } catch (MalformedURLException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
+
         for (int i = 0; i < serialBuild.size(); i++) {
             final BuildRule rule = serialBuild.get(i);
             for (final String cp : rule.getClassPaths()) {
                 try {
                     classPath.addClasspath(cp);
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (NoSuchMethodException e) {
+                } catch (MalformedURLException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
                     e.printStackTrace();
                 }
             }

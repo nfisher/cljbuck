@@ -44,30 +44,30 @@ public class Main {
     private static final int READER_TASKS = 4;
     private static final int LEXER_TASKS= 4;
 
-    public static String logConfig = "handlers=java.util.logging.FileHandler\n" +
-            ".level= INFO\n" +
-            "java.util.logging.FileHandler.pattern = clj-out/run.log\n" +
-            "\n" +
-            "java.util.logging.ConsoleHandler.level = INFO\n" +
-            "java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter\n" +
-            "\n" +
-            "java.util.logging.FileHandler.limit = 10000000\n" +
-            "java.util.logging.FileHandler.formatter = java.util.logging.SimpleFormatter\n" +
-            "java.util.logging.FileHandler.count = 25\n" +
-            "\n" +
-            "javax.jms.connection.level = INFO\n" +
-            "\n" +
-            "java.util.logging.SimpleFormatter.format={\"ts\":%1$tQ,\"level\":\"%4$s\",\"method\":\"%2$s\",%5$s%6$s}%n";
+    public static String logConfig(final String outputDir) {
+        final StringBuffer sb = new StringBuffer();
+        sb.append("handlers=java.util.logging.FileHandler\n")
+                .append(".level= INFO\n")
+                .append("java.util.logging.FileHandler.pattern = ").append(outputDir).append("/run.log\n")
+                .append("java.util.logging.ConsoleHandler.level = INFO\n")
+                .append("java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter\n")
+                .append("java.util.logging.FileHandler.limit = 10000000\n" )
+                .append("java.util.logging.FileHandler.formatter = java.util.logging.SimpleFormatter\n")
+                .append("java.util.logging.FileHandler.count = 25\n")
+                .append("javax.jms.connection.level = INFO\n")
+                .append("java.util.logging.SimpleFormatter.format={\"ts\":%1$tQ,\"level\":\"%4$s\",\"method\":\"%2$s\",%5$s%6$s}%n");
+        return sb.toString();
+    }
 
     public static void main(final String[] args) throws InterruptedException, ExecutionException, IOException {
         final Workspace workspace = new Workspace().findRoot();
         final File targetDir = new File(workspace.getOutputDir());
         targetDir.mkdirs();
 
-        final InputStream is = new ByteArrayInputStream(logConfig.getBytes(UTF_8));
+        final InputStream is = new ByteArrayInputStream(logConfig(workspace.getOutputDir()).getBytes(UTF_8));
         final Logger logger = Logger.getLogger("ca.junctionbox.cljbuck.build");
-        // TODO: replace relative log path with absolute path.
         LogManager.getLogManager().readConfiguration(is);
+
         logger.info("\"args\": [\"" + String.join("\",\"", args) + "\"],\"event\":\"started\"");
 
         final SourceCache cache = SourceCache.create(logger);
