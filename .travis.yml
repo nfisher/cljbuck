@@ -15,17 +15,17 @@ script:
   - find . -name cljbuck.jar
 branches:
   except:
-  - gh-pages
-cache:
-  directories:
-  - "$HOME/.buck/"
-  - buck-out/cache
+    - gh-pages
+  cache:
+    directories:
+      - "$HOME/.buck/"
+      - buck-out/cache
 deploy:
   provider: releases
   api_key:
     secure: hOieuigJTprK1ugxxWoETCH1V1RwbcGdlL5DK+BftqZPuEs/9I3wEZOV8IuASGonjbjdo6cDgepykP4DfG9bBOaAzCcOm4elvrWl83b6c5vg97JvhVF1D7tox/B9ZGiNCmcqOKuwqIPBgm+cWant/bcnb6sgPtARJutbe4LDzgO5l6rGQ5J9VUATt+fZbL9GKgJ3LSWcroZ1Yb+tXs80acohKmaGF0NX/lLla4wwL2OLjFxIb14EWU4uPCrLooX65ufn9bUQ515mQbJOyVrYnuOgQdLQEkuNnsboFS0Ml7ubku52+RTYChRA8U2pxNeiCqiR8aBRchsTFF43Y3l/YJ9jBksttj6I0Kr92rMNhpj0l8pmrn9+P3Zhts0C3m7VWAqDhl3MZzpKkrEBEhLOkxqQg6N33eOxEi6vni6w0uiho4YEbY8k94PxBC1ufoQworQKa3X1bWvWOh5SIxXnTy9w7vEPNriFjV7Z/eCVKn17ZNx9wJ0vE1yJdyjW+JLGBFj6J5hgefvJ+JuRvx4o7/omAP0eWsYTohzrVrEsfjE79BK0VhWl3nIyp38CNktRzPgBzfStoAlfIwzwTr4GkaqPMd0+mldWk4I4cQEzxA4g6KGSqw7b5hW9Y0G9izjn8tPUM468gQxVmojWO7qz/0I79dd73HPaOSsU+1dcX1U=
-  file:
-    - $TRAVIS_BUILD_DIR/cljbuck
-    - ./buck-out/gen/build/cljbuck.jar
-  on:
-    repo: nfisher/cljbuck
+    file:
+      - cljbuck
+      - 'buck-out/gen/build/cljbuck.jar'
+    on:
+      repo: nfisher/cljbuck
