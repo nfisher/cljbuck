@@ -61,16 +61,33 @@ public class BuildGraph {
 
         while (!buildRules.isEmpty()) {
             final BuildRule parent = buildRules.peek();
-            final BuildRule child = unseenChild(parent, seen);
+            final int depth = buildRules.size();
+            final BuildRule child = unseenChild(parent, seen, depth);
 
             if (null != child) {
-                seen.add(child.getName());
-                christopher.step(child, buildRules.size());
+                seen.add(depth + ":" + child.getName());
+                christopher.step(child, depth);
                 buildRules.push(child);
             } else {
                 buildRules.pop();
             }
         }
+    }
+
+    private BuildRule unseenChild(final BuildRule parent, final Set<String> seen, final int depth) {
+        final Set<BuildRule> children = graph.predecessors(parent);
+        BuildRule child = null;
+
+        for (final BuildRule n : children) {
+            if (seen.contains(depth + ":" + n.getName())) {
+                continue;
+            }
+
+            child = n;
+            break;
+        }
+
+        return child;
     }
 
     public void breadthFirstFrom(final String start, final Walken christopher) {
@@ -90,22 +107,6 @@ public class BuildGraph {
                 buildRules.add(child);
             }
         }
-    }
-
-    private BuildRule unseenChild(final BuildRule parent, final Set<String> seen) {
-        final Set<BuildRule> children = graph.predecessors(parent);
-        BuildRule child = null;
-
-        for (final BuildRule n : children) {
-            if (seen.contains(n.getName())) {
-                continue;
-            }
-
-            child = n;
-            break;
-        }
-
-        return child;
     }
 
     public String mainFor(final String nodeName) {
