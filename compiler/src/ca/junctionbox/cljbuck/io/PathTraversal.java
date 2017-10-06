@@ -42,11 +42,15 @@ public class PathTraversal extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-        if (dir.getFileName().startsWith(".")) {
+        final String d = dir.getFileName().toString();
+
+        if (d.startsWith(".")) {
             return SKIP_SUBTREE;
-        } else if (dir.getFileName().equals("clj-out")) {
+        } else if (d.equals("clj-out")) {
             return SKIP_SUBTREE;
-        } else if (dir.getFileName().equals("buck-out")) {
+        } else if (d.equals("target")) {
+            return SKIP_SUBTREE;
+        } else if (d.equals("buck-out")) {
             return SKIP_SUBTREE;
         }
         find(dir);
