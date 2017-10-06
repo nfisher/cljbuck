@@ -60,12 +60,11 @@ public class Main {
                 .append("java.util.logging.FileHandler.formatter = java.util.logging.SimpleFormatter\n")
                 .append("java.util.logging.FileHandler.count = 25\n")
                 .append("javax.jms.connection.level = INFO\n")
-                .append("java.util.logging.SimpleFormatter.format={\"ts\":%1$tQ,\"level\":\"%4$s\",\"method\":\"%2$s\",%5$s%6$s}%n");
+                .append("java.util.logging.SimpleFormatter.format={\"ts\":%1$tQ000,\"level\":\"%4$s\",\"name\":\"%2$s\",%5$s%6$s},%n");
         return sb.toString();
     }
 
     public static void main(final String[] args) throws InterruptedException, ExecutionException, IOException {
-        final long started = System.currentTimeMillis();
         final Workspace workspace = new Workspace().findRoot();
         final File targetDir = new File(workspace.getOutputDir());
         targetDir.mkdirs();
@@ -115,7 +114,7 @@ public class Main {
 
         if (0 != rc) {
             logger.log(Level.SEVERE, "unexpected error result returned from pipeline");
-            exit(logger, rc, started);
+            exit(logger, rc);
         }
 
         final ArrayList<Rules> buildRules = new ArrayList<>();
@@ -129,14 +128,14 @@ public class Main {
 
         try {
             final ClassPath classPath = new ClassPath();
-            final BuildGraph buildGraph = new Rules().graph(buildRules.toArray(new Rules[0]));
+            final BuildGraph buildGraph = new Rules().graph(logger, buildRules.toArray(new Rules[0]));
 
             final ArrayList<String> argList = new ArrayList<>(Arrays.asList(args));
-            final ImmutableSortedMap<String, Command> commandList = commandList(buildGraph, classPath, workspace);
+            final ImmutableSortedMap<String, Command> commandList = commandList(logger, buildGraph, classPath, workspace);
 
             if (args.length < 1) {
                 printUsage(System.out, commandList);
-                exit(logger, RC_USAGE, started);
+                exit(logger, RC_USAGE);
             }
 
             final String arg1 = argList.remove(ARG1);
@@ -144,41 +143,52 @@ public class Main {
 
             if (null == cmd) {
                 printUsage(System.out, commandList);
-                exit(logger, RC_USAGE, started);
+                exit(logger, RC_USAGE);
             }
 
             rc = cmd.exec(argList);
 
-            exit(logger, rc, started);
+            exit(logger, rc);
         } catch (Exception e) {
             e.printStackTrace();
-            exit(logger, RC_EXCEPTION, started);
+            exit(logger, RC_EXCEPTION);
         }
     }
 
-    public static void exit(final Logger logger, final int rc, final long started) {
+    public static void exit(final Logger logger, final int rc) {
+        final Runtime runtime = Runtime.getRuntime();
+
+        final long freeMemory = runtime.freeMemory();
+        final long maxMemory = runtime.maxMemory();
+        final long totalMemory = runtime.totalMemory();
+        final long processors = runtime.availableProcessors();
+
         long garbageCollections = 0;
         long garbageCollectionTime = 0;
 
-        for (GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans()) {
 
-            long count = gc.getCollectionCount();
+        for (GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans()) {
+            final long count = gc.getCollectionCount();
 
             if (count >= 0) {
                 garbageCollections += count;
             }
 
-            long time = gc.getCollectionTime();
+            final long time = gc.getCollectionTime();
 
             if (time >= 0) {
                 garbageCollectionTime += time;
             }
         }
 
-        logger.info(finished(0, started)
+        logger.info(finished(0)
                 .add("rc", RC_USAGE)
-                .add("gc", garbageCollections)
-                .add("ingc", garbageCollectionTime)
+                .add("numGC", garbageCollections)
+                .add("inGC", garbageCollectionTime)
+                .add("freeMemory", freeMemory)
+                .add("maxMemory", maxMemory)
+                .add("totalMemory", totalMemory)
+                .add("processors", processors)
                 .toString());
         System.exit(rc);
     }
@@ -186,22 +196,24 @@ public class Main {
     /**
      * Composes the list of commands and initialises them with the build graph.
      *
+     *
+     * @param logger
      * @param buildGraph
      * @param classPath
      * @param workspace
      * @return
      */
-    private static ImmutableSortedMap<String, Command> commandList(final BuildGraph buildGraph, final ClassPath classPath, final Workspace workspace) {
+    private static ImmutableSortedMap<String, Command> commandList(final Logger logger, final BuildGraph buildGraph, final ClassPath classPath, final Workspace workspace) {
         final ImmutableSortedMap.Builder<String, Command> commands = new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
         final ArrayList<Command> list = new ArrayList<>();
 
-        final BuildCommand buildCommand = new BuildCommand(buildGraph, classPath, workspace.getOutputDir());
+        final BuildCommand buildCommand = new BuildCommand(logger, buildGraph, classPath, workspace.getOutputDir());
 
         list.add(buildCommand);
-        list.add(new PrintDepsCommand(buildGraph));
-        list.add(new ReplCommand(buildGraph, classPath, buildCommand));
-        list.add(new RunCommand(buildGraph, classPath, buildCommand));
-        list.add(new PrintTargetsCommand(buildGraph));
+        list.add(new PrintDepsCommand(logger, buildGraph));
+        list.add(new ReplCommand(logger, buildGraph, classPath, buildCommand));
+        list.add(new RunCommand(logger, buildGraph, classPath, buildCommand));
+        list.add(new PrintTargetsCommand(logger, buildGraph));
 
         for (final Command c : list) {
             commands.put(c.getTarget(), c);

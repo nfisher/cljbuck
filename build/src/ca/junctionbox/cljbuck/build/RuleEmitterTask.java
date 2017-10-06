@@ -45,7 +45,6 @@ class RuleEmitterTask implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        final long started = System.currentTimeMillis();
         logger.info(started(hashCode()).toString());
         final HashMap<String, Rule> map = new HashMap<>();
 
@@ -140,7 +139,7 @@ class RuleEmitterTask implements Callable<Integer> {
             }
         }
 
-        logger.info(finished(hashCode(), started).toString());
+        logger.info(finished(hashCode()).toString());
         return 0;
     }
 }

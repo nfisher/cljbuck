@@ -77,7 +77,6 @@ public class SyntaxTask implements Runnable, Callable<Integer> {
 
     @Override
     public void run() {
-        final long started = System.currentTimeMillis();
         logger.info(started(hashCode()).toString());
         LinkedList<Item> brackets = new LinkedList<>();
         for (; ; ) {
@@ -92,7 +91,7 @@ public class SyntaxTask implements Runnable, Callable<Integer> {
             final Item item = (Item) o;
             items.add(item);
         }
-        logger.info(finished(hashCode(), started).toString());
+        logger.info(finished(hashCode()).toString());
     }
 
     public int size() {

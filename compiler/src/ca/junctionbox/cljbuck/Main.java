@@ -52,7 +52,6 @@ public class Main {
             "java.util.logging.SimpleFormatter.format=%4$s %2$s %5$s%6$s%n";
 
     public static void main(final String[] args) throws IOException {
-        final long start = System.currentTimeMillis();
         final InputStream is = new ByteArrayInputStream(logConfig.getBytes(UTF_8));
         final Logger logger = Logger.getLogger("ca.junctionbox.cljbuck");
         LogManager.getLogManager().readConfiguration(is);
@@ -94,7 +93,7 @@ public class Main {
 
         final long finish = System.currentTimeMillis();
 
-        logger.info(finished(0, start).toString());
+        logger.info(finished(0).toString());
         printGCStats(logger);
 
         for (final Future f : results) {

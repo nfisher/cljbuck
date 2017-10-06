@@ -4,12 +4,13 @@ import ca.junctionbox.cljbuck.build.graph.BuildGraph;
 import ca.junctionbox.cljbuck.build.graph.PrintTargets;
 
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 public class PrintTargetsCommand extends Command {
     private final BuildGraph buildGraph;
 
-    public PrintTargetsCommand(final BuildGraph buildGraph) {
-        super("targets", "prints the list of buildable targets", buildGraph);
+    public PrintTargetsCommand(Logger logger, final BuildGraph buildGraph) {
+        super(logger, "targets", "prints the list of buildable targets", buildGraph);
         this.buildGraph = buildGraph;
     }
 

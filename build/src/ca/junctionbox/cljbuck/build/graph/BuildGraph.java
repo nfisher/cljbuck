@@ -2,20 +2,20 @@ package ca.junctionbox.cljbuck.build.graph;
 
 import ca.junctionbox.cljbuck.build.rules.BuildRule;
 import ca.junctionbox.cljbuck.build.rules.ClojureBinary;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.graph.ImmutableGraph;
+import com.google.common.graph.MutableGraph;
 
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class BuildGraph {
-    private final ImmutableGraph<BuildRule> graph;
-    private final ImmutableSortedMap<String, BuildRule> map;
+    private final MutableGraph<BuildRule> graph;
+    private final ConcurrentHashMap<String, BuildRule> map;
 
-    public BuildGraph(final ImmutableGraph<BuildRule> graph, final ImmutableSortedMap<String, BuildRule> map) {
+    public BuildGraph(final MutableGraph<BuildRule> graph, final ConcurrentHashMap<String, BuildRule> map) {
         this.graph = graph;
         this.map = map;
     }

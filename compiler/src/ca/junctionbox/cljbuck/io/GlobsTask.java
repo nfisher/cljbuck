@@ -24,7 +24,6 @@ public class GlobsTask implements Runnable, Callable<Integer> {
     public void run() {
         logger.info(started(hashCode()).toString());
         final String clj = "**/*.clj";
-        final long start = System.currentTimeMillis();
 
         for (String s : startPaths) {
             out.write(Glob.create(s, clj));
@@ -32,7 +31,7 @@ public class GlobsTask implements Runnable, Callable<Integer> {
 
         close(out);
 
-        logger.info(finished(hashCode(), start).toString());
+        logger.info(finished(hashCode()).toString());
     }
 
     @Override

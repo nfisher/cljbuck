@@ -31,7 +31,6 @@ public class LexerTask implements SourceLexer, Runnable, Callable<Integer> {
 
     @Override
     public void run() {
-        long started = System.currentTimeMillis();
         logger.info(started(hashCode()).toString());
         long working = 0;
         try {
@@ -52,13 +51,12 @@ public class LexerTask implements SourceLexer, Runnable, Callable<Integer> {
         } finally {
             close(w);
         }
-        logger.info(finished(hashCode(), started)
+        logger.info(finished(hashCode())
                 .add("working", working)
                 .toString());
     }
 
     public void lex(final Path path, final String contents) {
-        final long started = System.currentTimeMillis();
         final Lexable lexable = Lexable.create(path.toString(), contents, lexeme, w);
 
         logger.info(started(hashCode())
@@ -66,7 +64,7 @@ public class LexerTask implements SourceLexer, Runnable, Callable<Integer> {
                 .toString());
         lexable.run();
 
-        logger.info(finished(hashCode(), started)
+        logger.info(finished(hashCode())
                 .add("source", path)
                 .add("bytes", contents.length())
                 .toString());

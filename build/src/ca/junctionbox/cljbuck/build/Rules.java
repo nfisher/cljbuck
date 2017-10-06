@@ -7,6 +7,8 @@ import ca.junctionbox.cljbuck.build.rules.ClojureLib;
 import ca.junctionbox.cljbuck.build.rules.ClojureTest;
 import ca.junctionbox.cljbuck.build.rules.Jar;
 import ca.junctionbox.cljbuck.build.rules.Type;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.ImmutableGraph;
@@ -15,7 +17,11 @@ import com.google.common.graph.MutableGraph;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
+import static ca.junctionbox.cljbuck.build.json.Event.finished;
+import static ca.junctionbox.cljbuck.build.json.Event.started;
 import static ca.junctionbox.cljbuck.build.rules.Type.CljBinary;
 import static ca.junctionbox.cljbuck.build.rules.Type.CljLib;
 import static ca.junctionbox.cljbuck.build.rules.Type.CljTest;
@@ -32,6 +38,7 @@ public class Rules {
     final List<String> srcs;
     final Type type;
     final List<String> visibility;
+    final int hashCode = hashCode();
 
     private Rules(final String name,
                   final List<String> deps,
@@ -75,20 +82,21 @@ public class Rules {
         return new Rules(CljTest);
     }
 
-    public BuildGraph graph(Rules... targets) throws Exception {
-        final ImmutableSortedMap.Builder<String, BuildRule> builder = new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
-        final MutableGraph<BuildRule> graph = GraphBuilder.directed().allowsSelfLoops(false).build();
+    public BuildGraph graph(final Logger logger, final Rules... targets) throws Exception {
+        logger.info(started(hashCode).toString());
+        final ConcurrentHashMap<String, BuildRule> nodeMap = new ConcurrentHashMap<>(targets.length);
+        final MutableGraph<BuildRule> graph = GraphBuilder.directed().expectedNodeCount(targets.length).build();
 
-        // add all of the nodes
-        for (final Rules target : targets) {
-            final BuildRule buildRule = target.build();
-            builder.put(buildRule.getName(), buildRule);
-            graph.addNode(buildRule);
-        }
+        addNodes(logger, nodeMap, graph, targets);
+        addEdges(logger, graph, nodeMap);
 
-        final ImmutableSortedMap<String, BuildRule> nodeMap = builder.build();
+        final BuildGraph buildGraph = new BuildGraph(graph, nodeMap);
+        logger.info(finished(hashCode).toString());
+        return buildGraph;
+    }
 
-        // add all of the edges
+    private void addEdges(Logger logger, MutableGraph<BuildRule> graph, ConcurrentHashMap<String, BuildRule> nodeMap) {
+        logger.info(started(hashCode).toString());
         for (final BuildRule buildRuleV : nodeMap.values()) {
             for (final String predecessor : buildRuleV.getDeps()) {
                 final BuildRule buildRuleU = nodeMap.get(predecessor);
@@ -99,9 +107,17 @@ public class Rules {
                 graph.putEdge(buildRuleU, buildRuleV);
             }
         }
+        logger.info(finished(hashCode).toString());
+    }
 
-        final BuildGraph buildGraph = new BuildGraph(ImmutableGraph.copyOf(graph), nodeMap);
-        return buildGraph;
+    private void addNodes(Logger logger, ConcurrentHashMap<String, BuildRule> builder, MutableGraph<BuildRule> graph, Rules[] targets) throws Exception {
+        logger.info(started(hashCode).toString());
+        for (final Rules target : targets) {
+            final BuildRule buildRule = target.build();
+            builder.put(buildRule.getName(), buildRule);
+            graph.addNode(buildRule);
+        }
+        logger.info(finished(hashCode).toString());
     }
 
     public Rules name(final String name) {

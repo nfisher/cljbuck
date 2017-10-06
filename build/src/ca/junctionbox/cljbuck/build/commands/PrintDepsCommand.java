@@ -4,10 +4,11 @@ import ca.junctionbox.cljbuck.build.graph.BuildGraph;
 import ca.junctionbox.cljbuck.build.graph.PrintDepsGraph;
 
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 public class PrintDepsCommand extends Command {
-    public PrintDepsCommand(final BuildGraph buildGraph) {
-        super("print", "print the dependency graph for the specified target", buildGraph);
+    public PrintDepsCommand(Logger logger, final BuildGraph buildGraph) {
+        super(logger, "print", "print the dependency graph for the specified target", buildGraph);
     }
 
     @Override

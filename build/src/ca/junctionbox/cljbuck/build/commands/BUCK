@@ -6,6 +6,7 @@ java_library(
     deps = [
         '//lib:guava',
         '//build/src/ca/junctionbox/cljbuck/build/graph:graph',
+        '//build/src/ca/junctionbox/cljbuck/build/json:json',
         '//build/src/ca/junctionbox/cljbuck/build/rules:rules',
         '//build/src/ca/junctionbox/cljbuck/build/runtime:runtime',
     ],

@@ -9,19 +9,24 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.logging.Logger;
+
+import static ca.junctionbox.cljbuck.build.json.Event.finished;
+import static ca.junctionbox.cljbuck.build.json.Event.started;
 
 public class BuildCommand extends Command {
     private final ClassPath classPath;
     private final String outputDir;
 
-    public BuildCommand(final BuildGraph buildGraph, final ClassPath classPath, final String outputDir) {
-        super("build", "builds the specified target", buildGraph);
+    public BuildCommand(final Logger logger, final BuildGraph buildGraph, final ClassPath classPath, final String outputDir) {
+        super(logger, "build", "builds the specified target", buildGraph);
         this.classPath = classPath;
         this.outputDir = outputDir;
     }
 
     @Override
     public int exec(final ArrayList<String> args) {
+        getLogger().info(started(hashCode()).toString());
         final SerialBuild serialBuild = new SerialBuild();
         final String target = args.get(0);
 
@@ -47,11 +52,12 @@ public class BuildCommand extends Command {
                 rtLoad(outputDir, load);
             }
         }
-
+        getLogger().info(finished(hashCode()).toString());
         return 0;
     }
 
     public void rtLoad(final String outputDir, final String ns) {
+        getLogger().info(started(hashCode()).toString());
         try {
             final Class<?> rt = classPath.forName("clojure.lang.RT", true);
             final Method rtVar = rt.getDeclaredMethod("var", String.class, String.class, Object.class);
@@ -65,5 +71,6 @@ public class BuildCommand extends Command {
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
+        getLogger().info(finished(hashCode()).toString());
     }
 }

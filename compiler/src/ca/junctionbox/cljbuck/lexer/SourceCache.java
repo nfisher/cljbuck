@@ -40,7 +40,7 @@ public class SourceCache {
 
         codeCache.put(sourceFile, contents);
 
-        logger.info(finished(hashCode(), start)
+        logger.info(finished(hashCode())
                 .add("source", sourceFile)
                 .add("bytes", bytes.length)
                 .add("read", (read - start))

@@ -19,6 +19,7 @@ public class FindFilesTask implements Runnable, Callable<Integer> {
     private final Reader in;
     private final Writer out;
     private final int readers;
+    private final int hashCode = hashCode();
 
     public FindFilesTask(final Logger logger, final Reader in, final Writer out, final int readers) {
         this.logger = logger;
@@ -29,30 +30,31 @@ public class FindFilesTask implements Runnable, Callable<Integer> {
 
     @Override
     public void run() {
-        logger.info(started(hashCode()).toString());
-        boolean first = true;
-        long start = 0;
+        logger.info(started(hashCode).toString());
         try {
             while (true) {
                 final Object o = in.read();
-                if (first) {
-                    first = false;
-                    start = System.currentTimeMillis();
-                }
-                if (o instanceof Closer) {
-                    break;
-                }
-                final Glob glob = (Glob) o;
-                final PathTraversal pathTraversal = PathTraversal.create(glob.glob, out);
-                // TODO: Look at using JNI find . -name CLJ is done 54ms where this PoS is done in 300ms.
-                Files.walkFileTree(Paths.get(glob.start), pathTraversal);
+                if (receive(o)) break;
             }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             for (int i = 0; i < readers; i++) close(out);
-            logger.info(finished(hashCode(), start).toString());
+            logger.info(finished(hashCode).toString());
         }
+    }
+
+    private boolean receive(final Object o) throws IOException {
+        logger.info(started(hashCode).toString());
+        if (o instanceof Closer) {
+            logger.info(finished(hashCode).toString());
+            return true;
+        }
+        final Glob glob = (Glob) o;
+        final PathTraversal pathTraversal = PathTraversal.create(glob.glob, out);
+        Files.walkFileTree(Paths.get(glob.start), pathTraversal);
+        logger.info(finished(hashCode).toString());
+        return false;
     }
 
     @Override
