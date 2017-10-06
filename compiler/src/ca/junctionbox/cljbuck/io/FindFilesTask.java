@@ -20,12 +20,14 @@ public class FindFilesTask implements Runnable, Callable<Integer> {
     private final Writer out;
     private final int readers;
     private final int hashCode = hashCode();
+    private final String workspacePath;
 
-    public FindFilesTask(final Logger logger, final Reader in, final Writer out, final int readers) {
+    public FindFilesTask(final Logger logger, final Reader in, final Writer out, final String workspacePath, final int readers) {
         this.logger = logger;
         this.in = in;
         this.out = out;
         this.readers = readers;
+        this.workspacePath = workspacePath;
     }
 
     @Override
@@ -51,7 +53,7 @@ public class FindFilesTask implements Runnable, Callable<Integer> {
             return true;
         }
         final Glob glob = (Glob) o;
-        final PathTraversal pathTraversal = PathTraversal.create(glob.glob, out);
+        final PathTraversal pathTraversal = PathTraversal.create(glob.glob, out, workspacePath);
         Files.walkFileTree(Paths.get(glob.start), pathTraversal);
         logger.info(finished(hashCode).toString());
         return false;

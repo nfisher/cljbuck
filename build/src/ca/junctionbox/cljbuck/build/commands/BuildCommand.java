@@ -17,6 +17,7 @@ import static ca.junctionbox.cljbuck.build.json.Event.started;
 public class BuildCommand extends Command {
     private final ClassPath classPath;
     private final String outputDir;
+    private final int hashCode = hashCode();
 
     public BuildCommand(final Logger logger, final BuildGraph buildGraph, final ClassPath classPath, final String outputDir) {
         super(logger, "build", "builds the specified target", buildGraph);
@@ -26,7 +27,7 @@ public class BuildCommand extends Command {
 
     @Override
     public int exec(final ArrayList<String> args) {
-        getLogger().info(started(hashCode()).toString());
+        getLogger().info(started(hashCode).toString());
         final SerialBuild serialBuild = new SerialBuild();
         final String target = args.get(0);
 
@@ -49,15 +50,15 @@ public class BuildCommand extends Command {
 
             for (final String load : rule.getNamespaces()) {
                 // TODO: create hierarchical/isolated outputDir for each target.
-                rtLoad(outputDir, load);
+                cljInit(outputDir, load);
             }
         }
-        getLogger().info(finished(hashCode()).toString());
+        getLogger().info(finished(hashCode).toString());
         return 0;
     }
 
-    public void rtLoad(final String outputDir, final String ns) {
-        getLogger().info(started(hashCode()).toString());
+    public void cljInit(final String outputDir, final String ns) {
+        getLogger().info(started(hashCode).toString());
         try {
             final Class<?> rt = classPath.forName("clojure.lang.RT", true);
             final Method rtVar = rt.getDeclaredMethod("var", String.class, String.class, Object.class);
@@ -67,10 +68,16 @@ public class BuildCommand extends Command {
 
             final Method rtLoad = rt.getDeclaredMethod("load", String.class);
 
-            rtLoad.invoke(null, ns.replace('.', '/').replace('-', '_'));
+            rtLoad(rtLoad, ns);
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
-        getLogger().info(finished(hashCode()).toString());
+        getLogger().info(finished(hashCode).toString());
+    }
+
+    private void rtLoad(Method rtLoad, String ns) throws IllegalAccessException, InvocationTargetException {
+        getLogger().info(started(hashCode).toString());
+        rtLoad.invoke(null, ns.replace('.', '/').replace('-', '_'));
+        getLogger().info(finished(hashCode).toString());
     }
 }

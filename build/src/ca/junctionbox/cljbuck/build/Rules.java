@@ -7,15 +7,10 @@ import ca.junctionbox.cljbuck.build.rules.ClojureLib;
 import ca.junctionbox.cljbuck.build.rules.ClojureTest;
 import ca.junctionbox.cljbuck.build.rules.Jar;
 import ca.junctionbox.cljbuck.build.rules.Type;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.GraphBuilder;
-import com.google.common.graph.ImmutableGraph;
 import com.google.common.graph.MutableGraph;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;

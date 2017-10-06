@@ -17,14 +17,16 @@ import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
 public class PathTraversal extends SimpleFileVisitor<Path> {
     private final PathMatcher matcher;
     private Writer out;
+    private final String workspacePath;
 
-    private PathTraversal(final String pattern, final Writer out) {
-        this.out = out;
+    private PathTraversal(final String pattern, final Writer out, String workspacePath) {
         this.matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
+        this.out = out;
+        this.workspacePath = workspacePath;
     }
 
-    public static PathTraversal create(final String pattern, final Writer out) {
-        return new PathTraversal(pattern, out);
+    public static PathTraversal create(final String pattern, final Writer out, final String workspacePath) {
+        return new PathTraversal(pattern, out, workspacePath);
     }
 
     void find(Path file) {
@@ -43,14 +45,15 @@ public class PathTraversal extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         final String d = dir.getFileName().toString();
+        final String abs = dir.toAbsolutePath().toString();
 
         if (d.startsWith(".")) {
             return SKIP_SUBTREE;
-        } else if (d.equals("clj-out")) {
+        } else if (abs.equals(workspacePath+"/clj-out")) {
             return SKIP_SUBTREE;
-        } else if (d.equals("target")) {
+        } else if (abs.equals(workspacePath+"/target")) {
             return SKIP_SUBTREE;
-        } else if (d.equals("buck-out")) {
+        } else if (abs.equals(workspacePath+"/buck-out")) {
             return SKIP_SUBTREE;
         }
         find(dir);

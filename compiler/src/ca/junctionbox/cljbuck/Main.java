@@ -72,7 +72,7 @@ public class Main {
 
         allTasks.add(new GlobsTask(args, logger, globCh));
 
-        allTasks.add(new FindFilesTask(logger, globCh, pathCh, numReadFileTasks));
+        allTasks.add(new FindFilesTask(logger, globCh, pathCh, workspace.getPath(), numReadFileTasks));
 
         for (int i = 0; i < numReadFileTasks; i++) {
             allTasks.add(new ReadFileTask(logger, pathCh, cacheCh, cache, numLexerTasks / numReadFileTasks));

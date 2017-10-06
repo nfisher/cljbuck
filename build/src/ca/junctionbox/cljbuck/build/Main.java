@@ -14,7 +14,6 @@ import ca.junctionbox.cljbuck.io.Glob;
 import ca.junctionbox.cljbuck.io.ReadFileTask;
 import ca.junctionbox.cljbuck.lexer.LexerTask;
 import ca.junctionbox.cljbuck.lexer.SourceCache;
-import com.google.common.collect.ImmutableSortedMap;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -25,10 +24,9 @@ import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.util.SortedMap;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -68,7 +66,6 @@ public class Main {
         final Workspace workspace = new Workspace().findRoot();
         final File targetDir = new File(workspace.getOutputDir());
         targetDir.mkdirs();
-
         final InputStream is = new ByteArrayInputStream(logConfig(workspace.getOutputDir()).getBytes(UTF_8));
         final Logger logger = Logger.getLogger("ca.junctionbox.cljbuck.build");
         LogManager.getLogManager().readConfiguration(is);
@@ -89,7 +86,7 @@ public class Main {
 
         final ArrayList<Callable<Integer>> tasks = new ArrayList<>();
 
-        tasks.add(new FindFilesTask(logger, globCh, pathCh, READER_TASKS));
+        tasks.add(new FindFilesTask(logger, globCh, pathCh, workspace.getPath(), READER_TASKS));
         for (int i = 0; i < READER_TASKS; i++) {
             tasks.add(new ReadFileTask(logger, pathCh, cacheCh, cache, LEXER_TASKS/READER_TASKS));
         }
@@ -131,7 +128,7 @@ public class Main {
             final BuildGraph buildGraph = new Rules().graph(logger, buildRules.toArray(new Rules[0]));
 
             final ArrayList<String> argList = new ArrayList<>(Arrays.asList(args));
-            final ImmutableSortedMap<String, Command> commandList = commandList(logger, buildGraph, classPath, workspace);
+            final ConcurrentHashMap<String, Command> commandList = commandList(logger, buildGraph, classPath, workspace);
 
             if (args.length < 1) {
                 printUsage(System.out, commandList);
@@ -203,8 +200,8 @@ public class Main {
      * @param workspace
      * @return
      */
-    private static ImmutableSortedMap<String, Command> commandList(final Logger logger, final BuildGraph buildGraph, final ClassPath classPath, final Workspace workspace) {
-        final ImmutableSortedMap.Builder<String, Command> commands = new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
+    private static ConcurrentHashMap<String, Command> commandList(final Logger logger, final BuildGraph buildGraph, final ClassPath classPath, final Workspace workspace) {
+        final ConcurrentHashMap<String, Command> commands = new ConcurrentHashMap<>();
         final ArrayList<Command> list = new ArrayList<>();
 
         final BuildCommand buildCommand = new BuildCommand(logger, buildGraph, classPath, workspace.getOutputDir());
@@ -219,16 +216,15 @@ public class Main {
             commands.put(c.getTarget(), c);
         }
 
-        return commands.build();
+        return commands;
     }
 
     /**
      * Prints the applications help for available commands.
-     *
-     * @param out
+     *  @param out
      * @param commandList
      */
-    private static void printUsage(final PrintStream out, final SortedMap<String, Command> commandList) {
+    private static void printUsage(final PrintStream out, final ConcurrentHashMap<String, Command> commandList) {
         out.println("Description:");
         out.println("  cljbuild is a clojure/jvm build too.");
         out.println("");
