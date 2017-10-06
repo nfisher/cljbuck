@@ -10,6 +10,7 @@ import ca.junctionbox.cljbuck.lexer.clj.CljLex;
 import ca.junctionbox.cljbuck.syntax.SyntaxTask;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.GarbageCollectorMXBean;
@@ -72,7 +73,7 @@ public class Main {
 
         allTasks.add(new GlobsTask(args, logger, globCh));
 
-        allTasks.add(new FindFilesTask(logger, globCh, pathCh, workspace.getPath(), numReadFileTasks));
+        allTasks.add(new FindFilesTask(logger, globCh, pathCh, new File(".").getAbsolutePath(), numReadFileTasks));
 
         for (int i = 0; i < numReadFileTasks; i++) {
             allTasks.add(new ReadFileTask(logger, pathCh, cacheCh, cache, numLexerTasks / numReadFileTasks));
