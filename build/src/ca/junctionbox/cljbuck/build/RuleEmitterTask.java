@@ -1,13 +1,16 @@
 package ca.junctionbox.cljbuck.build;
 
+import ca.junctionbox.cljbuck.build.json.Tracer;
+import ca.junctionbox.cljbuck.build.rules.BuildRule;
 import ca.junctionbox.cljbuck.channel.Closer;
 import ca.junctionbox.cljbuck.channel.Reader;
 import ca.junctionbox.cljbuck.channel.Writer;
 import ca.junctionbox.cljbuck.lexer.Item;
+import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.MutableGraph;
 
-import java.util.HashMap;
 import java.util.concurrent.Callable;
-import java.util.logging.Logger;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static ca.junctionbox.cljbuck.build.Rules.cljBinary;
 import static ca.junctionbox.cljbuck.build.Rules.cljLib;
@@ -26,7 +29,7 @@ import static ca.junctionbox.cljbuck.lexer.ItemType.itemSymbol;
 class RuleEmitterTask implements Callable<Integer> {
     private final Reader in;
     private final Writer out;
-    private final Logger logger;
+    private final Tracer tracer;
     private final Workspace workspace;
     private int countDown;
 
@@ -35,8 +38,8 @@ class RuleEmitterTask implements Callable<Integer> {
         String key;
     }
 
-    public RuleEmitterTask(final Logger logger, final Reader in, final Writer out, final Workspace workspace, final int lexerTasks) {
-        this.logger = logger;
+    public RuleEmitterTask(final Tracer tracer, final Reader in, final Writer out, final Workspace workspace, final int lexerTasks) {
+        this.tracer = tracer;
         this.in = in;
         this.out = out;
         this.countDown = lexerTasks;
@@ -45,14 +48,20 @@ class RuleEmitterTask implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        logger.info(started(hashCode()).toString());
-        final HashMap<String, Rule> map = new HashMap<>();
+        tracer.info(started(hashCode()).toString());
+        // force the class loader to load the graph classes early here
+        final MutableGraph<BuildRule> graph = GraphBuilder.directed().expectedNodeCount(10).build();
+        final ConcurrentHashMap<String, Rule> map = new ConcurrentHashMap<>();
 
         for (;;) {
             final Object o = in.read();
 
             if (o instanceof Closer) {
-                break;
+                countDown--;
+                if (countDown == 0) {
+                    break;
+                }
+                continue;
             }
 
             final Item token = (Item) o;
@@ -64,10 +73,7 @@ class RuleEmitterTask implements Callable<Integer> {
             map.put(token.filename, rule);
 
             if (itemShutdown == token.type) {
-                countDown--;
-                if (countDown < 1) {
-                    break;
-                }
+                break;
             } else if (itemLeftParen == token.type || itemEOF == token.type) {
                 // ignore it for now...
             } else if (itemRightParen == token.type) {
@@ -139,7 +145,7 @@ class RuleEmitterTask implements Callable<Integer> {
             }
         }
 
-        logger.info(finished(hashCode()).toString());
+        tracer.info(finished(hashCode()).toString());
         return 0;
     }
 }

@@ -2,12 +2,12 @@ package ca.junctionbox.cljbuck.build.commands;
 
 import ca.junctionbox.cljbuck.build.graph.BuildGraph;
 import ca.junctionbox.cljbuck.build.graph.PrintDepsGraph;
+import ca.junctionbox.cljbuck.build.json.Tracer;
 
 import java.util.ArrayList;
-import java.util.logging.Logger;
 
 public class PrintDepsCommand extends Command {
-    public PrintDepsCommand(Logger logger, final BuildGraph buildGraph) {
+    public PrintDepsCommand(Tracer logger, final BuildGraph buildGraph) {
         super(logger, "print", "print the dependency graph for the specified target", buildGraph);
     }
 

@@ -1,0 +1,12 @@
+# //build:
+
+java_test(
+    name = 'test',
+    srcs = glob(['*.java']),
+    deps = [
+        '//build/src/ca/junctionbox/cljbuck/build/graph:graph',
+        '//build/src/ca/junctionbox/cljbuck/build/rules:rules',
+        '//lib:hamcrest-core',
+        '//lib:junit',
+    ],
+)

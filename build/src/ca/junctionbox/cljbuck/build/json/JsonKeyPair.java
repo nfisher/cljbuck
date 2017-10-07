@@ -131,7 +131,20 @@ public class JsonKeyPair {
         return this;
     }
 
+    public JsonKeyPair addRaw(final String key, final String value) {
+        quoteHug(key);
+        stringBuilder.append(':');
+        stringBuilder.append(value);
+        stringBuilder.append(',');
+
+        return this;
+    }
+
     public String toString() {
         return stringBuilder.substring(0, stringBuilder.length() - 1);
+    }
+
+    public String toMapString() {
+        return "{" + toString() + "}";
     }
 }

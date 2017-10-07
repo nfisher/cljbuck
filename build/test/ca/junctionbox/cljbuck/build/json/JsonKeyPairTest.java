@@ -67,4 +67,18 @@ public class JsonKeyPairTest {
         kp.add("array", new String[]{"Hola", "Hello"});
         assertThat(kp.toString(), is("\"array\":[\"Hola\",\"Hello\"]"));
     }
+
+    @Test
+    public void Test_toMapString() {
+        final JsonKeyPair kp = new JsonKeyPair();
+        kp.add("str", "ohai");
+        assertThat(kp.toMapString(), is("{\"str\":\"ohai\"}"));
+    }
+
+    @Test
+    public void Test_addRaw() {
+        final JsonKeyPair kp = new JsonKeyPair();
+        kp.addRaw("str", "ohai");
+        assertThat(kp.toString(), is("\"str\":ohai"));
+    }
 }

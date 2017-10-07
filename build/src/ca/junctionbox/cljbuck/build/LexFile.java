@@ -55,6 +55,14 @@ public class LexFile implements StateFunc {
             l.acceptRun(ALPHANUMERIC + '-');
             l.emit(ItemType.itemSymbol);
             return this;
+        } else if (';' == ch) {
+            for (;;) {
+                final char c = l.next();
+                if ('\n' == c) {
+                    break;
+                }
+            }
+            return this;
         } else if (EOF == ch) {
             l.emit(ItemType.itemEOF);
             return null;

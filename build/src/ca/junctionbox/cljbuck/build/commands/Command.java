@@ -1,18 +1,18 @@
 package ca.junctionbox.cljbuck.build.commands;
 
 import ca.junctionbox.cljbuck.build.graph.BuildGraph;
+import ca.junctionbox.cljbuck.build.json.Tracer;
 
 import java.util.ArrayList;
-import java.util.logging.Logger;
 
 public abstract class Command {
     private final String target;
     private final String description;
     private final BuildGraph buildGraph;
-    private final Logger logger;
+    private final Tracer tracer;
 
-    public Command(final Logger logger, final String target, final String description, final BuildGraph buildGraph) {
-        this.logger = logger;
+    public Command(final Tracer tracer, final String target, final String description, final BuildGraph buildGraph) {
+        this.tracer = tracer;
         this.description = description;
         this.buildGraph = buildGraph;
         this.target = target;
@@ -32,7 +32,7 @@ public abstract class Command {
         return buildGraph;
     }
 
-    public Logger getLogger() {
-        return logger;
+    public Tracer getTracer() {
+        return tracer;
     }
 }

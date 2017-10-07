@@ -7,6 +7,8 @@ import ca.junctionbox.cljbuck.build.commands.PrintTargetsCommand;
 import ca.junctionbox.cljbuck.build.commands.ReplCommand;
 import ca.junctionbox.cljbuck.build.commands.RunCommand;
 import ca.junctionbox.cljbuck.build.graph.BuildGraph;
+import ca.junctionbox.cljbuck.build.json.JsonKeyPair;
+import ca.junctionbox.cljbuck.build.json.Tracer;
 import ca.junctionbox.cljbuck.build.runtime.ClassPath;
 import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
 import ca.junctionbox.cljbuck.io.FindFilesTask;
@@ -15,10 +17,8 @@ import ca.junctionbox.cljbuck.io.ReadFileTask;
 import ca.junctionbox.cljbuck.lexer.LexerTask;
 import ca.junctionbox.cljbuck.lexer.SourceCache;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -31,14 +31,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 import static ca.junctionbox.cljbuck.build.json.Event.finished;
 import static ca.junctionbox.cljbuck.build.json.Event.started;
+import static ca.junctionbox.cljbuck.build.json.Event.uptime;
+import static ca.junctionbox.cljbuck.build.json.JsonKeyPair.jsonPair;
 import static ca.junctionbox.cljbuck.channel.Closer.close;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Main {
     public static final int ARG1 = 0;
@@ -46,35 +44,41 @@ public class Main {
     private static final int RC_EXCEPTION = -1;
     private static final int READER_TASKS = 4;
     private static final int LEXER_TASKS= 4;
+    private ExecutorService pool;
+    private Tracer tracer;
 
-    public static String logConfig(final String outputDir) {
-        final StringBuffer sb = new StringBuffer();
-        sb.append("handlers=java.util.logging.FileHandler\n")
-                .append(".level= INFO\n")
-                .append("java.util.logging.FileHandler.pattern = ").append(outputDir).append("/run.log\n")
-                .append("java.util.logging.ConsoleHandler.level = INFO\n")
-                .append("java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter\n")
-                .append("java.util.logging.FileHandler.limit = 10000000\n" )
-                .append("java.util.logging.FileHandler.formatter = java.util.logging.SimpleFormatter\n")
-                .append("java.util.logging.FileHandler.count = 25\n")
-                .append("javax.jms.connection.level = INFO\n")
-                .append("java.util.logging.SimpleFormatter.format={\"ts\":%1$tQ000,\"level\":\"%4$s\",\"name\":\"%2$s\",%5$s%6$s},%n");
-        return sb.toString();
+    public static void main(final String[] args) {
+        final JsonKeyPair mainStart = started(0).add("args", args);
+        Main m = new Main();
+        try {
+            m.run(args, mainStart);
+        } catch (InterruptedException | IOException | ExecutionException e) {
+            e.printStackTrace();
+        } finally {
+            m.shutdown();
+        }
     }
 
-    public static void main(final String[] args) throws InterruptedException, ExecutionException, IOException {
+    private void shutdown() {
+        if (null != tracer) {
+            tracer.close();
+        }
+        if (null != pool) {
+            pool.shutdown();
+        }
+    }
+
+    public void run(final String[] args, final JsonKeyPair mainStart) throws InterruptedException, ExecutionException, IOException {
         final Workspace workspace = new Workspace().findRoot();
         final File targetDir = new File(workspace.getOutputDir());
         targetDir.mkdirs();
-        final InputStream is = new ByteArrayInputStream(logConfig(workspace.getOutputDir()).getBytes(UTF_8));
-        final Logger logger = Logger.getLogger("ca.junctionbox.cljbuck.build");
-        LogManager.getLogManager().readConfiguration(is);
+        tracer = Tracer.create(workspace.getOutputDir());
+        tracer.start();
 
-        logger.info(started(0)
-                .add("args", args)
-                .toString());
+        tracer.info(mainStart);
 
-        final SourceCache cache = SourceCache.create(logger);
+        final ArrayList<Callable<Integer>> tasks = new ArrayList<>();
+        final SourceCache cache = SourceCache.create(tracer);
         final ReadWriterQueue globCh = new ReadWriterQueue();
         final ReadWriterQueue pathCh = new ReadWriterQueue();
         final ReadWriterQueue cacheCh = new ReadWriterQueue();
@@ -84,34 +88,28 @@ public class Main {
         globCh.write(Glob.create(workspace.getPath(), "**/CLJ"));
         close(globCh);
 
-        final ArrayList<Callable<Integer>> tasks = new ArrayList<>();
 
-        tasks.add(new FindFilesTask(logger, globCh, pathCh, workspace.getPath(), READER_TASKS));
+        tasks.add(new FindFilesTask(tracer, globCh, pathCh, workspace.getPath(), READER_TASKS));
         for (int i = 0; i < READER_TASKS; i++) {
-            tasks.add(new ReadFileTask(logger, pathCh, cacheCh, cache, LEXER_TASKS/READER_TASKS));
+            tasks.add(new ReadFileTask(tracer, pathCh, cacheCh, cache, LEXER_TASKS/READER_TASKS));
         }
 
         for (int i = 0; i < LEXER_TASKS; i++) {
-            tasks.add(new LexerTask(logger, cacheCh, tokenCh, cache, new BuildFile()));
+            tasks.add(new LexerTask(tracer, cacheCh, tokenCh, cache, new BuildFile()));
         }
 
-        tasks.add(new RuleEmitterTask(logger, tokenCh, ruleCh, workspace, LEXER_TASKS));
+        tasks.add(new RuleEmitterTask(tracer, tokenCh, ruleCh, workspace, LEXER_TASKS));
+        pool = Executors.newFixedThreadPool(tasks.size());
 
-        final ExecutorService pool = Executors.newFixedThreadPool(tasks.size());
         int rc = 0;
-        try {
-            final List<Future<Integer>> results = pool.invokeAll(tasks);
+        final List<Future<Integer>> results = pool.invokeAll(tasks);
 
-            for (final Future<Integer> f : results) {
-                rc |= f.get();
-            }
-        } finally {
-            pool.shutdown();
+        for (final Future<Integer> f : results) {
+            rc |= f.get();
         }
 
         if (0 != rc) {
-            logger.log(Level.SEVERE, "unexpected error result returned from pipeline");
-            exit(logger, rc);
+            exit(tracer, rc);
         }
 
         final ArrayList<Rules> buildRules = new ArrayList<>();
@@ -125,14 +123,14 @@ public class Main {
 
         try {
             final ClassPath classPath = new ClassPath();
-            final BuildGraph buildGraph = new Rules().graph(logger, buildRules.toArray(new Rules[0]));
+            final BuildGraph buildGraph = new Rules().graph(tracer, buildRules.toArray(new Rules[0]));
 
             final ArrayList<String> argList = new ArrayList<>(Arrays.asList(args));
-            final ConcurrentHashMap<String, Command> commandList = commandList(logger, buildGraph, classPath, workspace);
+            final ConcurrentHashMap<String, Command> commandList = commandList(tracer, buildGraph, classPath, workspace);
 
             if (args.length < 1) {
                 printUsage(System.out, commandList);
-                exit(logger, RC_USAGE);
+                exit(tracer, RC_USAGE);
             }
 
             final String arg1 = argList.remove(ARG1);
@@ -140,19 +138,19 @@ public class Main {
 
             if (null == cmd) {
                 printUsage(System.out, commandList);
-                exit(logger, RC_USAGE);
+                exit(tracer, RC_USAGE);
             }
 
             rc = cmd.exec(argList);
 
-            exit(logger, rc);
+            exit(tracer, rc);
         } catch (Exception e) {
             e.printStackTrace();
-            exit(logger, RC_EXCEPTION);
+            exit(tracer, RC_EXCEPTION);
         }
     }
 
-    public static void exit(final Logger logger, final int rc) {
+    public void exit(final Tracer tracer, final int rc) {
         final Runtime runtime = Runtime.getRuntime();
 
         final long freeMemory = runtime.freeMemory();
@@ -178,15 +176,19 @@ public class Main {
             }
         }
 
-        logger.info(finished(0)
-                .add("rc", RC_USAGE)
-                .add("numGC", garbageCollections)
-                .add("inGC", garbageCollectionTime)
-                .add("freeMemory", freeMemory)
-                .add("maxMemory", maxMemory)
-                .add("totalMemory", totalMemory)
-                .add("processors", processors)
-                .toString());
+        tracer.info(finished(0)
+                .addRaw("args",
+                        jsonPair()
+                                .add("rc", RC_USAGE)
+                                .add("numGC", garbageCollections)
+                                .add("inGC", garbageCollectionTime)
+                                .add("freeMemory", freeMemory)
+                                .add("maxMemory", maxMemory)
+                                .add("totalMemory", totalMemory)
+                                .add("processors", processors)
+                                .toMapString()));
+        tracer.info(uptime());
+        shutdown();
         System.exit(rc);
     }
 
@@ -200,7 +202,7 @@ public class Main {
      * @param workspace
      * @return
      */
-    private static ConcurrentHashMap<String, Command> commandList(final Logger logger, final BuildGraph buildGraph, final ClassPath classPath, final Workspace workspace) {
+    private ConcurrentHashMap<String, Command> commandList(final Tracer logger, final BuildGraph buildGraph, final ClassPath classPath, final Workspace workspace) {
         final ConcurrentHashMap<String, Command> commands = new ConcurrentHashMap<>();
         final ArrayList<Command> list = new ArrayList<>();
 
@@ -224,7 +226,7 @@ public class Main {
      *  @param out
      * @param commandList
      */
-    private static void printUsage(final PrintStream out, final ConcurrentHashMap<String, Command> commandList) {
+    private void printUsage(final PrintStream out, final ConcurrentHashMap<String, Command> commandList) {
         out.println("Description:");
         out.println("  cljbuild is a clojure/jvm build too.");
         out.println("");

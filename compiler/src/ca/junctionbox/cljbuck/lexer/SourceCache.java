@@ -1,37 +1,41 @@
 package ca.junctionbox.cljbuck.lexer;
 
+import ca.junctionbox.cljbuck.build.json.Tracer;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 import static ca.junctionbox.cljbuck.build.json.Event.finished;
 import static ca.junctionbox.cljbuck.build.json.Event.started;
+import static ca.junctionbox.cljbuck.build.json.JsonKeyPair.jsonPair;
 
 /**
  * SourceCache is a cache for raw source code files.
  */
 public class SourceCache {
     final ConcurrentHashMap<Path, String> codeCache;
-    private final Logger logger;
+    private final Tracer tracer;
 
-    private SourceCache(final Logger logger) {
+    private SourceCache(final Tracer tracer) {
         this.codeCache = new ConcurrentHashMap<>();
-        this.logger = logger;
+        this.tracer = tracer;
     }
 
-    public static SourceCache create(final Logger logger) {
-        final SourceCache cache = new SourceCache(logger);
+    public static SourceCache create(final Tracer tracer) {
+        final SourceCache cache = new SourceCache(tracer);
 
         return cache;
     }
 
     public void consume(final Path sourceFile) throws IOException {
-        logger.info(started(hashCode())
+        tracer.info(started(hashCode())
+                .addRaw("args", jsonPair()
                         .add("source", sourceFile)
-                        .toString());
+                        .toMapString())
+                .toString());
 
         final long start = System.currentTimeMillis();
         final byte[] bytes = Files.readAllBytes(sourceFile);
@@ -40,10 +44,12 @@ public class SourceCache {
 
         codeCache.put(sourceFile, contents);
 
-        logger.info(finished(hashCode())
-                .add("source", sourceFile)
-                .add("bytes", bytes.length)
-                .add("read", (read - start))
+        tracer.info(finished(hashCode())
+                .addRaw("args", jsonPair()
+                        .add("source", sourceFile)
+                        .add("bytes", bytes.length)
+                        .add("read", (read - start))
+                        .toMapString())
                 .toString());
     }
 

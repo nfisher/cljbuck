@@ -62,10 +62,10 @@ public class BuildGraph {
         while (!buildRules.isEmpty()) {
             final BuildRule parent = buildRules.peek();
             final int depth = buildRules.size();
-            final BuildRule child = unseenChild(parent, seen, depth);
+            final BuildRule child = unseenChild(buildRules, parent, seen);
 
             if (null != child) {
-                seen.add(depth + ":" + child.getName());
+                seen.add(path(buildRules, child.getName()));
                 christopher.step(child, depth);
                 buildRules.push(child);
             } else {
@@ -74,12 +74,26 @@ public class BuildGraph {
         }
     }
 
-    private BuildRule unseenChild(final BuildRule parent, final Set<String> seen, final int depth) {
+    public String path(final Stack<BuildRule> stack, final String child) {
+            final StringBuilder sb = new StringBuilder();
+            final BuildRule[] a = stack.toArray(new BuildRule[stack.size()]);
+
+            for (final BuildRule r : a) {
+                sb.append(r.getName())
+                        .append(':');
+
+            }
+            sb.append(child);
+
+            return sb.toString();
+    }
+
+    private BuildRule unseenChild(final Stack<BuildRule> buildRules, final BuildRule parent, final Set<String> seen) {
         final Set<BuildRule> children = graph.predecessors(parent);
         BuildRule child = null;
 
         for (final BuildRule n : children) {
-            if (seen.contains(depth + ":" + n.getName())) {
+            if (seen.contains(path(buildRules, n.getName()))) {
                 continue;
             }
 

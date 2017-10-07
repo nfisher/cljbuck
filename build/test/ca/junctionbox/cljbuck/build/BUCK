@@ -8,6 +8,7 @@ java_test(
         '//compiler/src/ca/junctionbox/cljbuck/lexer:lexer',
         '//compiler/src/ca/junctionbox/cljbuck/channel:channel',
         '//build/src/ca/junctionbox/cljbuck/build/rules:rules',
+        '//build/src/ca/junctionbox/cljbuck/build/json:json',
         '//lib:hamcrest-core',
         '//lib:junit',
     ],

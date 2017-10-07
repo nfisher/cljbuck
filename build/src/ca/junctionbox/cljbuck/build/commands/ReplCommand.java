@@ -1,19 +1,19 @@
 package ca.junctionbox.cljbuck.build.commands;
 
 import ca.junctionbox.cljbuck.build.graph.BuildGraph;
+import ca.junctionbox.cljbuck.build.json.Tracer;
 import ca.junctionbox.cljbuck.build.runtime.ClassPath;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.logging.Logger;
 
 public class ReplCommand extends Command {
     private final BuildCommand buildCommand;
     private final ClassPath classPath;
 
-    public ReplCommand(Logger logger, final BuildGraph buildGraph, final ClassPath classPath, final BuildCommand buildCommand) {
+    public ReplCommand(Tracer logger, final BuildGraph buildGraph, final ClassPath classPath, final BuildCommand buildCommand) {
         super(logger, "repl", "start a repl session with the target", buildGraph);
         this.buildCommand = buildCommand;
         this.classPath = classPath;

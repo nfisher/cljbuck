@@ -1,6 +1,7 @@
 package ca.junctionbox.cljbuck.build;
 
 import ca.junctionbox.cljbuck.build.graph.BuildGraph;
+import ca.junctionbox.cljbuck.build.json.Tracer;
 import ca.junctionbox.cljbuck.build.rules.BuildRule;
 import ca.junctionbox.cljbuck.build.rules.ClojureBinary;
 import ca.junctionbox.cljbuck.build.rules.ClojureLib;
@@ -13,7 +14,6 @@ import com.google.common.graph.MutableGraph;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 import static ca.junctionbox.cljbuck.build.json.Event.finished;
 import static ca.junctionbox.cljbuck.build.json.Event.started;
@@ -77,21 +77,21 @@ public class Rules {
         return new Rules(CljTest);
     }
 
-    public BuildGraph graph(final Logger logger, final Rules... targets) throws Exception {
-        logger.info(started(hashCode).toString());
+    public BuildGraph graph(final Tracer tracer, final Rules... targets) throws Exception {
+        tracer.info(started(hashCode).toString());
         final ConcurrentHashMap<String, BuildRule> nodeMap = new ConcurrentHashMap<>(targets.length);
         final MutableGraph<BuildRule> graph = GraphBuilder.directed().expectedNodeCount(targets.length).build();
 
-        addNodes(logger, nodeMap, graph, targets);
-        addEdges(logger, graph, nodeMap);
+        addNodes(tracer, nodeMap, graph, targets);
+        addEdges(tracer, graph, nodeMap);
 
         final BuildGraph buildGraph = new BuildGraph(graph, nodeMap);
-        logger.info(finished(hashCode).toString());
+        tracer.info(finished(hashCode).toString());
         return buildGraph;
     }
 
-    private void addEdges(Logger logger, MutableGraph<BuildRule> graph, ConcurrentHashMap<String, BuildRule> nodeMap) {
-        logger.info(started(hashCode).toString());
+    private void addEdges(final Tracer tracer, final MutableGraph<BuildRule> graph, final ConcurrentHashMap<String, BuildRule> nodeMap) {
+        tracer.info(started(hashCode).toString());
         for (final BuildRule buildRuleV : nodeMap.values()) {
             for (final String predecessor : buildRuleV.getDeps()) {
                 final BuildRule buildRuleU = nodeMap.get(predecessor);
@@ -102,17 +102,17 @@ public class Rules {
                 graph.putEdge(buildRuleU, buildRuleV);
             }
         }
-        logger.info(finished(hashCode).toString());
+        tracer.info(finished(hashCode).toString());
     }
 
-    private void addNodes(Logger logger, ConcurrentHashMap<String, BuildRule> builder, MutableGraph<BuildRule> graph, Rules[] targets) throws Exception {
-        logger.info(started(hashCode).toString());
+    private void addNodes(final Tracer tracer, final ConcurrentHashMap<String, BuildRule> builder, final MutableGraph<BuildRule> graph, final Rules[] targets) throws Exception {
+        tracer.info(started(hashCode).toString());
         for (final Rules target : targets) {
             final BuildRule buildRule = target.build();
             builder.put(buildRule.getName(), buildRule);
             graph.addNode(buildRule);
         }
-        logger.info(finished(hashCode).toString());
+        tracer.info(finished(hashCode).toString());
     }
 
     public Rules name(final String name) {

@@ -1,5 +1,6 @@
 package ca.junctionbox.cljbuck.build;
 
+import ca.junctionbox.cljbuck.build.json.Tracer;
 import ca.junctionbox.cljbuck.channel.ReadWriterQueue;
 import ca.junctionbox.cljbuck.channel.Writer;
 import ca.junctionbox.cljbuck.lexer.Item;
@@ -258,8 +259,6 @@ public class RuleEmitterTaskTest {
             in.write(i);
         }
 
-        Logger logger = Logger.getLogger("pants");
-        logger.setLevel(Level.OFF);
-        return new RuleEmitterTask(logger, in, out, new Workspace("/home/nfisher/prj"), 1).call();
+        return new RuleEmitterTask(Tracer.create("."), in, out, new Workspace("/home/nfisher/prj"), 1).call();
     }
 }
